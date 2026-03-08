@@ -1,5 +1,6 @@
 import type { AopsOperationSpec } from './types.js'
 import {
+  buildAopsToolIdFromOperation,
   cloneAopsOperationSpec,
   defineAopsKitOperation,
   normalizeAopsOperationId,
@@ -36,7 +37,7 @@ function buildOperationsInternal(): AopsOperationSpec[] {
     const action = row.operationId.split('.').slice(1).join('.') || 'custom'
     const operation = defineAopsKitOperation({
       operationId: row.operationId,
-      toolId: row.toolId,
+      toolId: buildAopsToolIdFromOperation(row.operationId),
       serviceKey: row.serviceKey,
       serviceEntity: row.serviceEntity,
       methodName: row.methodName,

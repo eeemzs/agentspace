@@ -7,20 +7,20 @@ import { normalizeNonEmpty, toRecord } from '@aopslab/domain-kit-agentspace/shar
 
 import type { HostPluginTimeoutOptions } from './lifecycle-guards.js'
 
-export type AopsRunner = <TId extends AopsTypedOperationId>(
+export type AgentspaceRunner = <TId extends AopsTypedOperationId>(
   operationId: TId,
   input: AopsOperationInput<TId>,
 ) => Promise<AopsOperationOutput<TId>>
 
-export type AopsPluginOptions = {
-  runner?: AopsRunner
+export type AgentspacePluginOptions = {
+  runner?: AgentspaceRunner
   defaultTenantId?: string
   refreshProjectionOnCreate?: boolean
   requiredRuntimeEnv?: string[]
 } & HostPluginTimeoutOptions<AopsTypedOperationId>
 
-export type AopsResolvedPluginOptions = {
-  runner?: AopsRunner
+export type AgentspaceResolvedPluginOptions = {
+  runner?: AgentspaceRunner
   defaultTenantId?: string
   refreshProjectionOnCreate: boolean
   requiredRuntimeEnv: string[]
@@ -76,7 +76,9 @@ function normalizeOperationTimeoutByOperationId(
   return normalized
 }
 
-export function resolveAopsPluginOptions(options: AopsPluginOptions = {}): AopsResolvedPluginOptions {
+export function resolveAgentspacePluginOptions(
+  options: AgentspacePluginOptions = {},
+): AgentspaceResolvedPluginOptions {
   const source = toRecord(options)
 
   const runner = source.runner
@@ -109,7 +111,7 @@ export function resolveAopsPluginOptions(options: AopsPluginOptions = {}): AopsR
   const requiredRuntimeEnv = normalizeRuntimeEnvList(source.requiredRuntimeEnv)
 
   return {
-    runner: runner as AopsRunner | undefined,
+    runner: runner as AgentspaceRunner | undefined,
     defaultTenantId: defaultTenantId || undefined,
     operationTimeoutMs: operationTimeoutMs ?? undefined,
     operationTimeoutByOperationId,

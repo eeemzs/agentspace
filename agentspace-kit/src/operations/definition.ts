@@ -4,7 +4,7 @@ import type {
   AopsOperationSpec,
 } from './types.js'
 
-const TOOL_PREFIX = 'aops-'
+const TOOL_PREFIX = 'agentspace.'
 
 function normalizeNonEmpty(value: string): string {
   return String(value ?? '').trim()
@@ -50,7 +50,7 @@ export function normalizeAopsOperationId(value: string): string {
 }
 
 export function buildAopsToolIdFromOperation(operationId: string): string {
-  return `${TOOL_PREFIX}${normalizeAopsOperationId(operationId).replace(/\./g, '-')}`
+  return `${TOOL_PREFIX}${normalizeAopsOperationId(operationId)}`
 }
 
 function normalizeAopsToolId(toolId: string): string {
@@ -58,10 +58,11 @@ function normalizeAopsToolId(toolId: string): string {
   if (!normalized) return normalized
   return normalized
     .replace(/\s+/g, '-')
-    .replace(/[^a-z0-9-]/g, '-')
+    .replace(/[^a-z0-9.-]/g, '-')
     .replace(/-+/g, '-')
-    .replace(/^-+/, '')
-    .replace(/-+$/, '')
+    .replace(/\.+/g, '.')
+    .replace(/^[.-]+/, '')
+    .replace(/[.-]+$/, '')
 }
 
 export function defineAopsKitOperation(input: DefineAopsKitOperationInput): AopsOperationSpec {

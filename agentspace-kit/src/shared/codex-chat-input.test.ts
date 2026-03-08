@@ -59,8 +59,8 @@ describe('codex-chat input compatibility helper', () => {
     })
   })
 
-  it('maps legacy top-level list-threads fields into filter/options', () => {
-    const normalized = normalizeAopsToolInputForCompatibility('aops.codex-chat-thread.list-threads', {
+  it('maps top-level list-threads fields into filter/options for agentspace tool ids', () => {
+    const normalized = normalizeAopsToolInputForCompatibility('agentspace.codex-chat-thread.list-threads', {
       workspaceId: 'workspace-1',
       externalThreadId: 'thread-ext-2',
       limit: 25,

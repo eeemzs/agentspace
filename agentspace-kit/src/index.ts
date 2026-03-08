@@ -37,40 +37,7 @@ export type AgentspaceKitOperationSpec = AopsOperationSpec
 export type AgentspaceKitOperationId = AopsOperationSpec['operationId']
 
 function normalizeAgentspaceToolId(toolId: string): string {
-  const normalized = String(toolId ?? '').trim().toLowerCase()
-  if (!normalized) return normalized
-  if (normalized.startsWith('agentspace.')) {
-    return `aops-${normalized.slice('agentspace.'.length).replace(/\./g, '-')}`
-  }
-  if (normalized.startsWith('agentspace-')) {
-    return `aops-${normalized.slice('agentspace-'.length)}`
-  }
-  if (normalized.startsWith('aops.')) {
-    return `aops-${normalized.slice('aops.'.length).replace(/\./g, '-')}`
-  }
-  return normalized
-}
-
-function rewriteAgentspaceManifest(
-  manifest: AopsDomainCapabilityManifest,
-): AopsDomainCapabilityManifest {
-  return {
-    ...manifest,
-    domain: {
-      ...manifest.domain,
-      id: 'agentspace',
-      displayName: 'Agentspace',
-      description:
-        'Agent workspace tooling for prompts, skills, resources, memory, projects, chat, and agent runtime records.',
-    },
-  }
-}
-
-function rewriteRouteId(route: AopsHostRouteProjectionEntry): AopsHostRouteProjectionEntry {
-  return {
-    ...route,
-    id: route.id.startsWith('aops.') ? `agentspace.${route.id.slice('aops.'.length)}` : route.id,
-  }
+  return String(toolId ?? '').trim().toLowerCase()
 }
 
 export function listAgentspaceKitOperations(
@@ -113,11 +80,11 @@ export function buildAgentspaceDomainCapabilityManifest(options?: {
   includeDocs?: boolean
   refresh?: boolean
 }): AopsDomainCapabilityManifest {
-  return rewriteAgentspaceManifest(buildAopsDomainCapabilityManifest(options))
+  return buildAopsDomainCapabilityManifest(options)
 }
 
 export function buildAgentspaceHostRouteProjection(options?: {
   refresh?: boolean
 }): AopsHostRouteProjectionEntry[] {
-  return buildAopsHostRouteProjection(options).map(rewriteRouteId)
+  return buildAopsHostRouteProjection(options)
 }

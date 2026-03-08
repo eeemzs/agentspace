@@ -26,18 +26,16 @@ import {
   toSafeFailureEnvelope,
 } from './lifecycle-guards.js'
 import {
-  resolveAopsPluginOptions,
-  type AopsPluginOptions,
-  type AopsResolvedPluginOptions,
-  type AopsRunner,
+  resolveAgentspacePluginOptions,
+  type AgentspacePluginOptions,
+  type AgentspaceResolvedPluginOptions,
+  type AgentspaceRunner,
 } from './plugin-config.js'
 import { assertRuntimeEnv, resolveMissingRuntimeEnvKeys } from './runtime-env.js'
 
 export type {
-  AopsPluginOptions,
-  AopsRunner,
-  AopsPluginOptions as AgentspacePluginOptions,
-  AopsRunner as AgentspaceRunner,
+  AgentspacePluginOptions,
+  AgentspaceRunner,
 } from './plugin-config.js'
 
 const HOST_CONTEXT_INPUT_KEYS = new Set([
@@ -117,7 +115,7 @@ function buildRequiredArgsByOperationId(refresh: boolean): Map<AopsTypedOperatio
   )
 }
 
-function createPluginState(options: AopsResolvedPluginOptions): AopsPluginState {
+function createPluginState(options: AgentspaceResolvedPluginOptions): AopsPluginState {
   const refresh = options.refreshProjectionOnCreate
   return {
     routes: buildRoutes(refresh),
@@ -153,7 +151,7 @@ function ensureRuntimeEnvReady(
 
 function runPluginSetup(
   state: AopsPluginState,
-  options: AopsResolvedPluginOptions,
+  options: AgentspaceResolvedPluginOptions,
   enforceRuntimeEnv: boolean,
 ): void {
   state.setup.attempts += 1
@@ -282,13 +280,13 @@ function toExecutionReason(error: unknown, friendlyCode?: string, friendlyMessag
     const lower = candidate.trim().toLowerCase()
     if (!lower) continue
 
-    if (lower.startsWith('agentspace.validation') || lower.startsWith('aops.validation')) return 'invalid_input'
-    if (lower.startsWith('agentspace.notfound') || lower.startsWith('aops.notfound')) return 'not_found'
-    if (lower.startsWith('agentspace.unauthorized') || lower.startsWith('aops.unauthorized')) return 'unauthorized'
-    if (lower.startsWith('agentspace.forbidden') || lower.startsWith('aops.forbidden')) return 'forbidden'
-    if (lower.startsWith('agentspace.conflict') || lower.startsWith('aops.conflict')) return 'conflict'
-    if (lower.startsWith('agentspace.ratelimit') || lower.startsWith('aops.ratelimit')) return 'rate_limit'
-    if (lower.startsWith('agentspace.serviceunavailable') || lower.startsWith('aops.serviceunavailable')) return 'service_unavailable'
+    if (lower.startsWith('agentspace.validation')) return 'invalid_input'
+    if (lower.startsWith('agentspace.notfound')) return 'not_found'
+    if (lower.startsWith('agentspace.unauthorized')) return 'unauthorized'
+    if (lower.startsWith('agentspace.forbidden')) return 'forbidden'
+    if (lower.startsWith('agentspace.conflict')) return 'conflict'
+    if (lower.startsWith('agentspace.ratelimit')) return 'rate_limit'
+    if (lower.startsWith('agentspace.serviceunavailable')) return 'service_unavailable'
 
     const colonPrefix = lower.match(/^([a-z][a-z0-9_]+):/)
     if (colonPrefix && colonPrefix[1] !== 'failed') {
@@ -432,16 +430,16 @@ function buildInputForOperation(
   return payload
 }
 
-function resolveRunner(options: AopsResolvedPluginOptions): AopsRunner {
-  const defaultRunner: AopsRunner = <TId extends AopsTypedOperationId>(
+function resolveRunner(options: AgentspaceResolvedPluginOptions): AgentspaceRunner {
+  const defaultRunner: AgentspaceRunner = <TId extends AopsTypedOperationId>(
     operationId: TId,
     input: AopsOperationInput<TId>,
   ) => runAgentspaceKitOperationByTypedId(operationId, input)
   return options.runner ?? defaultRunner
 }
 
-export function createAgentspacePlugin(options: AopsPluginOptions = {}): DomainPlugin {
-  const resolvedOptions = resolveAopsPluginOptions(options)
+export function createAgentspacePlugin(options: AgentspacePluginOptions = {}): DomainPlugin {
+  const resolvedOptions = resolveAgentspacePluginOptions(options)
   const state = createPluginState(resolvedOptions)
   const runner = resolveRunner(resolvedOptions)
   const runnerMode = resolvedOptions.runner

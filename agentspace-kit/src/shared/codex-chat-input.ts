@@ -141,9 +141,7 @@ export function normalizeAopsToolInputForCompatibility(
   const normalizedToolId = normalizeNonEmpty(toolId) ?? ''
   const operationId = normalizedToolId.startsWith('agentspace.')
     ? normalizedToolId.slice('agentspace.'.length)
-    : normalizedToolId.startsWith('aops.')
-      ? normalizedToolId.slice('aops.'.length)
-      : normalizedToolId
+    : normalizedToolId
   if (!operationId) return toRecord(input)
   return normalizeAopsOperationInputForCompatibility(operationId as AopsTypedOperationId, input)
 }

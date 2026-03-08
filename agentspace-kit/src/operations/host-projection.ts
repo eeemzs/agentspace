@@ -134,7 +134,7 @@ function toRouteFromOperation(operation: AopsHostProjectionOperation): AopsHostR
   const collectionPath = toResourceCollectionPath(resource, operation.operationId)
   if (!collectionPath || kind === undefined || kind === 'custom') {
     return {
-      id: `aops.${operation.operationId.replace(/\./g, '-')}`,
+      id: `agentspace.${operation.operationId}`,
       method,
       pattern: fallbackPattern,
       operation: operation.operationId,
@@ -144,7 +144,7 @@ function toRouteFromOperation(operation: AopsHostProjectionOperation): AopsHostR
 
   if (kind === 'list' || kind === 'create') {
     return {
-      id: `aops.${operation.operationId.replace(/\./g, '-')}`,
+      id: `agentspace.${operation.operationId}`,
       method,
       pattern: collectionPath,
       operation: operation.operationId,
@@ -156,7 +156,7 @@ function toRouteFromOperation(operation: AopsHostProjectionOperation): AopsHostR
     const idParam = choosePathParamName(operation.requiredArgs, resource)
     if (!idParam) {
       return {
-        id: `aops.${operation.operationId.replace(/\./g, '-')}`,
+        id: `agentspace.${operation.operationId}`,
         method,
         pattern: fallbackPattern,
         operation: operation.operationId,
@@ -164,7 +164,7 @@ function toRouteFromOperation(operation: AopsHostProjectionOperation): AopsHostR
       }
     }
     return {
-      id: `aops.${operation.operationId.replace(/\./g, '-')}`,
+      id: `agentspace.${operation.operationId}`,
       method,
       pattern: `${collectionPath}/:${idParam}`,
       operation: operation.operationId,
@@ -173,7 +173,7 @@ function toRouteFromOperation(operation: AopsHostProjectionOperation): AopsHostR
   }
 
   return {
-    id: `aops.${operation.operationId.replace(/\./g, '-')}`,
+    id: `agentspace.${operation.operationId}`,
     method,
     pattern: fallbackPattern,
     operation: operation.operationId,

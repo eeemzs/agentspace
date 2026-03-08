@@ -84,12 +84,12 @@ function inferResourceKind(resourceId: string): string | undefined {
 
 function buildResourceSummary(resourceTitle: string, operationKinds: string[]): string {
   if (operationKinds.length === 0) {
-    return `${resourceTitle} records used inside the Agentic Operations System workspace and agent runtime.`
+    return `${resourceTitle} records used inside the Agentspace workspace and agent runtime.`
   }
   if (operationKinds.length === 1) {
-    return `Supports ${operationKinds[0]} operations for ${resourceTitle.toLowerCase()} in AOPS runtime workflows.`
+    return `Supports ${operationKinds[0]} operations for ${resourceTitle.toLowerCase()} in Agentspace runtime workflows.`
   }
-  return `Supports ${operationKinds.slice(0, 5).join(', ')} operations for ${resourceTitle.toLowerCase()} in AOPS runtime workflows.`
+  return `Supports ${operationKinds.slice(0, 5).join(', ')} operations for ${resourceTitle.toLowerCase()} in Agentspace runtime workflows.`
 }
 
 function buildCapabilityResources(operations: AopsOperationContract[]): AopsDomainCapabilityResource[] {
@@ -193,10 +193,10 @@ export function buildAopsDomainCapabilityManifest(
   const manifest: AopsDomainCapabilityManifest = {
     manifestVersion: options.manifestVersion ?? '1.0.0',
     domain: {
-      id: 'aops',
+      id: 'agentspace',
       version: options.domainVersion ?? '0.0.0',
-      displayName: 'AOPS',
-      description: 'Agentic Operations System workspace tooling for projects, prompts, tasks, skills, memory, chat, and agent runtime records.',
+      displayName: 'Agentspace',
+      description: 'Agent workspace tooling for projects, prompts, tasks, skills, memory, chat, and agent runtime records.',
     },
     capabilities: {
       operations: operations.map(toCapabilityOperation),
@@ -207,7 +207,7 @@ export function buildAopsDomainCapabilityManifest(
   if (options.includeDocs !== false) {
     manifest.docs = {
       domain: {
-        summary: 'Manage AOPS-native workspace state such as projects, tasks, prompts, skills, chat threads, memory items, agent runs, and related runtime records.',
+        summary: 'Manage Agentspace workspace state such as projects, tasks, prompts, skills, chat threads, memory items, agent runs, and related runtime records.',
       },
       resources: buildResourceDocs(operations),
       operations: Object.fromEntries(operations.map((operation) => [operation.operationId, toOperationDocs(operation)])),
