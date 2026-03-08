@@ -33,3 +33,4 @@ Canonical runtime model:
 3. Bu, request'in dogrudan canonical `agentspace` host-plugin/kit zincirine gitmesi demektir.
 4. `aops-server` app wrapper katmaninda env/bootstrap baglayabilir; fakat `agentspace` ustune AOPS-specific policy/writeback/filter koymak canonical model degildir.
 5. `agentspace` icindeki canonical business logic domain package owner'inda kalir; AOPS-specific orchestration gerekiyorsa bu davranis app katmaninda ayri owner olur.
+6. App katmani bilincli olarak orkestrasyon owner'i olabilir; domain generic kalirken urun davranisi app runtime adapter/orchestration service katmaninda tasinabilir.

@@ -52,6 +52,7 @@ Scope Root: `/Volumes/d/dev-js2/domains/agentspace`
 3. Primary internal composition boundary: `agentspace-kit`
 4. Primary external direct API boundary: `/api/agentspace/*`
 5. Primary orchestrated/AI invoke boundary: `/api/agent/tools`
+6. AOPS-specific orchestration gerekiyorsa owner `agentspace` degil, app katmani olur; app runtime adapter veya orchestration service bunu tasiyabilir.
 
 Negatif kararlar:
 
