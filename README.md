@@ -26,3 +26,10 @@ Ana binary ve tool prefix:
 Canonical migration/planning kayitlari:
 1. `/Volumes/d/dev-js2/apps/aops/.sprints/2026-03-08-aops-domain-extraction-cli-split-sprint-15.md`
 2. `/Volumes/d/dev-js2/domains/agentspace/.sprints/2026-03-08-agentspace-bootstrap-sprint-01.md`
+
+Canonical runtime model:
+1. `agentspace`, kendi basina standalone domain + standalone domain CLI modeline sahiptir.
+2. `aops-server` icinde host edildiginde dogru model `in-process integrated hosting`tir.
+3. Bu, request'in dogrudan canonical `agentspace` host-plugin/kit zincirine gitmesi demektir.
+4. `aops-server` app wrapper katmaninda env/bootstrap baglayabilir; fakat `agentspace` ustune AOPS-specific policy/writeback/filter koymak canonical model degildir.
+5. `agentspace` icindeki canonical business logic domain package owner'inda kalir; AOPS-specific orchestration gerekiyorsa bu davranis app katmaninda ayri owner olur.

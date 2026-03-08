@@ -43,6 +43,22 @@ Scope Root: `/Volumes/d/dev-js2/domains/agentspace`
 6. `aops-cli` operator/gateway CLI olarak `apps/aops` altinda kalirken, `agentspace` binary canonical domain invoke surface olarak ayrilir.
 7. Verification durumunda `agentspace-dm`, `agentspace-kit`, `agentspace-host-plugin`, `agentspace-tooling`, `agentspace-cli`, `aops-server` ve `aops-desktop` build/typecheck zinciri temiz gecti.
 
+### 4.1 Canonical Model Freeze
+
+`agentspace` icin kesin karar:
+
+1. Standalone kullanim modeli: standalone domain + standalone domain CLI
+2. `aops-server` icindeki hosting modeli: `in-process integrated hosting`
+3. Primary internal composition boundary: `agentspace-kit`
+4. Primary external direct API boundary: `/api/agentspace/*`
+5. Primary orchestrated/AI invoke boundary: `/api/agent/tools`
+
+Negatif kararlar:
+
+1. `agentspace`, AOPS icinde adapter-wrapped canonical domain olmayacaktir.
+2. `agentspace` request-time execution boundary'si olarak CLI/subprocess kullanmayacaktir.
+3. `agentspace` icine AOPS'e ozel cross-domain orchestration gomulmeyecektir.
+
 ## 5. Not
 
 Bu sprint artık bootstrap'i asmıs durumdadir: extraction, hosted cutover, canonical naming cleanup ve legacy tree archive tasimasi tamamlandi. Kalan isler bootstrap degil, follow-up niteligindedir; ozellikle standalone `agentspace-cli` UX/command surface'i ve sonraki gunlerde archive tree'nin fiziksel silinmesi ayri bir slice olarak ele alinmalidir.
