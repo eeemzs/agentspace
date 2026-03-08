@@ -27,18 +27,22 @@ Scope Root: `/Volumes/d/dev-js2/domains/agentspace`
 - [x] `apps/aops/domains/aops` altindaki gercek kaynaklar `agentspace-*` paketlerine tasindi.
 - [x] `aops-server` ve `aops-desktop` consumer import'lari yeni package setine gore rewiring aldi.
 - [x] Placeholder manifest/tool catalog stub'lari gercek operation/tool projection'lariyla dolduruldu.
-- [ ] Compat/bridge ve eski package alias plani netlestirilecek.
-- [ ] `@aops/host-plugin-aops` -> `@aopslab/domain-host-plugin-agentspace` gecis stratejisi, outward `aops` hosted identity korunup korunmayacagi netlestirilerek ayrica planlanacak.
+- [x] Compat/bridge ve eski package alias plani netlestirildi; canonical runtime'dan legacy tool alias normalization kaldirildi.
+- [x] `@aops/host-plugin-aops` -> `@aopslab/domain-host-plugin-agentspace` hosted cutover tamamlandi; outward hosted identity `agentspace` olarak freeze edildi.
+- [x] App-local wrapper/path naming cleanup tamamlandi (`agentspace-request-input`, `agentspace-domain-*`, `getAgentspaceKit`).
+- [x] Legacy internal domain agaci `apps/aops/archive/domains/aops` altina tasindi.
+- [ ] Standalone `agentspace-cli` command surface'i ve publish/release policy'si tamamlanacak.
 
 ## 4. Ilk Teknik Notlar
 
-1. `dm + kit` tarafinda canonical package sahibi artik `/Volumes/d/dev-js2/domains/agentspace` altindadir; hosted outward `aops` kimligini koruyan legacy plugin hatti ise su an icin `/Volumes/d/dev-js2/apps/aops/domains/aops/aops-host-plugin` altinda kalir ve iceride extracted `agentspace-kit` paketini kullanir.
-2. `agentspace` root bu sprintte `fileman` / `projectman` / `docman` ile hizali workspace matrix olarak acildi.
-3. `agentspace-dm`, `agentspace-kit` ve `agentspace-host-plugin` artik gercek source owner durumundadir; `apps/aops` tarafinda `dm + kit` consumer rewiring'i tamamlandi ancak host-plugin compat katmani henuz korunmaktadir.
-4. Package naming'i bilerek `@aopslab/domain-*` pattern'ine cekildi; boylece external domain lineup ile ayni release/import dili korunur.
-5. `aops-cli` operator/gateway CLI olarak `apps/aops` altinda kalirken, `agentspace` binary canonical domain invoke surface olarak ayrilir.
-6. `apps/aops` workspace'i `../../domains/agentspace/*` paketlerini aktif workspace olarak gorur hale geldi; `pnpm install --ignore-scripts` sonrasi `agentspace-dm`, `agentspace-kit`, `aops-server` ve `aops-desktop` build/typecheck dogrulamalari temiz gecti.
+1. `agentspace-dm`, `agentspace-kit`, `agentspace-host-plugin`, `agentspace-tooling` ve `agentspace-cli` package ownership'i artik `/Volumes/d/dev-js2/domains/agentspace` altindadir.
+2. Hosted runtime cutover tamamlandi; `aops-server` local plugin kaydi `@aopslab/domain-host-plugin-agentspace#createAgentspacePlugin` kullanir ve outward hosted domain kimligi `agentspace`tir.
+3. `apps/aops` tarafinda app-local wrapper katmanlari da `Agentspace*` vocabulary'sine cekildi; domain-owned helper path'lerinde `aops` adi kalmadi.
+4. Eski internal source agaci aktif workspace/build graph'tan cikarilip `/Volumes/d/dev-js2/apps/aops/archive/domains/aops` altina tasindi.
+5. Package naming'i bilerek `@aopslab/domain-*` pattern'ine cekildi; boylece external domain lineup ile ayni release/import dili korunur.
+6. `aops-cli` operator/gateway CLI olarak `apps/aops` altinda kalirken, `agentspace` binary canonical domain invoke surface olarak ayrilir.
+7. Verification durumunda `agentspace-dm`, `agentspace-kit`, `agentspace-host-plugin`, `agentspace-tooling`, `agentspace-cli`, `aops-server` ve `aops-desktop` build/typecheck zinciri temiz gecti.
 
 ## 5. Not
 
-Bu sprintte eski `apps/aops/domains/aops` yapisi korunurken yeni `agentspace` root'u acildi, ardindan `dm/kit/host-plugin` source agaclari yeni canonical package ailesine tasindi. Sonraki slice ile `apps/aops` tarafindaki `dm/kit` consumer'lari yeni package ailesine rewiring aldi; yalniz `@aops/host-plugin-aops` hosted `aops` kimligini korumak icin bilerek legacy hatta tutuldu.
+Bu sprint artık bootstrap'i asmıs durumdadir: extraction, hosted cutover, canonical naming cleanup ve legacy tree archive tasimasi tamamlandi. Kalan isler bootstrap degil, follow-up niteligindedir; ozellikle standalone `agentspace-cli` UX/command surface'i ve sonraki gunlerde archive tree'nin fiziksel silinmesi ayri bir slice olarak ele alinmalidir.
