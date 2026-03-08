@@ -15,6 +15,7 @@
   ],
   "scripts": {
     "bootstrap": "pnpm install",
+    "changeset": "changeset",
     "build:tooling": "pnpm --filter @aopslab/domain-tooling-agentspace run build",
     "build:cli": "pnpm --filter @aopslab/domain-cli-agentspace run build",
     "build:core": "pnpm --filter @aopslab/domain-core-agentspace run build",
@@ -30,7 +31,11 @@
     "manifest:print": "pnpm --filter @aopslab/domain-cli-agentspace run start:tsx -- manifest all",
     "manifest:emit": "pnpm --filter @aopslab/domain-tooling-agentspace run manifest:emit && pnpm --filter @aopslab/domain-cli-agentspace run manifest:emit",
     "manifest:check": "pnpm --filter @aopslab/domain-tooling-agentspace run manifest:check && pnpm --filter @aopslab/domain-cli-agentspace run manifest:check",
-    "manifest:sync": "pnpm run build:kit && pnpm run build:tooling && pnpm run build:host-plugin && pnpm run build:cli && pnpm run manifest:check"
+    "manifest:sync": "pnpm run build:kit && pnpm run build:tooling && pnpm run build:host-plugin && pnpm run build:cli && pnpm run manifest:check",
+    "release:status": "changeset status --verbose",
+    "release:check": "changeset status --verbose",
+    "release:version": "changeset version",
+    "version-packages": "changeset version"
   },
   "dependencies": {
     "@aopslab/xf-bm": "catalog:",

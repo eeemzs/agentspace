@@ -1,6 +1,6 @@
 {
   "name": "@aopslab/domain-dm-agentspace",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "type": "module",
   "description": "Agentspace domain model surface.",
   "main": "./dist/index.js",

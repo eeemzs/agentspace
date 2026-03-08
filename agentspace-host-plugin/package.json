@@ -1,6 +1,6 @@
 {
   "name": "@aopslab/domain-host-plugin-agentspace",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "type": "module",
   "private": false,
   "description": "Agentspace host plugin for xf-host compatible plugin registries.",
