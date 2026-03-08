@@ -1,36 +1,44 @@
-# Agentspace Domain
+# agentspace
 
-`agentspace`, AOPS runtime icinden cikarilacak olan AOPS-native workspace domaininin hedef adidir.
+Agentspace domain workspace for dm, kit, host-plugin, tooling, cli, and tests.
 
-Rol ayrimi:
-1. `AOPS` = runtime / host / gateway urunu
-2. `agentspace` = prompt, skill, resource, memory, project-summary ve benzeri agent workspace capability'lerini tasiyan domain
+## Packages
 
-Planlanan paketler:
-1. `@aopslab/domain-dm-agentspace`
-2. `@aopslab/domain-kit-agentspace`
-3. `@aopslab/domain-host-plugin-agentspace`
-4. `@aopslab/domain-tooling-agentspace`
-5. `@aopslab/domain-cli-agentspace`
-6. `@aopslab/domain-core-agentspace`
-7. `@aopslab/domain-ops-agentspace`
-8. `@aopslab/domain-tests-agentspace`
+- `agentspace-dm`: workspace-scoped agent data domain model and repositories
+- `agentspace-kit`: canonical operation contracts, executor, DCM, and host routes
+- `agentspace-tooling`: tooling facade plus derived manifest generation (`dcm`, `routes`, `agent`, `cli`, `ops`)
+- `agentspace-cli`: canonical `tool` / `op` invoke plus generated sugar commands and projection-driven help
+- `agentspace-host-plugin`: host runtime bridge backed by kit projections
+- `agentspace-tests`: bootstrap smoke plus CLI browse/help regression coverage
 
-Bu klasor ilk bootstrap fazinda, `fileman` / `projectman` / `docman` pattern'iyle hizali workspace matrix olarak scaffold edilmektedir.
+## Common Commands
 
-Ana binary ve tool prefix:
-1. binary: `agentspace`
-2. alternate binary alias: `agentspace-cli`
-3. tool prefix: `agentspace.*`
+```bash
+pnpm run build
+pnpm run test
+pnpm run manifest:sync
+```
 
-Canonical migration/planning kayitlari:
-1. `/Volumes/d/dev-js2/apps/aops/.sprints/2026-03-08-aops-domain-extraction-cli-split-sprint-15.md`
-2. `/Volumes/d/dev-js2/domains/agentspace/.sprints/2026-03-08-agentspace-bootstrap-sprint-01.md`
+## CLI Examples
 
-Canonical runtime model:
-1. `agentspace`, kendi basina standalone domain + standalone domain CLI modeline sahiptir.
-2. `aops-server` icinde host edildiginde dogru model `in-process integrated hosting`tir.
-3. Bu, request'in dogrudan canonical `agentspace` host-plugin/kit zincirine gitmesi demektir.
-4. `aops-server` app wrapper katmaninda env/bootstrap baglayabilir; fakat `agentspace` ustune AOPS-specific policy/writeback/filter koymak canonical model degildir.
-5. `agentspace` icindeki canonical business logic domain package owner'inda kalir; AOPS-specific orchestration gerekiyorsa bu davranis app katmaninda ayri owner olur.
-6. App katmani bilincli olarak orkestrasyon owner'i olabilir; domain generic kalirken urun davranisi app runtime adapter/orchestration service katmaninda tasinabilir.
+```bash
+pnpm --filter @aopslab/domain-cli-agentspace run start:tsx -- tools
+pnpm --filter @aopslab/domain-cli-agentspace run start:tsx -- manifest cli
+pnpm --filter @aopslab/domain-cli-agentspace run start:tsx -- manifest get dcm --path docs.operations.workspace.list-workspaces
+pnpm --filter @aopslab/domain-cli-agentspace run start:tsx -- manifest show cli --path commandsById.workspace.list-workspaces
+pnpm --filter @aopslab/domain-cli-agentspace run start:tsx -- workspace list-workspaces --workspace-id <id>
+pnpm --filter @aopslab/domain-cli-agentspace run start:tsx -- op agentspace.project.create --data '{"workspaceId":"<id>","name":"Demo"}'
+```
+
+## Projection Rule
+
+1. `agentspace-kit` DCM is the canonical capability source.
+2. `agentspace-tooling` emits derived `agent` and `cli` projections from that source.
+3. `agentspace-cli` reads the derived CLI projection for `--help`, `manifest cli`, `manifest get`, and `manifest show`.
+4. HRM / `host-registration` is runtime registration metadata only; it is not a second capability source.
+
+## Runtime Notes
+
+- Standalone CLI runtime defaults to host-plugin execution and can fall back to tooling mode with `--execution-mode tooling`.
+- Repo URL precedence is `--repo-url -> AGENTSPACE_REPO_URL -> AOPS_PG_URL -> DEV_PG_URL`.
+- Workspace-scoped operations should receive either explicit payload workspace fields or `--workspace-id` context.

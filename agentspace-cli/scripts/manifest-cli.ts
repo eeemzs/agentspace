@@ -1,61 +1,87 @@
 #!/usr/bin/env node
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
-import { resolve } from 'node:path'
-import {
-  buildAgentspaceAgentManifest,
-  buildAgentspaceDomainCapabilityManifest,
-} from '@aopslab/domain-tooling-agentspace'
+import fs from 'node:fs/promises'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { buildAgentspaceHostRegistrationManifest } from '../src/host-registration.js'
 
-function readOption(argv: readonly string[], key: string, fallback: string): string {
-  const index = argv.indexOf(key)
-  if (index === -1) return fallback
-  const next = argv[index + 1]
-  if (!next || next.startsWith('--')) return fallback
-  return next
+type ManifestCommand = 'print' | 'emit' | 'check'
+
+type ParsedArgs = {
+  command: ManifestCommand
+  outDir: string
 }
 
-function stringifyJson(value: unknown): string {
+const scriptDir = path.dirname(fileURLToPath(import.meta.url))
+const packageRoot = path.resolve(scriptDir, '..')
+const defaultOutDir = path.resolve(packageRoot, 'dist/manifests')
+
+function parseArgs(argv: string[]): ParsedArgs {
+  const [commandRaw, ...rest] = argv
+  const command = (commandRaw ?? '').trim().toLowerCase()
+  if (command !== 'print' && command !== 'emit' && command !== 'check') {
+    throw new Error('invalid_command:expected_one_of(print|emit|check)')
+  }
+
+  let outDir = defaultOutDir
+  for (let index = 0; index < rest.length; index += 1) {
+    const token = rest[index]
+    if (token !== '--out-dir') continue
+    const value = rest[index + 1]
+    if (!value || value.startsWith('--')) throw new Error('missing_out_dir_value')
+    outDir = path.isAbsolute(value) ? value : path.resolve(packageRoot, value)
+    index += 1
+  }
+
+  return { command, outDir }
+}
+
+function serializeJson(value: unknown): string {
   return `${JSON.stringify(value, null, 2)}\n`
 }
 
-function buildManifestFiles(): Readonly<Record<string, unknown>> {
-  return {
-    'agent.manifest.json': buildAgentspaceAgentManifest(),
-    'domain-capability.manifest.json': buildAgentspaceDomainCapabilityManifest(),
-    'host-registration.manifest.json': buildAgentspaceHostRegistrationManifest(),
-  }
+function buildOutputPath(outDir: string): string {
+  return path.resolve(outDir, 'host-registration.json')
 }
 
-function emitManifestFiles(outDir: string, files: Readonly<Record<string, unknown>>): void {
-  mkdirSync(outDir, { recursive: true })
-  for (const [filename, payload] of Object.entries(files)) {
-    writeFileSync(resolve(outDir, filename), stringifyJson(payload), 'utf8')
-  }
+async function runPrint(): Promise<void> {
+  process.stdout.write(serializeJson(buildAgentspaceHostRegistrationManifest()))
 }
 
-function checkManifestFiles(outDir: string, files: Readonly<Record<string, unknown>>): void {
-  for (const [filename, payload] of Object.entries(files)) {
-    const filePath = resolve(outDir, filename)
-    const actual = readFileSync(filePath, 'utf8')
-    const expected = stringifyJson(payload)
-    if (actual !== expected) {
-      throw new Error(`manifest_out_of_sync:${filename}`)
+async function runEmit(outDir: string): Promise<void> {
+  await fs.mkdir(outDir, { recursive: true })
+  const outputPath = buildOutputPath(outDir)
+  await fs.writeFile(outputPath, serializeJson(buildAgentspaceHostRegistrationManifest()), 'utf8')
+  process.stderr.write(`[manifest] emitted host-registration -> ${outputPath}\n`)
+}
+
+async function runCheck(outDir: string): Promise<void> {
+  const outputPath = buildOutputPath(outDir)
+  const expected = serializeJson(buildAgentspaceHostRegistrationManifest())
+  let actual: string
+  try {
+    actual = await fs.readFile(outputPath, 'utf8')
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+      throw new Error(`manifest_missing:host-registration:${outputPath}`)
     }
+    throw error
   }
+
+  if (actual !== expected) {
+    throw new Error(`manifest_outdated:host-registration:${outputPath}`)
+  }
+  process.stderr.write(`[manifest] up-to-date host-registration -> ${outputPath}\n`)
 }
 
-const argv = process.argv.slice(2)
-const command = argv[0] ?? 'print'
-const outDir = resolve(process.cwd(), readOption(argv, '--out-dir', 'dist/manifests'))
-const manifestFiles = buildManifestFiles()
-
-if (command === 'print') {
-  process.stdout.write(stringifyJson(manifestFiles))
-} else if (command === 'emit') {
-  emitManifestFiles(outDir, manifestFiles)
-} else if (command === 'check') {
-  checkManifestFiles(outDir, manifestFiles)
-} else {
-  throw new Error(`unsupported_manifest_command:${command}`)
+async function main(): Promise<void> {
+  const { command, outDir } = parseArgs(process.argv.slice(2))
+  if (command === 'print') return runPrint()
+  if (command === 'emit') return runEmit(outDir)
+  return runCheck(outDir)
 }
+
+await main().catch((error) => {
+  const message = error instanceof Error ? error.message : String(error)
+  process.stderr.write(`[manifest] failed: ${message}\n`)
+  process.exitCode = 1
+})

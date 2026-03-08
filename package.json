@@ -25,7 +25,7 @@
     "build:tests": "pnpm --filter @aopslab/domain-tests-agentspace run build",
     "build": "pnpm run build:core && pnpm run build:dm && pnpm run build:kit && pnpm run build:ops && pnpm run build:tooling && pnpm run build:cli && pnpm run build:host-plugin && pnpm run build:tests",
     "typecheck": "pnpm exec tsc -p tsconfig.json --noEmit",
-    "test:integration": "pnpm --filter @aopslab/domain-tests-agentspace run test:basic",
+    "test:integration": "pnpm --filter @aopslab/domain-tests-agentspace run test",
     "test": "pnpm run test:integration",
     "manifest:print": "pnpm --filter @aopslab/domain-cli-agentspace run start:tsx -- manifest all",
     "manifest:emit": "pnpm --filter @aopslab/domain-tooling-agentspace run manifest:emit && pnpm --filter @aopslab/domain-cli-agentspace run manifest:emit",
