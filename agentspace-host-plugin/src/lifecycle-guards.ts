@@ -29,7 +29,7 @@ export function resolveOperationTimeoutMs<TOperationId extends string>(
 }
 
 function toTimeoutError(operationId: string, timeoutMs: number): Error {
-  return new Error(`aops.serviceUnavailable:operation_timeout:${operationId}:${timeoutMs}`)
+  return new Error(`agentspace.serviceUnavailable:operation_timeout:${operationId}:${timeoutMs}`)
 }
 
 export async function runWithOperationTimeout<T>(

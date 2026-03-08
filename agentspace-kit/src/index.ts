@@ -11,6 +11,7 @@ import {
   runAopsKitOperationByToolId,
   runAopsKitOperationByTypedId,
 } from './operations/executor.js'
+import type { AopsOperationInput, AopsOperationOutput, AopsTypedOperationId } from './operations/index.js'
 import type { AopsDomainCapabilityManifest } from './operations/dcm.js'
 import type { AopsHostRouteProjectionEntry } from './operations/host-projection.js'
 import type { AopsOperationSpec } from './operations/types.js'
@@ -34,6 +35,21 @@ export const AGENTSPACE_KIT_DOMAIN_ID = 'agentspace' as const
 
 export type AgentspaceKitOperationSpec = AopsOperationSpec
 export type AgentspaceKitOperationId = AopsOperationSpec['operationId']
+
+function normalizeAgentspaceToolId(toolId: string): string {
+  const normalized = String(toolId ?? '').trim().toLowerCase()
+  if (!normalized) return normalized
+  if (normalized.startsWith('agentspace.')) {
+    return `aops-${normalized.slice('agentspace.'.length).replace(/\./g, '-')}`
+  }
+  if (normalized.startsWith('agentspace-')) {
+    return `aops-${normalized.slice('agentspace-'.length)}`
+  }
+  if (normalized.startsWith('aops.')) {
+    return `aops-${normalized.slice('aops.'.length).replace(/\./g, '-')}`
+  }
+  return normalized
+}
 
 function rewriteAgentspaceManifest(
   manifest: AopsDomainCapabilityManifest,
@@ -74,23 +90,21 @@ export function getAgentspaceKitOperationByToolId(
   toolId: string,
   options?: { refresh?: boolean },
 ): AgentspaceKitOperationSpec | null {
-  const resolvedToolId = toolId.startsWith('agentspace-') ? `aops-${toolId.slice('agentspace-'.length)}` : toolId
-  return getAopsOperationByToolId(resolvedToolId, options)
+  return getAopsOperationByToolId(normalizeAgentspaceToolId(toolId), options)
 }
 
 export async function runAgentspaceKitOperationByToolId(
   toolId: string,
   input: unknown,
 ): Promise<unknown> {
-  const resolvedToolId = toolId.startsWith('agentspace-') ? `aops-${toolId.slice('agentspace-'.length)}` : toolId
-  return runAopsKitOperationByToolId(resolvedToolId, input)
+  return runAopsKitOperationByToolId(normalizeAgentspaceToolId(toolId), input)
 }
 
-export async function runAgentspaceKitOperationByTypedId(
-  operationId: string,
-  input?: unknown,
-): Promise<unknown> {
-  return runAopsKitOperationByTypedId(operationId as never, input as never)
+export async function runAgentspaceKitOperationByTypedId<TId extends AopsTypedOperationId>(
+  operationId: TId,
+  input: AopsOperationInput<TId>,
+): Promise<AopsOperationOutput<TId>> {
+  return runAopsKitOperationByTypedId(operationId, input)
 }
 
 export function buildAgentspaceDomainCapabilityManifest(options?: {

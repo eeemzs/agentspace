@@ -210,7 +210,7 @@ function validateInputBySchema(
   const valid = validator(input)
   if (valid) return
   const detail = formatSchemaErrors(validator.errors)
-  throw new Error(`tool_input_schema_invalid:aops.${operationId}:${detail}`)
+  throw new Error(`tool_input_schema_invalid:agentspace.${operationId}:${detail}`)
 }
 
 function hasRequiredOperationArg(input: Record<string, unknown>, argName: string): boolean {
@@ -282,13 +282,13 @@ function toExecutionReason(error: unknown, friendlyCode?: string, friendlyMessag
     const lower = candidate.trim().toLowerCase()
     if (!lower) continue
 
-    if (lower.startsWith('aops.validation')) return 'invalid_input'
-    if (lower.startsWith('aops.notfound')) return 'not_found'
-    if (lower.startsWith('aops.unauthorized')) return 'unauthorized'
-    if (lower.startsWith('aops.forbidden')) return 'forbidden'
-    if (lower.startsWith('aops.conflict')) return 'conflict'
-    if (lower.startsWith('aops.ratelimit')) return 'rate_limit'
-    if (lower.startsWith('aops.serviceunavailable')) return 'service_unavailable'
+    if (lower.startsWith('agentspace.validation') || lower.startsWith('aops.validation')) return 'invalid_input'
+    if (lower.startsWith('agentspace.notfound') || lower.startsWith('aops.notfound')) return 'not_found'
+    if (lower.startsWith('agentspace.unauthorized') || lower.startsWith('aops.unauthorized')) return 'unauthorized'
+    if (lower.startsWith('agentspace.forbidden') || lower.startsWith('aops.forbidden')) return 'forbidden'
+    if (lower.startsWith('agentspace.conflict') || lower.startsWith('aops.conflict')) return 'conflict'
+    if (lower.startsWith('agentspace.ratelimit') || lower.startsWith('aops.ratelimit')) return 'rate_limit'
+    if (lower.startsWith('agentspace.serviceunavailable') || lower.startsWith('aops.serviceunavailable')) return 'service_unavailable'
 
     const colonPrefix = lower.match(/^([a-z][a-z0-9_]+):/)
     if (colonPrefix && colonPrefix[1] !== 'failed') {
@@ -553,5 +553,3 @@ export function createAgentspacePlugin(options: AopsPluginOptions = {}): DomainP
     },
   }
 }
-
-export const createAopsPlugin = createAgentspacePlugin
