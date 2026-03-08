@@ -1,18 +1,18 @@
-import type { AopsTypedOperationId } from '../operations/io-types.js'
+import type { AgentspaceTypedOperationId } from '../operations/io-types.js'
 import { hasNonEmptyValue, normalizeNonEmpty, resolveWorkspaceAliasValue, toRecord } from './tool-input.js'
 
 type ToolInputRecord = Record<string, unknown>
 
-const CODEX_CHAT_MESSAGE_CREATE_OPERATION_IDS = new Set<AopsTypedOperationId>([
+const CODEX_CHAT_MESSAGE_CREATE_OPERATION_IDS = new Set<AgentspaceTypedOperationId>([
   'codex-chat-message.add-message',
   'codex-chat-message.create',
 ])
 
-const CODEX_CHAT_MESSAGE_LIST_OPERATION_IDS = new Set<AopsTypedOperationId>([
+const CODEX_CHAT_MESSAGE_LIST_OPERATION_IDS = new Set<AgentspaceTypedOperationId>([
   'codex-chat-message.list-messages',
 ])
 
-const CODEX_CHAT_THREAD_LIST_OPERATION_IDS = new Set<AopsTypedOperationId>([
+const CODEX_CHAT_THREAD_LIST_OPERATION_IDS = new Set<AgentspaceTypedOperationId>([
   'codex-chat-thread.list-threads',
 ])
 
@@ -118,8 +118,8 @@ export function normalizeCodexChatMessageCreateInput(input: ToolInputRecord): To
   return source
 }
 
-export function normalizeAopsOperationInputForCompatibility(
-  operationId: AopsTypedOperationId,
+export function normalizeAgentspaceOperationInputForCompatibility(
+  operationId: AgentspaceTypedOperationId,
   input: ToolInputRecord,
 ): ToolInputRecord {
   if (CODEX_CHAT_MESSAGE_CREATE_OPERATION_IDS.has(operationId)) {
@@ -134,7 +134,7 @@ export function normalizeAopsOperationInputForCompatibility(
   return toRecord(input)
 }
 
-export function normalizeAopsToolInputForCompatibility(
+export function normalizeAgentspaceToolInputForCompatibility(
   toolId: string,
   input: ToolInputRecord,
 ): ToolInputRecord {
@@ -143,5 +143,5 @@ export function normalizeAopsToolInputForCompatibility(
     ? normalizedToolId.slice('agentspace.'.length)
     : normalizedToolId
   if (!operationId) return toRecord(input)
-  return normalizeAopsOperationInputForCompatibility(operationId as AopsTypedOperationId, input)
+  return normalizeAgentspaceOperationInputForCompatibility(operationId as AgentspaceTypedOperationId, input)
 }

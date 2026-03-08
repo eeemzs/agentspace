@@ -1,6 +1,6 @@
 import { Effect } from 'effect'
 import type { IbmPrompt, IbmProject, IbmSkill, IbmSkillSet, IbmSprint } from '@aopslab/domain-dm-agentspace/models'
-import type { AopsKitProvider } from '../domain-services/types.js'
+import type { AgentspaceKitProvider } from '../domain-services/types.js'
 
 function normalizeNonEmpty(value: unknown): string | undefined {
   if (typeof value !== 'string') return undefined
@@ -40,7 +40,7 @@ function collectIds<T extends { id?: unknown }>(rows: ReadonlyArray<T>): string[
 }
 
 type HardDeleteProjectKit = Pick<
-  AopsKitProvider,
+  AgentspaceKitProvider,
   | 'getProjectRepository'
   | 'getProjectPathRepository'
   | 'getProjectMemberRepository'
@@ -92,7 +92,7 @@ async function findByMatchEq<TDomainModel>(
   try {
     return await safeFind(asMatchEqRepository<TDomainModel>(repository).find({ matchEq }))
   } catch (error) {
-    throw new Error(`hardDeleteAopsProjectCascade.findByMatchEq failed: ${label}`, { cause: error })
+    throw new Error(`hardDeleteAgentspaceProjectCascade.findByMatchEq failed: ${label}`, { cause: error })
   }
 }
 
@@ -104,7 +104,7 @@ async function deleteManyByMatchEq<TDomainModel>(
   try {
     return await Effect.runPromise(asMatchEqRepository<TDomainModel>(repository).deleteMany({ matchEq }))
   } catch (error) {
-    throw new Error(`hardDeleteAopsProjectCascade.deleteManyByMatchEq failed: ${label}`, { cause: error })
+    throw new Error(`hardDeleteAgentspaceProjectCascade.deleteManyByMatchEq failed: ${label}`, { cause: error })
   }
 }
 
@@ -114,7 +114,7 @@ async function deleteManyByMatchEq<TDomainModel>(
  * This is intended for orchestrators (e.g. host plugin runner / ops scripts) that need a
  * safe permanent delete operation.
  */
-export async function hardDeleteAopsProjectCascade(params: {
+export async function hardDeleteAgentspaceProjectCascade(params: {
   kit: HardDeleteProjectKit
   workspaceId: string
   projectId: string
@@ -316,7 +316,7 @@ export async function hardDeleteAopsProjectCascade(params: {
       asMatchEqDeleteByIdRepository<IbmProject>(projectRepository).deleteByIdWithMatch(projectId, { workspaceId })
     )
   } catch (error) {
-    throw new Error('hardDeleteAopsProjectCascade.deleteByIdWithMatch failed: projectRepository.deleteByIdWithMatch', {
+    throw new Error('hardDeleteAgentspaceProjectCascade.deleteByIdWithMatch failed: projectRepository.deleteByIdWithMatch', {
       cause: error,
     })
   }

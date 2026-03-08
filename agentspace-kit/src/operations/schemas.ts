@@ -1,11 +1,11 @@
-import type { AopsOperationKind, AopsOperationSchemaRef } from './types.js'
-import { normalizeAopsOperationId } from './definition.js'
-import { AOPS_OPERATION_CATALOG_ROWS } from './catalog.data.js'
+import type { AgentspaceOperationKind, AgentspaceOperationSchemaRef } from './types.js'
+import { normalizeAgentspaceOperationId } from './definition.js'
+import { AGENTSPACE_OPERATION_CATALOG_ROWS } from './catalog.data.js'
 
 type JsonSchema = Record<string, unknown>
 type SchemaDirection = 'input' | 'output'
 
-const CRUD_KINDS = new Set<Exclude<AopsOperationKind, 'custom'>>(['list', 'get', 'create', 'update', 'delete'])
+const CRUD_KINDS = new Set<Exclude<AgentspaceOperationKind, 'custom'>>(['list', 'get', 'create', 'update', 'delete'])
 
 const GENERIC_LIST_INPUT_SCHEMA: JsonSchema = {
   type: 'object',
@@ -180,20 +180,20 @@ const INTEGER_ARG_NAMES = new Set(['seq', 'limit', 'offset', 'tokenInput', 'toke
 
 const inputSchemaByOperationId = new Map<string, JsonSchema>()
 const INPUT_SCHEMA_OVERRIDES_BY_OPERATION_ID = new Map<string, JsonSchema>([
-  [normalizeAopsOperationId('codex-chat-message.add-message'), CODEX_CHAT_MESSAGE_CREATE_INPUT_SCHEMA],
-  [normalizeAopsOperationId('codex-chat-message.create'), CODEX_CHAT_MESSAGE_CREATE_INPUT_SCHEMA],
-  [normalizeAopsOperationId('codex-chat-thread.add-thread'), CODEX_CHAT_THREAD_CREATE_INPUT_SCHEMA],
-  [normalizeAopsOperationId('codex-chat-thread.create'), CODEX_CHAT_THREAD_CREATE_INPUT_SCHEMA],
-  [normalizeAopsOperationId('project.create'), PROJECT_CREATE_INPUT_SCHEMA],
-  [normalizeAopsOperationId('project-path.create'), PROJECT_PATH_UPSERT_INPUT_SCHEMA],
-  [normalizeAopsOperationId('project-path.upsert-project-path'), PROJECT_PATH_UPSERT_INPUT_SCHEMA],
+  [normalizeAgentspaceOperationId('codex-chat-message.add-message'), CODEX_CHAT_MESSAGE_CREATE_INPUT_SCHEMA],
+  [normalizeAgentspaceOperationId('codex-chat-message.create'), CODEX_CHAT_MESSAGE_CREATE_INPUT_SCHEMA],
+  [normalizeAgentspaceOperationId('codex-chat-thread.add-thread'), CODEX_CHAT_THREAD_CREATE_INPUT_SCHEMA],
+  [normalizeAgentspaceOperationId('codex-chat-thread.create'), CODEX_CHAT_THREAD_CREATE_INPUT_SCHEMA],
+  [normalizeAgentspaceOperationId('project.create'), PROJECT_CREATE_INPUT_SCHEMA],
+  [normalizeAgentspaceOperationId('project-path.create'), PROJECT_PATH_UPSERT_INPUT_SCHEMA],
+  [normalizeAgentspaceOperationId('project-path.upsert-project-path'), PROJECT_PATH_UPSERT_INPUT_SCHEMA],
 ])
 
-function inferOperationKind(operationId: string): AopsOperationKind {
+function inferOperationKind(operationId: string): AgentspaceOperationKind {
   const segments = operationId.split('.').map((segment) => segment.trim()).filter(Boolean)
   const last = segments[segments.length - 1] ?? ''
-  if (CRUD_KINDS.has(last as Exclude<AopsOperationKind, 'custom'>)) {
-    return last as Exclude<AopsOperationKind, 'custom'>
+  if (CRUD_KINDS.has(last as Exclude<AgentspaceOperationKind, 'custom'>)) {
+    return last as Exclude<AgentspaceOperationKind, 'custom'>
   }
   return 'custom'
 }
@@ -224,7 +224,7 @@ function parseSchemaRef(ref: string): { operationId: string; direction: SchemaDi
   return null
 }
 
-function getDefaultSchemaForKind(kind: AopsOperationKind, direction: SchemaDirection): JsonSchema {
+function getDefaultSchemaForKind(kind: AgentspaceOperationKind, direction: SchemaDirection): JsonSchema {
   if (kind === 'list' && direction === 'input') return GENERIC_LIST_INPUT_SCHEMA
   if (kind === 'list' && direction === 'output') return GENERIC_LIST_OUTPUT_SCHEMA
 
@@ -264,7 +264,7 @@ function inferArgumentSchema(name: string): JsonSchema {
 }
 
 function buildInputSchemaFromCatalog(operationId: string): JsonSchema | null {
-  const normalizedOperationId = normalizeAopsOperationId(operationId)
+  const normalizedOperationId = normalizeAgentspaceOperationId(operationId)
   const cached = inputSchemaByOperationId.get(normalizedOperationId)
   if (cached) return cached
 
@@ -274,7 +274,7 @@ function buildInputSchemaFromCatalog(operationId: string): JsonSchema | null {
     return override
   }
 
-  const row = AOPS_OPERATION_CATALOG_ROWS.find((item) => normalizeAopsOperationId(item.operationId) === normalizedOperationId)
+  const row = AGENTSPACE_OPERATION_CATALOG_ROWS.find((item) => normalizeAgentspaceOperationId(item.operationId) === normalizedOperationId)
   if (!row) return null
 
   const properties: Record<string, unknown> = {}
@@ -299,15 +299,15 @@ function buildInputSchemaFromCatalog(operationId: string): JsonSchema | null {
   return schema
 }
 
-export function createAopsSchemaRef(name: string): AopsOperationSchemaRef {
-  return { $ref: normalizeAopsSchemaRefName(name) }
+export function createAgentspaceSchemaRef(name: string): AgentspaceOperationSchemaRef {
+  return { $ref: normalizeAgentspaceSchemaRefName(name) }
 }
 
-export function normalizeAopsSchemaRefName(name: string): string {
-  return normalizeAopsOperationId(name).replace(/\.-/g, '.')
+export function normalizeAgentspaceSchemaRefName(name: string): string {
+  return normalizeAgentspaceOperationId(name).replace(/\.-/g, '.')
 }
 
-export function resolveAopsSchemaRefName(schema: unknown): string | null {
+export function resolveAgentspaceSchemaRefName(schema: unknown): string | null {
   if (!schema || typeof schema !== 'object' || Array.isArray(schema)) return null
   const maybeRef = (schema as { $ref?: unknown }).$ref
   if (typeof maybeRef !== 'string') return null
@@ -315,15 +315,15 @@ export function resolveAopsSchemaRefName(schema: unknown): string | null {
   return normalized.length > 0 ? normalized : null
 }
 
-export function getAopsOperationIoSchemaRefs(operationId: string): { inputRef: string; outputRef: string } {
-  return buildDefaultSchemaRefs(normalizeAopsOperationId(operationId))
+export function getAgentspaceOperationIoSchemaRefs(operationId: string): { inputRef: string; outputRef: string } {
+  return buildDefaultSchemaRefs(normalizeAgentspaceOperationId(operationId))
 }
 
-export function getAopsContractSchema(ref: string): JsonSchema | null {
+export function getAgentspaceContractSchema(ref: string): JsonSchema | null {
   const parsed = parseSchemaRef(ref)
   if (!parsed) return null
 
-  const normalizedOperationId = normalizeAopsOperationId(parsed.operationId)
+  const normalizedOperationId = normalizeAgentspaceOperationId(parsed.operationId)
   if (parsed.direction === 'input') {
     const inputSchema = buildInputSchemaFromCatalog(normalizedOperationId)
     if (inputSchema) return inputSchema

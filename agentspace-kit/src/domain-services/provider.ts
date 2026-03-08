@@ -3,17 +3,17 @@
 import { createProvider, cacheKeyFromLocale, fingerprintRepositoryConfig, buildRepositoryConfig } from '@aopslab/xf-dm-kits'
 import type { XfLogger } from '@aopslab/xf-logger'
 
-import type { AopsKitProviderOptions, AopsKitProvider, AopsKitContext, AopsKitStaticConfig, AopsKitServiceProviderOptions, AopsKitServices, AopsKitRepositories, AopsKitDomainServiceRegistryStats } from './types.js'
+import type { AgentspaceKitProviderOptions, AgentspaceKitProvider, AgentspaceKitContext, AgentspaceKitStaticConfig, AgentspaceKitServiceProviderOptions, AgentspaceKitServices, AgentspaceKitRepositories, AgentspaceKitDomainServiceRegistryStats } from './types.js'
 
 import { RepositoryFactoryProject, RepositoryFactoryProjectPath, RepositoryFactoryWorkspace, RepositoryFactoryWorkspaceMember, RepositoryFactoryProjectMember, RepositoryFactoryPrompt, RepositoryFactoryPromptVersion, RepositoryFactoryResource, RepositoryFactorySkill, RepositoryFactorySkillVersion, RepositoryFactorySkillSet, RepositoryFactorySkillSetItem, RepositoryFactoryKanbanBoard, RepositoryFactoryKanbanColumn, RepositoryFactorySprint, RepositoryFactorySprintItem, RepositoryFactoryTask, RepositoryFactoryTaskComment, RepositoryFactoryAgentSession, RepositoryFactoryAgentRun, RepositoryFactoryArtifact, RepositoryFactoryArtifactLink, RepositoryFactoryCodexChatThread, RepositoryFactoryCodexChatMessage, RepositoryFactoryCodexChatSetting, RepositoryFactoryProjectSummary, RepositoryFactoryMemoryItem, RepositoryFactoryTag } from '@aopslab/domain-dm-agentspace/factories'
 import { ProjectService, ProjectPathService, WorkspaceService, WorkspaceMemberService, ProjectMemberService, PromptService, PromptVersionService, ResourceService, SkillService, SkillVersionService, SkillSetService, SkillSetItemService, KanbanBoardService, KanbanColumnService, SprintService, SprintItemService, TaskService, TaskCommentService, AgentSessionService, AgentRunService, ArtifactService, ArtifactLinkService, CodexChatThreadService, CodexChatMessageService, CodexChatSettingService, ProjectSummaryService, MemoryItemService, TagService } from '@aopslab/domain-dm-agentspace/services'
 
-function computeConfigKey(name: string, cfg: AopsKitServiceProviderOptions): string {
+function computeConfigKey(name: string, cfg: AgentspaceKitServiceProviderOptions): string {
   const sigs = [fingerprintRepositoryConfig(cfg.projectRepositoryConfig), fingerprintRepositoryConfig(cfg.projectPathRepositoryConfig), fingerprintRepositoryConfig(cfg.workspaceRepositoryConfig), fingerprintRepositoryConfig(cfg.workspaceMemberRepositoryConfig), fingerprintRepositoryConfig(cfg.projectMemberRepositoryConfig), fingerprintRepositoryConfig(cfg.promptRepositoryConfig), fingerprintRepositoryConfig(cfg.promptVersionRepositoryConfig), fingerprintRepositoryConfig(cfg.resourceRepositoryConfig), fingerprintRepositoryConfig(cfg.skillRepositoryConfig), fingerprintRepositoryConfig(cfg.skillVersionRepositoryConfig), fingerprintRepositoryConfig(cfg.skillSetRepositoryConfig), fingerprintRepositoryConfig(cfg.skillSetItemRepositoryConfig), fingerprintRepositoryConfig(cfg.kanbanBoardRepositoryConfig), fingerprintRepositoryConfig(cfg.kanbanColumnRepositoryConfig), fingerprintRepositoryConfig(cfg.sprintRepositoryConfig), fingerprintRepositoryConfig(cfg.sprintItemRepositoryConfig), fingerprintRepositoryConfig(cfg.taskRepositoryConfig), fingerprintRepositoryConfig(cfg.taskCommentRepositoryConfig), fingerprintRepositoryConfig(cfg.agentSessionRepositoryConfig), fingerprintRepositoryConfig(cfg.agentRunRepositoryConfig), fingerprintRepositoryConfig(cfg.artifactRepositoryConfig), fingerprintRepositoryConfig(cfg.artifactLinkRepositoryConfig), fingerprintRepositoryConfig(cfg.codexChatThreadRepositoryConfig), fingerprintRepositoryConfig(cfg.codexChatMessageRepositoryConfig), fingerprintRepositoryConfig(cfg.codexChatSettingRepositoryConfig), fingerprintRepositoryConfig(cfg.projectSummaryRepositoryConfig), fingerprintRepositoryConfig(cfg.memoryItemRepositoryConfig), fingerprintRepositoryConfig(cfg.tagRepositoryConfig)].filter(Boolean)
   return [name, cfg.tenantId ?? '', ...sigs].join('|')
 }
 
-function buildResolvedConfig(staticCfg: AopsKitStaticConfig, ctx: AopsKitContext): AopsKitServiceProviderOptions {
+function buildResolvedConfig(staticCfg: AgentspaceKitStaticConfig, ctx: AgentspaceKitContext): AgentspaceKitServiceProviderOptions {
   const tenantId = ctx.tenantId
 
   return {
@@ -51,20 +51,20 @@ function buildResolvedConfig(staticCfg: AopsKitStaticConfig, ctx: AopsKitContext
   }
 }
 
-export function createAopsKitProvider(options: AopsKitProviderOptions): AopsKitProvider {
+export function createAgentspaceKitProvider(options: AgentspaceKitProviderOptions): AgentspaceKitProvider {
   const name = options.name ?? 'aops-kit'
 
-  function defaultCacheKey(context: AopsKitContext): string | null {
+  function defaultCacheKey(context: AgentspaceKitContext): string | null {
     if (typeof context.cacheKey === 'string' && context.cacheKey.length > 0) return context.cacheKey
     return cacheKeyFromLocale(context.locale, context.fallbackLocale)
   }
 
   const gp = createProvider<
-    AopsKitContext,
-    AopsKitServiceProviderOptions,
+    AgentspaceKitContext,
+    AgentspaceKitServiceProviderOptions,
     XfLogger | undefined,
-    AopsKitServices,
-    AopsKitRepositories
+    AgentspaceKitServices,
+    AgentspaceKitRepositories
   >({
     name: `aops-kit::provider::${name}`,
     getContext: options.getContext,
@@ -545,7 +545,7 @@ tagService: async (ctx, _deps, repos, logger) => {
     transformService: options.transformService,
   })
 
-  function toStats(): AopsKitDomainServiceRegistryStats {
+  function toStats(): AgentspaceKitDomainServiceRegistryStats {
     const stats = gp.getStats()
     return {
       name: stats.name,

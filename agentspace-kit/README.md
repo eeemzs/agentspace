@@ -7,10 +7,10 @@ Bu scaffold, `inventory-kit` desenini takip eder ve domain'e ozel kodlari
 ## Hizli Kullanim (env ile)
 
 ```ts
-import { createAopsKitWithEnv, getAopsKitEnvConfig } from '@aops/aops-kit'
+import { createAgentspaceKitWithEnv, getAgentspaceKitEnvConfig } from '@aops/aops-kit'
 
-const { kit } = createAopsKitWithEnv({
-  envConfig: getAopsKitEnvConfig(),
+const { kit } = createAgentspaceKitWithEnv({
+  envConfig: getAgentspaceKitEnvConfig(),
   baseContext: {
     tenantId: 'tenant-1',
     locale: 'tr',

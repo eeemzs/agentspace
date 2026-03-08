@@ -1,35 +1,35 @@
-import type { AopsOperationContract, AopsOperationSideEffect } from './contract.js'
-import type { AopsOperationPolicy } from './types.js'
-import { listAopsOperationContracts } from './contract.js'
-import { getAopsContractSchema, resolveAopsSchemaRefName } from './schemas.js'
+import type { AgentspaceOperationContract, AgentspaceOperationSideEffect } from './contract.js'
+import type { AgentspaceOperationPolicy } from './types.js'
+import { listAgentspaceOperationContracts } from './contract.js'
+import { getAgentspaceContractSchema, resolveAgentspaceSchemaRefName } from './schemas.js'
 
-export type AopsDomainCapabilityOperation = {
+export type AgentspaceDomainCapabilityOperation = {
   operationId: string
   title?: string
-  sideEffect?: AopsOperationSideEffect
+  sideEffect?: AgentspaceOperationSideEffect
   tags?: string[]
   inputSchemaRef?: string
   outputSchemaRef?: string
 }
 
-export type AopsDomainCapabilityOperationDocs = {
+export type AgentspaceDomainCapabilityOperationDocs = {
   summary?: string
   notes?: string[]
   examples?: string[]
 }
 
-export type AopsDomainCapabilityResource = {
+export type AgentspaceDomainCapabilityResource = {
   resourceId: string
   title: string
   kind?: string
 }
 
-export type AopsDomainDiscoveryDocs = {
+export type AgentspaceDomainDiscoveryDocs = {
   summary?: string
   notes?: string[]
 }
 
-export type AopsDomainCapabilityManifest = {
+export type AgentspaceDomainCapabilityManifest = {
   manifestVersion: string
   domain: {
     id: string
@@ -38,23 +38,23 @@ export type AopsDomainCapabilityManifest = {
     description?: string
   }
   capabilities: {
-    operations: AopsDomainCapabilityOperation[]
-    resources?: AopsDomainCapabilityResource[]
+    operations: AgentspaceDomainCapabilityOperation[]
+    resources?: AgentspaceDomainCapabilityResource[]
   }
   contracts?: {
     schemas: Record<string, unknown>
   }
   policies?: {
-    operations: Record<string, AopsOperationPolicy>
+    operations: Record<string, AgentspaceOperationPolicy>
   }
   docs?: {
-    domain?: AopsDomainDiscoveryDocs
-    resources?: Record<string, AopsDomainDiscoveryDocs>
-    operations?: Record<string, AopsDomainCapabilityOperationDocs>
+    domain?: AgentspaceDomainDiscoveryDocs
+    resources?: Record<string, AgentspaceDomainDiscoveryDocs>
+    operations?: Record<string, AgentspaceDomainCapabilityOperationDocs>
   }
 }
 
-export type BuildAopsDomainCapabilityManifestOptions = {
+export type BuildAgentspaceDomainCapabilityManifestOptions = {
   manifestVersion?: string
   domainVersion?: string
   includeDocs?: boolean
@@ -92,8 +92,8 @@ function buildResourceSummary(resourceTitle: string, operationKinds: string[]): 
   return `Supports ${operationKinds.slice(0, 5).join(', ')} operations for ${resourceTitle.toLowerCase()} in Agentspace runtime workflows.`
 }
 
-function buildCapabilityResources(operations: AopsOperationContract[]): AopsDomainCapabilityResource[] {
-  const seen = new Map<string, AopsDomainCapabilityResource>()
+function buildCapabilityResources(operations: AgentspaceOperationContract[]): AgentspaceDomainCapabilityResource[] {
+  const seen = new Map<string, AgentspaceDomainCapabilityResource>()
 
   for (const operation of operations) {
     const resourceId = String(operation.serviceEntity ?? '').trim()
@@ -108,7 +108,7 @@ function buildCapabilityResources(operations: AopsOperationContract[]): AopsDoma
   return [...seen.values()].sort((left, right) => left.title.localeCompare(right.title))
 }
 
-function buildResourceDocs(operations: AopsOperationContract[]): Record<string, AopsDomainDiscoveryDocs> {
+function buildResourceDocs(operations: AgentspaceOperationContract[]): Record<string, AgentspaceDomainDiscoveryDocs> {
   const operationKindsByResource = new Map<string, Set<string>>()
 
   for (const operation of operations) {
@@ -131,7 +131,7 @@ function buildResourceDocs(operations: AopsOperationContract[]): Record<string, 
   )
 }
 
-function chooseOperationSummary(operation: AopsOperationContract): string {
+function chooseOperationSummary(operation: AgentspaceOperationContract): string {
   const resource = humanizeResource(operation.serviceEntity || operation.operationId.split('.')[0] || 'resource')
   const kind = operation.kind
 
@@ -143,7 +143,7 @@ function chooseOperationSummary(operation: AopsOperationContract): string {
   return `Run ${operation.operationId} on ${resource}.`
 }
 
-function toTags(operation: AopsOperationContract): string[] {
+function toTags(operation: AgentspaceOperationContract): string[] {
   const tags = new Set<string>()
   for (const tag of operation.tags ?? []) {
     const normalized = String(tag ?? '').trim()
@@ -156,7 +156,7 @@ function toTags(operation: AopsOperationContract): string[] {
   return [...tags]
 }
 
-function toOperationDocs(operation: AopsOperationContract): AopsDomainCapabilityOperationDocs {
+function toOperationDocs(operation: AgentspaceOperationContract): AgentspaceDomainCapabilityOperationDocs {
   const requiredArgs = operation.args.filter((arg) => !arg.optional).map((arg) => arg.name)
   const optionalArgs = operation.args.filter((arg) => arg.optional).map((arg) => arg.name)
   const notes: string[] = []
@@ -171,9 +171,9 @@ function toOperationDocs(operation: AopsOperationContract): AopsDomainCapability
   }
 }
 
-function toCapabilityOperation(operation: AopsOperationContract): AopsDomainCapabilityOperation {
-  const inputSchemaRef = resolveAopsSchemaRefName(operation.inputSchema)
-  const outputSchemaRef = resolveAopsSchemaRefName(operation.outputSchema)
+function toCapabilityOperation(operation: AgentspaceOperationContract): AgentspaceDomainCapabilityOperation {
+  const inputSchemaRef = resolveAgentspaceSchemaRefName(operation.inputSchema)
+  const outputSchemaRef = resolveAgentspaceSchemaRefName(operation.outputSchema)
 
   return {
     operationId: operation.operationId,
@@ -185,12 +185,12 @@ function toCapabilityOperation(operation: AopsOperationContract): AopsDomainCapa
   }
 }
 
-export function buildAopsDomainCapabilityManifest(
-  options: BuildAopsDomainCapabilityManifestOptions = {},
-): AopsDomainCapabilityManifest {
-  const operations = listAopsOperationContracts({ refresh: options.refresh })
+export function buildAgentspaceDomainCapabilityManifest(
+  options: BuildAgentspaceDomainCapabilityManifestOptions = {},
+): AgentspaceDomainCapabilityManifest {
+  const operations = listAgentspaceOperationContracts({ refresh: options.refresh })
 
-  const manifest: AopsDomainCapabilityManifest = {
+  const manifest: AgentspaceDomainCapabilityManifest = {
     manifestVersion: options.manifestVersion ?? '1.0.0',
     domain: {
       id: 'agentspace',
@@ -214,7 +214,7 @@ export function buildAopsDomainCapabilityManifest(
     }
   }
 
-  const operationPolicies: Record<string, AopsOperationPolicy> = {}
+  const operationPolicies: Record<string, AgentspaceOperationPolicy> = {}
   for (const operation of operations) {
     if (!operation.policy) continue
     operationPolicies[operation.operationId] = operation.policy
@@ -232,7 +232,7 @@ export function buildAopsDomainCapabilityManifest(
   if (schemaRefs.size > 0) {
     const schemas: Record<string, unknown> = {}
     for (const ref of schemaRefs) {
-      const schema = getAopsContractSchema(ref)
+      const schema = getAgentspaceContractSchema(ref)
       if (!schema) continue
       schemas[ref] = schema
     }

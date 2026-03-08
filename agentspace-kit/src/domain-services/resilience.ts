@@ -1,10 +1,10 @@
-import type { AopsKitProviderOptions } from './types.js';
+import type { AgentspaceKitProviderOptions } from './types.js';
 
 /**
  * Resilience/policy preset'lerini tek yerde toplayın.
  * Örn. retry/breaker/timeouts veya cache ayarları.
  */
-export const defaultAopsKitResilience: Pick<AopsKitProviderOptions, 'resilience' | 'cache'> = {
+export const defaultAgentspaceKitResilience: Pick<AgentspaceKitProviderOptions, 'resilience' | 'cache'> = {
   resilience: {
     services: {
       // retry: { maxRetries: 3, delayMs: 50 },

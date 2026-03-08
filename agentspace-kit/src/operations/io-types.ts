@@ -1,35 +1,35 @@
 import type { Effect } from 'effect'
 
-import type { AopsKitServices } from '../domain-services/types.js'
-import { AOPS_OPERATION_CATALOG_ROWS } from './catalog.data.js'
+import type { AgentspaceKitServices } from '../domain-services/types.js'
+import { AGENTSPACE_OPERATION_CATALOG_ROWS } from './catalog.data.js'
 
-type AopsCatalogRow = (typeof AOPS_OPERATION_CATALOG_ROWS)[number]
-type AopsOperationId = Extract<AopsCatalogRow['operationId'], string>
+type AgentspaceCatalogRow = (typeof AGENTSPACE_OPERATION_CATALOG_ROWS)[number]
+type AgentspaceOperationId = Extract<AgentspaceCatalogRow['operationId'], string>
 
-type AopsSpecialMethods = {
-  hardDeleteAopsProjectCascade: (workspaceId: string, projectId: string) => Promise<unknown>
+type AgentspaceSpecialMethods = {
+  hardDeleteAgentspaceProjectCascade: (workspaceId: string, projectId: string) => Promise<unknown>
 }
 
-type AopsServiceByKey = AopsKitServices & {
-  __calls__: AopsSpecialMethods
+type AgentspaceServiceByKey = AgentspaceKitServices & {
+  __calls__: AgentspaceSpecialMethods
 }
 
-type RowService<TRow extends AopsCatalogRow> =
-  TRow['serviceKey'] extends keyof AopsServiceByKey
-    ? AopsServiceByKey[TRow['serviceKey']]
+type RowService<TRow extends AgentspaceCatalogRow> =
+  TRow['serviceKey'] extends keyof AgentspaceServiceByKey
+    ? AgentspaceServiceByKey[TRow['serviceKey']]
     : never
 
-type RowMethod<TRow extends AopsCatalogRow> =
+type RowMethod<TRow extends AgentspaceCatalogRow> =
   TRow['methodName'] extends keyof RowService<TRow>
     ? RowService<TRow>[TRow['methodName']]
     : never
 
-type RowParams<TRow extends AopsCatalogRow> =
+type RowParams<TRow extends AgentspaceCatalogRow> =
   RowMethod<TRow> extends (...args: infer TArgs) => unknown
     ? TArgs
     : never
 
-type RowResult<TRow extends AopsCatalogRow> =
+type RowResult<TRow extends AgentspaceCatalogRow> =
   RowMethod<TRow> extends (...args: unknown[]) => infer TResult
     ? TResult
     : never
@@ -39,7 +39,7 @@ type UnwrapEffect<T> = T extends Effect.Effect<infer A, unknown, unknown>
   : Awaited<T>
 
 type BuildInputShape<
-  TRow extends AopsCatalogRow,
+  TRow extends AgentspaceCatalogRow,
   TParams extends readonly unknown[] = RowParams<TRow>,
 > = {
   [I in keyof TRow['args'] as TRow['args'][I] extends {
@@ -61,19 +61,19 @@ type BuildInputShape<
     : never
 }
 
-type RowByOperationId<TId extends AopsOperationId> = Extract<AopsCatalogRow, { operationId: TId }>
+type RowByOperationId<TId extends AgentspaceOperationId> = Extract<AgentspaceCatalogRow, { operationId: TId }>
 
-export type AopsOperationInputById = {
-  [TId in AopsOperationId]: BuildInputShape<RowByOperationId<TId>>
+export type AgentspaceOperationInputById = {
+  [TId in AgentspaceOperationId]: BuildInputShape<RowByOperationId<TId>>
 }
 
-export type AopsOperationOutputById = {
-  [TId in AopsOperationId]: UnwrapEffect<RowResult<RowByOperationId<TId>>>
+export type AgentspaceOperationOutputById = {
+  [TId in AgentspaceOperationId]: UnwrapEffect<RowResult<RowByOperationId<TId>>>
 }
 
-export type AopsTypedOperationId = AopsOperationId
+export type AgentspaceTypedOperationId = AgentspaceOperationId
 
-export type AopsOperationHostContextInput = {
+export type AgentspaceOperationHostContextInput = {
   tenantId?: string
   workspaceId?: string
   workspaceUuid?: string
@@ -83,5 +83,5 @@ export type AopsOperationHostContextInput = {
   fallbackLocale?: string
 }
 
-export type AopsOperationInput<TId extends AopsTypedOperationId> = AopsOperationInputById[TId] & AopsOperationHostContextInput
-export type AopsOperationOutput<TId extends AopsTypedOperationId> = AopsOperationOutputById[TId]
+export type AgentspaceOperationInput<TId extends AgentspaceTypedOperationId> = AgentspaceOperationInputById[TId] & AgentspaceOperationHostContextInput
+export type AgentspaceOperationOutput<TId extends AgentspaceTypedOperationId> = AgentspaceOperationOutputById[TId]

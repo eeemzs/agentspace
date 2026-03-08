@@ -9,23 +9,23 @@ import {
   parseEnvConfig,
 } from '@aopslab/xf-dm-kits'
 
-import type { AopsKitEnvConfig } from '../config/config.js'
-import type { AopsKitProvider, AopsKitProviderOptions, AopsKitContext, AopsKitStaticConfig } from './types.js'
-import { createAopsKitProvider } from './provider.js'
+import type { AgentspaceKitEnvConfig } from '../config/config.js'
+import type { AgentspaceKitProvider, AgentspaceKitProviderOptions, AgentspaceKitContext, AgentspaceKitStaticConfig } from './types.js'
+import { createAgentspaceKitProvider } from './provider.js'
 
-export interface CreateAopsKitOptions extends Omit<AopsKitProviderOptions, 'getCacheKey'> {
+export interface CreateAgentspaceKitOptions extends Omit<AgentspaceKitProviderOptions, 'getCacheKey'> {
   name?: string
-  getCacheKey?: (context: AopsKitContext) => string | null
+  getCacheKey?: (context: AgentspaceKitContext) => string | null
 }
 
-export function createAopsKit(options: CreateAopsKitOptions) {
-  const provider: AopsKitProvider = createAopsKitProvider({
+export function createAgentspaceKit(options: CreateAgentspaceKitOptions) {
+  const provider: AgentspaceKitProvider = createAgentspaceKitProvider({
     ...options,
     getCacheKey: options.getCacheKey ?? ((ctx) => cacheKeyFromLocale(ctx.locale, ctx.fallbackLocale)),
   })
 
   return {
-    getStaticConfig(): AopsKitStaticConfig {
+    getStaticConfig(): AgentspaceKitStaticConfig {
       return options.staticConfig
     },
     getProjectService: provider.getProjectService,
@@ -147,69 +147,69 @@ export function createAopsKit(options: CreateAopsKitOptions) {
     getRegistryStats: provider.getRegistryStats,
     resolveLogger: provider.resolveLogger,
 
-    withContext(overrides: Partial<AopsKitContext>) {
+    withContext(overrides: Partial<AgentspaceKitContext>) {
       return {
-        getStaticConfig(): AopsKitStaticConfig {
+        getStaticConfig(): AgentspaceKitStaticConfig {
           return options.staticConfig
         },
-        getProjectService: (o?: Partial<AopsKitContext>) => provider.getProjectService({ ...overrides, ...o }),
-        getProjectPathService: (o?: Partial<AopsKitContext>) => provider.getProjectPathService({ ...overrides, ...o }),
-        getWorkspaceService: (o?: Partial<AopsKitContext>) => provider.getWorkspaceService({ ...overrides, ...o }),
-        getWorkspaceMemberService: (o?: Partial<AopsKitContext>) => provider.getWorkspaceMemberService({ ...overrides, ...o }),
-        getProjectMemberService: (o?: Partial<AopsKitContext>) => provider.getProjectMemberService({ ...overrides, ...o }),
-        getPromptService: (o?: Partial<AopsKitContext>) => provider.getPromptService({ ...overrides, ...o }),
-        getPromptVersionService: (o?: Partial<AopsKitContext>) => provider.getPromptVersionService({ ...overrides, ...o }),
-        getResourceService: (o?: Partial<AopsKitContext>) => provider.getResourceService({ ...overrides, ...o }),
-        getSkillService: (o?: Partial<AopsKitContext>) => provider.getSkillService({ ...overrides, ...o }),
-        getSkillVersionService: (o?: Partial<AopsKitContext>) => provider.getSkillVersionService({ ...overrides, ...o }),
-        getSkillSetService: (o?: Partial<AopsKitContext>) => provider.getSkillSetService({ ...overrides, ...o }),
-        getSkillSetItemService: (o?: Partial<AopsKitContext>) => provider.getSkillSetItemService({ ...overrides, ...o }),
-        getKanbanBoardService: (o?: Partial<AopsKitContext>) => provider.getKanbanBoardService({ ...overrides, ...o }),
-        getKanbanColumnService: (o?: Partial<AopsKitContext>) => provider.getKanbanColumnService({ ...overrides, ...o }),
-        getSprintService: (o?: Partial<AopsKitContext>) => provider.getSprintService({ ...overrides, ...o }),
-        getSprintItemService: (o?: Partial<AopsKitContext>) => provider.getSprintItemService({ ...overrides, ...o }),
-        getTaskService: (o?: Partial<AopsKitContext>) => provider.getTaskService({ ...overrides, ...o }),
-        getTaskCommentService: (o?: Partial<AopsKitContext>) => provider.getTaskCommentService({ ...overrides, ...o }),
-        getAgentSessionService: (o?: Partial<AopsKitContext>) => provider.getAgentSessionService({ ...overrides, ...o }),
-        getAgentRunService: (o?: Partial<AopsKitContext>) => provider.getAgentRunService({ ...overrides, ...o }),
-        getArtifactService: (o?: Partial<AopsKitContext>) => provider.getArtifactService({ ...overrides, ...o }),
-        getArtifactLinkService: (o?: Partial<AopsKitContext>) => provider.getArtifactLinkService({ ...overrides, ...o }),
-        getCodexChatThreadService: (o?: Partial<AopsKitContext>) => provider.getCodexChatThreadService({ ...overrides, ...o }),
-        getCodexChatMessageService: (o?: Partial<AopsKitContext>) => provider.getCodexChatMessageService({ ...overrides, ...o }),
-        getCodexChatSettingService: (o?: Partial<AopsKitContext>) => provider.getCodexChatSettingService({ ...overrides, ...o }),
-        getProjectSummaryService: (o?: Partial<AopsKitContext>) => provider.getProjectSummaryService({ ...overrides, ...o }),
-        getMemoryItemService: (o?: Partial<AopsKitContext>) => provider.getMemoryItemService({ ...overrides, ...o }),
-        getTagService: (o?: Partial<AopsKitContext>) => provider.getTagService({ ...overrides, ...o }),
-        getProjectRepository: (o?: Partial<AopsKitContext>) => provider.getProjectRepository({ ...overrides, ...o }),
-        getProjectPathRepository: (o?: Partial<AopsKitContext>) => provider.getProjectPathRepository({ ...overrides, ...o }),
-        getWorkspaceRepository: (o?: Partial<AopsKitContext>) => provider.getWorkspaceRepository({ ...overrides, ...o }),
-        getWorkspaceMemberRepository: (o?: Partial<AopsKitContext>) => provider.getWorkspaceMemberRepository({ ...overrides, ...o }),
-        getProjectMemberRepository: (o?: Partial<AopsKitContext>) => provider.getProjectMemberRepository({ ...overrides, ...o }),
-        getPromptRepository: (o?: Partial<AopsKitContext>) => provider.getPromptRepository({ ...overrides, ...o }),
-        getPromptVersionRepository: (o?: Partial<AopsKitContext>) => provider.getPromptVersionRepository({ ...overrides, ...o }),
-        getResourceRepository: (o?: Partial<AopsKitContext>) => provider.getResourceRepository({ ...overrides, ...o }),
-        getSkillRepository: (o?: Partial<AopsKitContext>) => provider.getSkillRepository({ ...overrides, ...o }),
-        getSkillVersionRepository: (o?: Partial<AopsKitContext>) => provider.getSkillVersionRepository({ ...overrides, ...o }),
-        getSkillSetRepository: (o?: Partial<AopsKitContext>) => provider.getSkillSetRepository({ ...overrides, ...o }),
-        getSkillSetItemRepository: (o?: Partial<AopsKitContext>) => provider.getSkillSetItemRepository({ ...overrides, ...o }),
-        getKanbanBoardRepository: (o?: Partial<AopsKitContext>) => provider.getKanbanBoardRepository({ ...overrides, ...o }),
-        getKanbanColumnRepository: (o?: Partial<AopsKitContext>) => provider.getKanbanColumnRepository({ ...overrides, ...o }),
-        getSprintRepository: (o?: Partial<AopsKitContext>) => provider.getSprintRepository({ ...overrides, ...o }),
-        getSprintItemRepository: (o?: Partial<AopsKitContext>) => provider.getSprintItemRepository({ ...overrides, ...o }),
-        getTaskRepository: (o?: Partial<AopsKitContext>) => provider.getTaskRepository({ ...overrides, ...o }),
-        getTaskCommentRepository: (o?: Partial<AopsKitContext>) => provider.getTaskCommentRepository({ ...overrides, ...o }),
-        getAgentSessionRepository: (o?: Partial<AopsKitContext>) => provider.getAgentSessionRepository({ ...overrides, ...o }),
-        getAgentRunRepository: (o?: Partial<AopsKitContext>) => provider.getAgentRunRepository({ ...overrides, ...o }),
-        getArtifactRepository: (o?: Partial<AopsKitContext>) => provider.getArtifactRepository({ ...overrides, ...o }),
-        getArtifactLinkRepository: (o?: Partial<AopsKitContext>) => provider.getArtifactLinkRepository({ ...overrides, ...o }),
-        getCodexChatThreadRepository: (o?: Partial<AopsKitContext>) => provider.getCodexChatThreadRepository({ ...overrides, ...o }),
-        getCodexChatMessageRepository: (o?: Partial<AopsKitContext>) => provider.getCodexChatMessageRepository({ ...overrides, ...o }),
-        getCodexChatSettingRepository: (o?: Partial<AopsKitContext>) => provider.getCodexChatSettingRepository({ ...overrides, ...o }),
-        getProjectSummaryRepository: (o?: Partial<AopsKitContext>) => provider.getProjectSummaryRepository({ ...overrides, ...o }),
-        getMemoryItemRepository: (o?: Partial<AopsKitContext>) => provider.getMemoryItemRepository({ ...overrides, ...o }),
-        getTagRepository: (o?: Partial<AopsKitContext>) => provider.getTagRepository({ ...overrides, ...o }),
-        getAll: (o?: Partial<AopsKitContext>) => provider.getAll({ ...overrides, ...o }),
-        createAll: (o?: Partial<AopsKitContext>) => provider.createAll({ ...overrides, ...o }),
+        getProjectService: (o?: Partial<AgentspaceKitContext>) => provider.getProjectService({ ...overrides, ...o }),
+        getProjectPathService: (o?: Partial<AgentspaceKitContext>) => provider.getProjectPathService({ ...overrides, ...o }),
+        getWorkspaceService: (o?: Partial<AgentspaceKitContext>) => provider.getWorkspaceService({ ...overrides, ...o }),
+        getWorkspaceMemberService: (o?: Partial<AgentspaceKitContext>) => provider.getWorkspaceMemberService({ ...overrides, ...o }),
+        getProjectMemberService: (o?: Partial<AgentspaceKitContext>) => provider.getProjectMemberService({ ...overrides, ...o }),
+        getPromptService: (o?: Partial<AgentspaceKitContext>) => provider.getPromptService({ ...overrides, ...o }),
+        getPromptVersionService: (o?: Partial<AgentspaceKitContext>) => provider.getPromptVersionService({ ...overrides, ...o }),
+        getResourceService: (o?: Partial<AgentspaceKitContext>) => provider.getResourceService({ ...overrides, ...o }),
+        getSkillService: (o?: Partial<AgentspaceKitContext>) => provider.getSkillService({ ...overrides, ...o }),
+        getSkillVersionService: (o?: Partial<AgentspaceKitContext>) => provider.getSkillVersionService({ ...overrides, ...o }),
+        getSkillSetService: (o?: Partial<AgentspaceKitContext>) => provider.getSkillSetService({ ...overrides, ...o }),
+        getSkillSetItemService: (o?: Partial<AgentspaceKitContext>) => provider.getSkillSetItemService({ ...overrides, ...o }),
+        getKanbanBoardService: (o?: Partial<AgentspaceKitContext>) => provider.getKanbanBoardService({ ...overrides, ...o }),
+        getKanbanColumnService: (o?: Partial<AgentspaceKitContext>) => provider.getKanbanColumnService({ ...overrides, ...o }),
+        getSprintService: (o?: Partial<AgentspaceKitContext>) => provider.getSprintService({ ...overrides, ...o }),
+        getSprintItemService: (o?: Partial<AgentspaceKitContext>) => provider.getSprintItemService({ ...overrides, ...o }),
+        getTaskService: (o?: Partial<AgentspaceKitContext>) => provider.getTaskService({ ...overrides, ...o }),
+        getTaskCommentService: (o?: Partial<AgentspaceKitContext>) => provider.getTaskCommentService({ ...overrides, ...o }),
+        getAgentSessionService: (o?: Partial<AgentspaceKitContext>) => provider.getAgentSessionService({ ...overrides, ...o }),
+        getAgentRunService: (o?: Partial<AgentspaceKitContext>) => provider.getAgentRunService({ ...overrides, ...o }),
+        getArtifactService: (o?: Partial<AgentspaceKitContext>) => provider.getArtifactService({ ...overrides, ...o }),
+        getArtifactLinkService: (o?: Partial<AgentspaceKitContext>) => provider.getArtifactLinkService({ ...overrides, ...o }),
+        getCodexChatThreadService: (o?: Partial<AgentspaceKitContext>) => provider.getCodexChatThreadService({ ...overrides, ...o }),
+        getCodexChatMessageService: (o?: Partial<AgentspaceKitContext>) => provider.getCodexChatMessageService({ ...overrides, ...o }),
+        getCodexChatSettingService: (o?: Partial<AgentspaceKitContext>) => provider.getCodexChatSettingService({ ...overrides, ...o }),
+        getProjectSummaryService: (o?: Partial<AgentspaceKitContext>) => provider.getProjectSummaryService({ ...overrides, ...o }),
+        getMemoryItemService: (o?: Partial<AgentspaceKitContext>) => provider.getMemoryItemService({ ...overrides, ...o }),
+        getTagService: (o?: Partial<AgentspaceKitContext>) => provider.getTagService({ ...overrides, ...o }),
+        getProjectRepository: (o?: Partial<AgentspaceKitContext>) => provider.getProjectRepository({ ...overrides, ...o }),
+        getProjectPathRepository: (o?: Partial<AgentspaceKitContext>) => provider.getProjectPathRepository({ ...overrides, ...o }),
+        getWorkspaceRepository: (o?: Partial<AgentspaceKitContext>) => provider.getWorkspaceRepository({ ...overrides, ...o }),
+        getWorkspaceMemberRepository: (o?: Partial<AgentspaceKitContext>) => provider.getWorkspaceMemberRepository({ ...overrides, ...o }),
+        getProjectMemberRepository: (o?: Partial<AgentspaceKitContext>) => provider.getProjectMemberRepository({ ...overrides, ...o }),
+        getPromptRepository: (o?: Partial<AgentspaceKitContext>) => provider.getPromptRepository({ ...overrides, ...o }),
+        getPromptVersionRepository: (o?: Partial<AgentspaceKitContext>) => provider.getPromptVersionRepository({ ...overrides, ...o }),
+        getResourceRepository: (o?: Partial<AgentspaceKitContext>) => provider.getResourceRepository({ ...overrides, ...o }),
+        getSkillRepository: (o?: Partial<AgentspaceKitContext>) => provider.getSkillRepository({ ...overrides, ...o }),
+        getSkillVersionRepository: (o?: Partial<AgentspaceKitContext>) => provider.getSkillVersionRepository({ ...overrides, ...o }),
+        getSkillSetRepository: (o?: Partial<AgentspaceKitContext>) => provider.getSkillSetRepository({ ...overrides, ...o }),
+        getSkillSetItemRepository: (o?: Partial<AgentspaceKitContext>) => provider.getSkillSetItemRepository({ ...overrides, ...o }),
+        getKanbanBoardRepository: (o?: Partial<AgentspaceKitContext>) => provider.getKanbanBoardRepository({ ...overrides, ...o }),
+        getKanbanColumnRepository: (o?: Partial<AgentspaceKitContext>) => provider.getKanbanColumnRepository({ ...overrides, ...o }),
+        getSprintRepository: (o?: Partial<AgentspaceKitContext>) => provider.getSprintRepository({ ...overrides, ...o }),
+        getSprintItemRepository: (o?: Partial<AgentspaceKitContext>) => provider.getSprintItemRepository({ ...overrides, ...o }),
+        getTaskRepository: (o?: Partial<AgentspaceKitContext>) => provider.getTaskRepository({ ...overrides, ...o }),
+        getTaskCommentRepository: (o?: Partial<AgentspaceKitContext>) => provider.getTaskCommentRepository({ ...overrides, ...o }),
+        getAgentSessionRepository: (o?: Partial<AgentspaceKitContext>) => provider.getAgentSessionRepository({ ...overrides, ...o }),
+        getAgentRunRepository: (o?: Partial<AgentspaceKitContext>) => provider.getAgentRunRepository({ ...overrides, ...o }),
+        getArtifactRepository: (o?: Partial<AgentspaceKitContext>) => provider.getArtifactRepository({ ...overrides, ...o }),
+        getArtifactLinkRepository: (o?: Partial<AgentspaceKitContext>) => provider.getArtifactLinkRepository({ ...overrides, ...o }),
+        getCodexChatThreadRepository: (o?: Partial<AgentspaceKitContext>) => provider.getCodexChatThreadRepository({ ...overrides, ...o }),
+        getCodexChatMessageRepository: (o?: Partial<AgentspaceKitContext>) => provider.getCodexChatMessageRepository({ ...overrides, ...o }),
+        getCodexChatSettingRepository: (o?: Partial<AgentspaceKitContext>) => provider.getCodexChatSettingRepository({ ...overrides, ...o }),
+        getProjectSummaryRepository: (o?: Partial<AgentspaceKitContext>) => provider.getProjectSummaryRepository({ ...overrides, ...o }),
+        getMemoryItemRepository: (o?: Partial<AgentspaceKitContext>) => provider.getMemoryItemRepository({ ...overrides, ...o }),
+        getTagRepository: (o?: Partial<AgentspaceKitContext>) => provider.getTagRepository({ ...overrides, ...o }),
+        getAll: (o?: Partial<AgentspaceKitContext>) => provider.getAll({ ...overrides, ...o }),
+        createAll: (o?: Partial<AgentspaceKitContext>) => provider.createAll({ ...overrides, ...o }),
         clearServiceCache: (cacheKey?: string) => provider.clearServiceCache(cacheKey),
         clearProjectServiceCache: (cacheKey?: string) => provider.clearProjectServiceCache(cacheKey),
         clearProjectPathServiceCache: (cacheKey?: string) => provider.clearProjectPathServiceCache(cacheKey),
@@ -241,13 +241,13 @@ export function createAopsKit(options: CreateAopsKitOptions) {
         clearTagServiceCache: (cacheKey?: string) => provider.clearTagServiceCache(cacheKey),
         reset: (opts?: { services?: boolean; repositories?: boolean }) => provider.reset(opts),
         getRegistryStats: () => provider.getRegistryStats(),
-        resolveLogger: (o?: Partial<AopsKitContext>) => provider.resolveLogger({ ...overrides, ...o }),
+        resolveLogger: (o?: Partial<AgentspaceKitContext>) => provider.resolveLogger({ ...overrides, ...o }),
       }
     },
   }
 }
 
-export function buildAopsKitStaticConfig(envConfig: AopsKitEnvConfig): AopsKitStaticConfig {
+export function buildAgentspaceKitStaticConfig(envConfig: AgentspaceKitEnvConfig): AgentspaceKitStaticConfig {
   const repoUrl = envConfig.repoUrl
   const repoType = inferRepoType(repoUrl)
 
@@ -284,20 +284,20 @@ export function buildAopsKitStaticConfig(envConfig: AopsKitEnvConfig): AopsKitSt
   }
 }
 
-export type CreateAopsKitWithEnvOptions = {
+export type CreateAgentspaceKitWithEnvOptions = {
   name?: string
-  envConfig: AopsKitEnvConfig
+  envConfig: AgentspaceKitEnvConfig
   baseContext: {
     tenantId: string
     locale?: string
     fallbackLocale?: string
     logger?: XfLogger
   }
-  getCacheKey?: (context: AopsKitContext) => string | null
-} & Pick<AopsKitProviderOptions, 'cache' | 'metrics' | 'resilience' | 'transformService' | 'resolveLogger'>
+  getCacheKey?: (context: AgentspaceKitContext) => string | null
+} & Pick<AgentspaceKitProviderOptions, 'cache' | 'metrics' | 'resilience' | 'transformService' | 'resolveLogger'>
 
-export function createAopsKitWithEnv(options: CreateAopsKitWithEnvOptions) {
-  const staticConfig = buildAopsKitStaticConfig(options.envConfig)
+export function createAgentspaceKitWithEnv(options: CreateAgentspaceKitWithEnvOptions) {
+  const staticConfig = buildAgentspaceKitStaticConfig(options.envConfig)
   const envCfg = parseEnvConfig()
 
   const statsEnabled = envCfg.statsEnabled === true
@@ -307,17 +307,17 @@ export function createAopsKitWithEnv(options: CreateAopsKitWithEnvOptions) {
     options.metrics ?? (counters && loggerMetrics ? new MultiMetricsCollector([counters, loggerMetrics]) : counters ?? loggerMetrics)
 
   const cacheMerged = (options.cache || envCfg.cacheGlobal)
-    ? ({ ...(options.cache ?? {}), ...(envCfg.cacheGlobal ?? {}) } as AopsKitProviderOptions['cache'])
+    ? ({ ...(options.cache ?? {}), ...(envCfg.cacheGlobal ?? {}) } as AgentspaceKitProviderOptions['cache'])
     : undefined
 
   const resilienceMerged = (options.resilience || envCfg.resilience)
     ? ({ ...(options.resilience ?? {}), ...(envCfg.resilience ?? {}) })
     : undefined
 
-  const kit = createAopsKit({
+  const kit = createAgentspaceKit({
     name: options.name ?? 'aops-kit',
     staticConfig,
-    getContext: (overrides?: Partial<AopsKitContext>) => ({
+    getContext: (overrides?: Partial<AgentspaceKitContext>) => ({
       tenantId: options.baseContext.tenantId,
       locale: options.baseContext.locale,
       fallbackLocale: options.baseContext.fallbackLocale,
@@ -328,7 +328,7 @@ export function createAopsKitWithEnv(options: CreateAopsKitWithEnvOptions) {
     getCacheKey: (ctx) => options.getCacheKey?.(ctx) ?? cacheKeyFromLocale(ctx.locale, ctx.fallbackLocale),
     cache: cacheMerged,
     metrics: metricsCollector,
-    resilience: resilienceMerged as AopsKitProviderOptions['resilience'],
+    resilience: resilienceMerged as AgentspaceKitProviderOptions['resilience'],
     transformService: options.transformService,
   })
 

@@ -1,34 +1,34 @@
 import type {
-  AopsOperationArgument,
-  AopsOperationEffect,
-  AopsOperationKind,
-  AopsOperationPolicy,
-  AopsOperationSchema,
-  AopsOperationSpec,
+  AgentspaceOperationArgument,
+  AgentspaceOperationEffect,
+  AgentspaceOperationKind,
+  AgentspaceOperationPolicy,
+  AgentspaceOperationSchema,
+  AgentspaceOperationSpec,
 } from './types.js'
-import { listAopsOperationSpecs } from './catalog.js'
-import { normalizeAopsOperationId } from './definition.js'
+import { listAgentspaceOperationSpecs } from './catalog.js'
+import { normalizeAgentspaceOperationId } from './definition.js'
 
-export type AopsOperationSideEffect = AopsOperationEffect
+export type AgentspaceOperationSideEffect = AgentspaceOperationEffect
 
-export type AopsOperationContract = {
+export type AgentspaceOperationContract = {
   operationId: string
   toolId: string
   summary: string
-  kind: AopsOperationKind
-  sideEffect: AopsOperationSideEffect
+  kind: AgentspaceOperationKind
+  sideEffect: AgentspaceOperationSideEffect
   serviceKey: string
   serviceEntity: string
   methodName: string
-  args: AopsOperationArgument[]
+  args: AgentspaceOperationArgument[]
   tags?: string[]
-  inputSchema?: AopsOperationSchema
-  outputSchema?: AopsOperationSchema
-  policy?: AopsOperationPolicy
+  inputSchema?: AgentspaceOperationSchema
+  outputSchema?: AgentspaceOperationSchema
+  policy?: AgentspaceOperationPolicy
   examples?: string[]
 }
 
-type AopsOperationPolicyRecord = {
+type AgentspaceOperationPolicyRecord = {
   scope: 'tenant' | 'global'
   auth?: { required?: boolean; roles?: string[]; capabilities?: string[] }
   safety?: { destructive?: boolean; confirmationRequired?: boolean; applyRequired?: boolean }
@@ -45,20 +45,20 @@ function toSummary(operationId: string): string {
   return normalized.charAt(0).toUpperCase() + normalized.slice(1)
 }
 
-function toSideEffect(kind: AopsOperationKind): AopsOperationSideEffect {
+function toSideEffect(kind: AgentspaceOperationKind): AgentspaceOperationSideEffect {
   if (kind === 'list' || kind === 'get') return 'none'
   if (kind === 'custom') return 'mixed'
   return 'db'
 }
 
-function isWriteOperation(spec: AopsOperationSpec): boolean {
+function isWriteOperation(spec: AgentspaceOperationSpec): boolean {
   if (spec.kind === 'create' || spec.kind === 'update' || spec.kind === 'delete') return true
   return spec.operationId.endsWith('.push')
 }
 
-function toDefaultPolicy(spec: AopsOperationSpec): AopsOperationPolicy {
+function toDefaultPolicy(spec: AgentspaceOperationSpec): AgentspaceOperationPolicy {
   const write = isWriteOperation(spec)
-  const policy: AopsOperationPolicyRecord = {
+  const policy: AgentspaceOperationPolicyRecord = {
     scope: 'tenant',
     auth: { required: true },
   }
@@ -70,7 +70,7 @@ function toDefaultPolicy(spec: AopsOperationSpec): AopsOperationPolicy {
       confirmationRequired: false,
     }
     policy.rateLimit = {
-      bucket: 'aops-write',
+      bucket: 'agentspace-write',
       max: 100,
       windowSeconds: 60,
     }
@@ -78,7 +78,7 @@ function toDefaultPolicy(spec: AopsOperationSpec): AopsOperationPolicy {
   }
 
   policy.rateLimit = {
-    bucket: 'aops-read',
+    bucket: 'agentspace-read',
     max: 240,
     windowSeconds: 60,
   }
@@ -89,7 +89,7 @@ function toJsonExample(input: Record<string, unknown>): string {
   return JSON.stringify(input)
 }
 
-function toDefaultExampleFromArgs(spec: AopsOperationSpec): string {
+function toDefaultExampleFromArgs(spec: AgentspaceOperationSpec): string {
   const payload: Record<string, unknown> = {}
   for (const arg of spec.args) {
     if (arg.name === 'id') payload.id = '<id>'
@@ -111,11 +111,11 @@ function toDefaultExampleFromArgs(spec: AopsOperationSpec): string {
   return toJsonExample(payload)
 }
 
-function toDefaultExamples(spec: AopsOperationSpec): string[] {
+function toDefaultExamples(spec: AgentspaceOperationSpec): string[] {
   return [toDefaultExampleFromArgs(spec)]
 }
 
-function fromSpec(spec: AopsOperationSpec): AopsOperationContract {
+function fromSpec(spec: AgentspaceOperationSpec): AgentspaceOperationContract {
   const summary = typeof spec.summary === 'string' ? spec.summary.trim() : ''
   const policy = spec.policy ?? toDefaultPolicy(spec)
   const examples = spec.examples && spec.examples.length > 0 ? [...spec.examples] : toDefaultExamples(spec)
@@ -138,17 +138,17 @@ function fromSpec(spec: AopsOperationSpec): AopsOperationContract {
   }
 }
 
-export function listAopsOperationContracts(options?: { refresh?: boolean }): AopsOperationContract[] {
-  return listAopsOperationSpecs(options).map(fromSpec)
+export function listAgentspaceOperationContracts(options?: { refresh?: boolean }): AgentspaceOperationContract[] {
+  return listAgentspaceOperationSpecs(options).map(fromSpec)
 }
 
-export function getAopsOperationContractByToolId(toolId: string, options?: { refresh?: boolean }): AopsOperationContract | null {
-  const operations = listAopsOperationContracts(options)
+export function getAgentspaceOperationContractByToolId(toolId: string, options?: { refresh?: boolean }): AgentspaceOperationContract | null {
+  const operations = listAgentspaceOperationContracts(options)
   return operations.find((operation) => operation.toolId === toolId) ?? null
 }
 
-export function getAopsOperationContractById(operationId: string, options?: { refresh?: boolean }): AopsOperationContract | null {
-  const normalized = normalizeAopsOperationId(operationId)
-  const operations = listAopsOperationContracts(options)
+export function getAgentspaceOperationContractById(operationId: string, options?: { refresh?: boolean }): AgentspaceOperationContract | null {
+  const normalized = normalizeAgentspaceOperationId(operationId)
+  const operations = listAgentspaceOperationContracts(options)
   return operations.find((operation) => operation.operationId === normalized) ?? null
 }

@@ -2,18 +2,18 @@ import type { DomainPlugin, DomainRequest, DomainRouteManifestEntry } from './ty
 import { Ajv, type AnySchema, type ErrorObject, type ValidateFunction } from 'ajv'
 import {
   buildAgentspaceHostRouteProjection,
-  getAopsContractSchema,
-  getAopsOperationIoSchemaRefs,
-  listAopsOperationSpecs,
+  getAgentspaceContractSchema,
+  getAgentspaceOperationIoSchemaRefs,
+  listAgentspaceOperationSpecs,
   mapErrorToFriendly,
   runAgentspaceKitOperationByTypedId,
-  type AopsOperationInput,
-  type AopsTypedOperationId,
+  type AgentspaceOperationInput,
+  type AgentspaceTypedOperationId,
 } from '@aopslab/domain-kit-agentspace'
 import {
   hasNonEmptyValue,
   isWorkspaceArgName,
-  normalizeAopsOperationInputForCompatibility,
+  normalizeAgentspaceOperationInputForCompatibility,
   normalizeNonEmpty,
   resolveWorkspaceAliasValue,
   toMissingRequiredArgToken,
@@ -48,7 +48,7 @@ const HOST_CONTEXT_INPUT_KEYS = new Set([
   'fallbackLocale',
 ])
 
-const DATA_WORKSPACE_FALLBACK_OPERATIONS = new Set<AopsTypedOperationId>([
+const DATA_WORKSPACE_FALLBACK_OPERATIONS = new Set<AgentspaceTypedOperationId>([
   'prompt.create',
   'project.create',
   'project-path.create',
@@ -62,20 +62,20 @@ const inputSchemaValidatorAjv = new Ajv({
   allowUnionTypes: true,
 })
 
-type AopsRequiredArg = ReadonlyArray<{ name: string; optional: boolean }>
+type AgentspaceRequiredArg = ReadonlyArray<{ name: string; optional: boolean }>
 
-type AopsPluginSetupStatus = 'idle' | 'ready' | 'failed'
+type AgentspacePluginSetupStatus = 'idle' | 'ready' | 'failed'
 
-type AopsPluginState = {
+type AgentspacePluginState = {
   routes: DomainRouteManifestEntry[]
-  requiredArgsByOperationId: Map<AopsTypedOperationId, AopsRequiredArg>
-  inputValidatorByOperationId: Map<AopsTypedOperationId, ValidateFunction>
-  workspaceInDataRequirementByOperationId: Map<AopsTypedOperationId, boolean>
+  requiredArgsByOperationId: Map<AgentspaceTypedOperationId, AgentspaceRequiredArg>
+  inputValidatorByOperationId: Map<AgentspaceTypedOperationId, ValidateFunction>
+  workspaceInDataRequirementByOperationId: Map<AgentspaceTypedOperationId, boolean>
   projectionRefreshedAt: string
   runtimeEnvVerifiedAt: string | null
   setup: {
     attempts: number
-    status: AopsPluginSetupStatus
+    status: AgentspacePluginSetupStatus
     lastAttemptAt: string | null
     readyAt: string | null
     lastError: string | null
@@ -102,26 +102,26 @@ function buildRoutes(refresh: boolean): DomainRouteManifestEntry[] {
     pattern: route.pattern,
     operation: route.operation,
     summary: route.summary,
-    buildInput: (request, params) => buildInputForOperation(route.operation as AopsTypedOperationId, request, params),
+    buildInput: (request, params) => buildInputForOperation(route.operation as AgentspaceTypedOperationId, request, params),
   }))
 }
 
-function buildRequiredArgsByOperationId(refresh: boolean): Map<AopsTypedOperationId, AopsRequiredArg> {
-  return new Map<AopsTypedOperationId, AopsRequiredArg>(
-    listAopsOperationSpecs({ refresh }).map((operation) => [
-      operation.operationId as AopsTypedOperationId,
+function buildRequiredArgsByOperationId(refresh: boolean): Map<AgentspaceTypedOperationId, AgentspaceRequiredArg> {
+  return new Map<AgentspaceTypedOperationId, AgentspaceRequiredArg>(
+    listAgentspaceOperationSpecs({ refresh }).map((operation) => [
+      operation.operationId as AgentspaceTypedOperationId,
       operation.args,
     ]),
   )
 }
 
-function createPluginState(options: AgentspaceResolvedPluginOptions): AopsPluginState {
+function createPluginState(options: AgentspaceResolvedPluginOptions): AgentspacePluginState {
   const refresh = options.refreshProjectionOnCreate
   return {
     routes: buildRoutes(refresh),
     requiredArgsByOperationId: buildRequiredArgsByOperationId(refresh),
-    inputValidatorByOperationId: new Map<AopsTypedOperationId, ValidateFunction>(),
-    workspaceInDataRequirementByOperationId: new Map<AopsTypedOperationId, boolean>(),
+    inputValidatorByOperationId: new Map<AgentspaceTypedOperationId, ValidateFunction>(),
+    workspaceInDataRequirementByOperationId: new Map<AgentspaceTypedOperationId, boolean>(),
     projectionRefreshedAt: new Date().toISOString(),
     runtimeEnvVerifiedAt: null,
     setup: {
@@ -139,7 +139,7 @@ function extractErrorMessage(error: unknown): string | null {
 }
 
 function ensureRuntimeEnvReady(
-  state: AopsPluginState,
+  state: AgentspacePluginState,
   requiredRuntimeEnv: string[],
   enforceRuntimeEnv: boolean,
 ): void {
@@ -150,7 +150,7 @@ function ensureRuntimeEnvReady(
 }
 
 function runPluginSetup(
-  state: AopsPluginState,
+  state: AgentspacePluginState,
   options: AgentspaceResolvedPluginOptions,
   enforceRuntimeEnv: boolean,
 ): void {
@@ -170,11 +170,11 @@ function runPluginSetup(
   }
 }
 
-function isAopsTypedOperationId(
+function isAgentspaceTypedOperationId(
   operationId: string,
-  requiredArgsByOperationId: Map<AopsTypedOperationId, AopsRequiredArg>,
-): operationId is AopsTypedOperationId {
-  return requiredArgsByOperationId.has(operationId as AopsTypedOperationId)
+  requiredArgsByOperationId: Map<AgentspaceTypedOperationId, AgentspaceRequiredArg>,
+): operationId is AgentspaceTypedOperationId {
+  return requiredArgsByOperationId.has(operationId as AgentspaceTypedOperationId)
 }
 
 function formatSchemaErrors(errors: ErrorObject[] | null | undefined): string {
@@ -185,12 +185,12 @@ function formatSchemaErrors(errors: ErrorObject[] | null | undefined): string {
   return `${path} ${message}`.trim()
 }
 
-function resolveInputValidator(state: AopsPluginState, operationId: AopsTypedOperationId): ValidateFunction | null {
+function resolveInputValidator(state: AgentspacePluginState, operationId: AgentspaceTypedOperationId): ValidateFunction | null {
   const existing = state.inputValidatorByOperationId.get(operationId)
   if (existing) return existing
 
-  const refs = getAopsOperationIoSchemaRefs(operationId)
-  const schema = getAopsContractSchema(refs.inputRef)
+  const refs = getAgentspaceOperationIoSchemaRefs(operationId)
+  const schema = getAgentspaceContractSchema(refs.inputRef)
   if (!schema || typeof schema !== 'object' || Array.isArray(schema)) return null
 
   const validator = inputSchemaValidatorAjv.compile(schema as AnySchema)
@@ -199,8 +199,8 @@ function resolveInputValidator(state: AopsPluginState, operationId: AopsTypedOpe
 }
 
 function validateInputBySchema(
-  state: AopsPluginState,
-  operationId: AopsTypedOperationId,
+  state: AgentspacePluginState,
+  operationId: AgentspaceTypedOperationId,
   input: Record<string, unknown>,
 ): void {
   const validator = resolveInputValidator(state, operationId)
@@ -224,12 +224,12 @@ function assignTypedValue<TInput>(
   ;(target as Record<string, unknown>)[key] = value
 }
 
-function requiresWorkspaceIdInDataArg(state: AopsPluginState, operationId: AopsTypedOperationId): boolean {
+function requiresWorkspaceIdInDataArg(state: AgentspacePluginState, operationId: AgentspaceTypedOperationId): boolean {
   const existing = state.workspaceInDataRequirementByOperationId.get(operationId)
   if (existing !== undefined) return existing
 
-  const refs = getAopsOperationIoSchemaRefs(operationId)
-  const schema = getAopsContractSchema(refs.inputRef)
+  const refs = getAgentspaceOperationIoSchemaRefs(operationId)
+  const schema = getAgentspaceContractSchema(refs.inputRef)
   const root = toRecord(schema)
   const properties = toRecord(root.properties)
   const dataSchema = toRecord(properties.data)
@@ -240,8 +240,8 @@ function requiresWorkspaceIdInDataArg(state: AopsPluginState, operationId: AopsT
 }
 
 function injectWorkspaceIdIntoDataArg(
-  state: AopsPluginState,
-  operationId: AopsTypedOperationId,
+  state: AgentspacePluginState,
+  operationId: AgentspaceTypedOperationId,
   input: Record<string, unknown>,
   argName: string,
   rawValue: unknown,
@@ -355,11 +355,11 @@ function toSafeErrorMessage(message: string, status: number): string {
   return RUNTIME_FAILURE_MESSAGE
 }
 
-function toTypedOperationInput<TId extends AopsTypedOperationId>(
-  state: AopsPluginState,
+function toTypedOperationInput<TId extends AgentspaceTypedOperationId>(
+  state: AgentspacePluginState,
   operationId: TId,
   input: Record<string, unknown>,
-): AopsOperationInput<TId> {
+): AgentspaceOperationInput<TId> {
   const args = state.requiredArgsByOperationId.get(operationId) ?? []
   const allowedOperationArgs = new Set(args.map((arg) => arg.name))
   for (const key of Object.keys(input)) {
@@ -368,7 +368,7 @@ function toTypedOperationInput<TId extends AopsTypedOperationId>(
     throw new Error(`unknown_input_arg:${key}`)
   }
 
-  const typed: Partial<AopsOperationInput<TId>> = {}
+  const typed: Partial<AgentspaceOperationInput<TId>> = {}
   for (const arg of args) {
     const rawValue =
       arg.name === 'workspaceId'
@@ -378,9 +378,9 @@ function toTypedOperationInput<TId extends AopsTypedOperationId>(
     if (!arg.optional && !hasRequiredOperationArg(input, arg.name)) {
       throw new Error(toMissingRequiredArgToken(arg.name))
     }
-    if (normalizedRawValue !== undefined) assignTypedValue<AopsOperationInput<TId>>(typed, arg.name, normalizedRawValue)
+    if (normalizedRawValue !== undefined) assignTypedValue<AgentspaceOperationInput<TId>>(typed, arg.name, normalizedRawValue)
   }
-  return typed as AopsOperationInput<TId>
+  return typed as AgentspaceOperationInput<TId>
 }
 
 function parseMaybeJson(value: string): unknown {
@@ -415,7 +415,7 @@ function payloadFromBody(body: unknown): Record<string, unknown> {
 }
 
 function buildInputForOperation(
-  _operationId: AopsTypedOperationId,
+  _operationId: AgentspaceTypedOperationId,
   request: DomainRequest,
   params: Record<string, string>,
 ): Record<string, unknown> {
@@ -431,9 +431,9 @@ function buildInputForOperation(
 }
 
 function resolveRunner(options: AgentspaceResolvedPluginOptions): AgentspaceRunner {
-  const defaultRunner: AgentspaceRunner = <TId extends AopsTypedOperationId>(
+  const defaultRunner: AgentspaceRunner = <TId extends AgentspaceTypedOperationId>(
     operationId: TId,
-    input: AopsOperationInput<TId>,
+    input: AgentspaceOperationInput<TId>,
   ) => runAgentspaceKitOperationByTypedId(operationId, input)
   return options.runner ?? defaultRunner
 }
@@ -495,8 +495,8 @@ export function createAgentspacePlugin(options: AgentspacePluginOptions = {}): D
     },
     execute: async ({ request, match }) => {
       const operationIdRaw = match.route.operation
-      if (!isAopsTypedOperationId(operationIdRaw, state.requiredArgsByOperationId)) {
-        throw new Error(`unknown_aops_operation:${operationIdRaw}`)
+      if (!isAgentspaceTypedOperationId(operationIdRaw, state.requiredArgsByOperationId)) {
+        throw new Error(`unknown_agentspace_operation:${operationIdRaw}`)
       }
       const operationId = operationIdRaw
 
@@ -510,7 +510,7 @@ export function createAgentspacePlugin(options: AgentspacePluginOptions = {}): D
       try {
         ensureRuntimeEnvReady(state, resolvedOptions.requiredRuntimeEnv, enforceRuntimeEnv)
         const scopedInput = buildContextScopedInput(inputBase, request.context, resolvedOptions.defaultTenantId)
-        const input = normalizeAopsOperationInputForCompatibility(operationId, scopedInput)
+        const input = normalizeAgentspaceOperationInputForCompatibility(operationId, scopedInput)
         const typedInput = toTypedOperationInput(state, operationId, input)
         validateInputBySchema(state, operationId, typedInput as Record<string, unknown>)
         const output = await runWithOperationTimeout(operationId, operationTimeoutMs, () =>

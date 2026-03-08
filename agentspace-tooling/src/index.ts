@@ -5,7 +5,6 @@ import {
   getAgentspaceKitOperationByTypedId,
   listAgentspaceKitOperations,
   runAgentspaceKitOperationByToolId,
-  runAgentspaceKitOperationByTypedId,
   type AgentspaceKitOperationSpec,
 } from '@aopslab/domain-kit-agentspace'
 
@@ -16,17 +15,13 @@ export interface AgentspaceToolingToolSpec {
   readonly summary?: string
 }
 
-function toAgentspaceToolId(toolId: string): string {
-  return toolId.startsWith('aops-') ? `agentspace-${toolId.slice('aops-'.length)}` : toolId
-}
-
-function toAopsToolId(toolId: string): string {
-  return toolId.startsWith('agentspace-') ? `aops-${toolId.slice('agentspace-'.length)}` : toolId
+function normalizeAgentspaceToolId(toolId: string): string {
+  return String(toolId ?? '').trim().toLowerCase()
 }
 
 function toToolSpec(operation: AgentspaceKitOperationSpec): AgentspaceToolingToolSpec {
   return {
-    toolId: toAgentspaceToolId(operation.toolId),
+    toolId: normalizeAgentspaceToolId(operation.toolId),
     operationId: operation.operationId,
     title: operation.summary ?? operation.operationId,
     summary: operation.summary,
@@ -42,28 +37,32 @@ export function listAgentspaceToolingTools(): readonly AgentspaceToolingToolSpec
 }
 
 export function resolveAgentspaceOperationIdByToolId(toolId: string): string | undefined {
-  return getAgentspaceKitOperationByToolId(toAopsToolId(toolId))?.operationId ?? undefined
+  return getAgentspaceKitOperationByToolId(normalizeAgentspaceToolId(toolId))?.operationId ?? undefined
 }
 
 export function getAgentspaceOperationSpecById(
   operationId: string,
 ): AgentspaceKitOperationSpec | undefined {
-  return getAgentspaceKitOperationByTypedId(operationId)
+  return getAgentspaceKitOperationByTypedId(operationId) ?? undefined
 }
 
 export async function runAgentspaceOperationById(
   operationId: string,
   input?: unknown,
 ): Promise<unknown> {
-  return runAgentspaceKitOperationByTypedId(operationId, input)
+  const operation = getAgentspaceKitOperationByTypedId(operationId)
+  if (!operation) {
+    throw new Error(`unknown_agentspace_operation:${operationId}`)
+  }
+  return runAgentspaceKitOperationByToolId(operation.toolId, input)
 }
 
 export async function runAgentspaceToolById(toolId: string, input?: unknown): Promise<unknown> {
-  const aopsToolId = toAopsToolId(toolId)
-  if (!getAgentspaceKitOperationByToolId(aopsToolId)) {
+  const normalizedToolId = normalizeAgentspaceToolId(toolId)
+  if (!getAgentspaceKitOperationByToolId(normalizedToolId)) {
     throw new Error(`unknown_agentspace_tool:${toolId}`)
   }
-  return runAgentspaceKitOperationByToolId(aopsToolId, input)
+  return runAgentspaceKitOperationByToolId(normalizedToolId, input)
 }
 
 export interface AgentspaceAgentManifest {

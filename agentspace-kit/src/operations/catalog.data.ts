@@ -1,17 +1,17 @@
-import type { AopsOperationArgument, AopsOperationKind } from './types.js'
+import type { AgentspaceOperationArgument, AgentspaceOperationKind } from './types.js'
 
-export type AopsOperationCatalogRow = {
+export type AgentspaceOperationCatalogRow = {
   toolId: string
   operationId: string
   summary: string
   serviceKey: string
   serviceEntity: string
   methodName: string
-  kind: AopsOperationKind
-  args: readonly AopsOperationArgument[]
+  kind: AgentspaceOperationKind
+  args: readonly AgentspaceOperationArgument[]
 }
 
-export const AOPS_OPERATION_CATALOG_ROWS = [
+export const AGENTSPACE_OPERATION_CATALOG_ROWS = [
   {
     "toolId": "aops-agent-run-attach-run-to-task",
     "operationId": "agent-run.attach-run-to-task",
@@ -1532,7 +1532,7 @@ export const AOPS_OPERATION_CATALOG_ROWS = [
     "summary": "Hard-delete project and linked records (child-first).",
     "serviceKey": "__calls__",
     "serviceEntity": "project",
-    "methodName": "hardDeleteAopsProjectCascade",
+    "methodName": "hardDeleteAgentspaceProjectCascade",
     "kind": "delete",
     "args": [
       {
@@ -3548,4 +3548,4 @@ export const AOPS_OPERATION_CATALOG_ROWS = [
       }
     ]
   }
-] as const satisfies readonly AopsOperationCatalogRow[]
+] as const satisfies readonly AgentspaceOperationCatalogRow[]

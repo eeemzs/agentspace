@@ -1,16 +1,16 @@
-import { buildAopsDomainCapabilityManifest } from './dcm.js'
+import { buildAgentspaceDomainCapabilityManifest } from './dcm.js'
 
-export type AopsHostProjectionMethod = 'GET' | 'POST' | 'PATCH' | 'DELETE'
+export type AgentspaceHostProjectionMethod = 'GET' | 'POST' | 'PATCH' | 'DELETE'
 
-export type AopsHostRouteProjectionEntry = {
+export type AgentspaceHostRouteProjectionEntry = {
   id: string
-  method: AopsHostProjectionMethod
+  method: AgentspaceHostProjectionMethod
   pattern: string
   operation: string
   summary?: string
 }
 
-type AopsHostProjectionOperation = {
+type AgentspaceHostProjectionOperation = {
   operationId: string
   title?: string
   tags?: string[]
@@ -34,7 +34,7 @@ function getTagValue(tags: string[] | undefined, prefix: string): string | undef
   return undefined
 }
 
-function toRouteMethodByKind(kind: string | undefined): AopsHostProjectionMethod {
+function toRouteMethodByKind(kind: string | undefined): AgentspaceHostProjectionMethod {
   if (kind === 'list' || kind === 'get') return 'GET'
   if (kind === 'update') return 'PATCH'
   if (kind === 'delete') return 'DELETE'
@@ -125,7 +125,7 @@ function parseRequiredArgsFromNotes(notes: unknown): string[] {
   return []
 }
 
-function toRouteFromOperation(operation: AopsHostProjectionOperation): AopsHostRouteProjectionEntry {
+function toRouteFromOperation(operation: AgentspaceHostProjectionOperation): AgentspaceHostRouteProjectionEntry {
   const kind = getTagValue(operation.tags, 'kind:')
   const resource = getTagValue(operation.tags, 'resource:')
   const method = toRouteMethodByKind(kind)
@@ -181,13 +181,13 @@ function toRouteFromOperation(operation: AopsHostProjectionOperation): AopsHostR
   }
 }
 
-export function buildAopsHostRouteProjection(options?: { refresh?: boolean }): AopsHostRouteProjectionEntry[] {
-  const manifest = buildAopsDomainCapabilityManifest({
+export function buildAgentspaceHostRouteProjection(options?: { refresh?: boolean }): AgentspaceHostRouteProjectionEntry[] {
+  const manifest = buildAgentspaceDomainCapabilityManifest({
     refresh: options?.refresh,
     includeDocs: true,
   })
 
-  const unique = new Map<string, AopsHostRouteProjectionEntry>()
+  const unique = new Map<string, AgentspaceHostRouteProjectionEntry>()
   const usedRouteKeys = new Set<string>()
 
   for (const operation of manifest.capabilities.operations) {

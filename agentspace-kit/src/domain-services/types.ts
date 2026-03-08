@@ -4,7 +4,7 @@ import type { XfLogger } from '@aopslab/xf-logger'
 import type { IProjectServicePort, IProjectPathServicePort, IPromptServicePort, IPromptVersionServicePort, IResourceServicePort, ISkillServicePort, ISkillVersionServicePort, ISkillSetServicePort, ISkillSetItemServicePort, IKanbanBoardServicePort, IKanbanColumnServicePort, ISprintServicePort, ISprintItemServicePort, ITaskServicePort, ITaskCommentServicePort, IAgentSessionServicePort, IAgentRunServicePort, IArtifactServicePort, IArtifactLinkServicePort, ICodexChatMessageServicePort, ICodexChatSettingServicePort, ICodexChatThreadServicePort, IProjectSummaryServicePort, IMemoryItemServicePort, ITagServicePort, IWorkspaceServicePort, IWorkspaceMemberServicePort, IProjectMemberServicePort } from '@aopslab/domain-dm-agentspace/ports'
 import type { IRepositoryPortProject, IRepositoryPortProjectPath, IRepositoryPortPrompt, IRepositoryPortPromptVersion, IRepositoryPortResource, IRepositoryPortSkill, IRepositoryPortSkillVersion, IRepositoryPortSkillSet, IRepositoryPortSkillSetItem, IRepositoryPortKanbanBoard, IRepositoryPortKanbanColumn, IRepositoryPortSprint, IRepositoryPortSprintItem, IRepositoryPortTask, IRepositoryPortTaskComment, IRepositoryPortAgentSession, IRepositoryPortAgentRun, IRepositoryPortArtifact, IRepositoryPortArtifactLink, IRepositoryPortCodexChatMessage, IRepositoryPortCodexChatSetting, IRepositoryPortCodexChatThread, IRepositoryPortProjectSummary, IRepositoryPortMemoryItem, IRepositoryPortTag, IRepositoryPortWorkspace, IRepositoryPortWorkspaceMember, IRepositoryPortProjectMember } from '@aopslab/domain-dm-agentspace/repository-ports'
 
-export interface AopsKitContext {
+export interface AgentspaceKitContext {
   tenantId: string
   locale?: string
   fallbackLocale?: string
@@ -12,7 +12,7 @@ export interface AopsKitContext {
   logger?: XfLogger
 }
 
-export interface AopsKitStaticConfig {
+export interface AgentspaceKitStaticConfig {
   logLevel?: DefaultServiceProviderOptions['logLevel']
   projectRepository: RepositoryEndpoint
   projectPathRepository: RepositoryEndpoint
@@ -44,7 +44,7 @@ export interface AopsKitStaticConfig {
   tagRepository: RepositoryEndpoint
 }
 
-export interface AopsKitServiceProviderOptions extends DefaultServiceProviderOptions {
+export interface AgentspaceKitServiceProviderOptions extends DefaultServiceProviderOptions {
   tenantId: string
   localeOptions?: { locale?: string; fallbackLocale?: string }
   logLevel?: DefaultServiceProviderOptions['logLevel']
@@ -78,7 +78,7 @@ export interface AopsKitServiceProviderOptions extends DefaultServiceProviderOpt
   tagRepositoryConfig: RepositoryConfig
 }
 
-export interface AopsKitServices {
+export interface AgentspaceKitServices {
   projectService: IProjectServicePort
   projectPathService: IProjectPathServicePort
   workspaceService: IWorkspaceServicePort
@@ -109,7 +109,7 @@ export interface AopsKitServices {
   tagService: ITagServicePort
 }
 
-export interface AopsKitRepositories {
+export interface AgentspaceKitRepositories {
   projectRepository: IRepositoryPortProject
   projectPathRepository: IRepositoryPortProjectPath
   workspaceRepository: IRepositoryPortWorkspace
@@ -140,97 +140,97 @@ export interface AopsKitRepositories {
   tagRepository: IRepositoryPortTag
 }
 
-export type AopsKitServiceKeys = Extract<keyof AopsKitServices, string>
+export type AgentspaceKitServiceKeys = Extract<keyof AgentspaceKitServices, string>
 
-export type AopsKitDomainServiceRegistryStats = RegistryStats<AopsKitServiceKeys>
+export type AgentspaceKitDomainServiceRegistryStats = RegistryStats<AgentspaceKitServiceKeys>
 
-export interface AopsKitProvider {
-  getProjectService(overrides?: Partial<AopsKitContext>): Promise<AopsKitServices['projectService']>
-  createProjectService(overrides?: Partial<AopsKitContext>): Promise<AopsKitServices['projectService']>
-  getProjectPathService(overrides?: Partial<AopsKitContext>): Promise<AopsKitServices['projectPathService']>
-  createProjectPathService(overrides?: Partial<AopsKitContext>): Promise<AopsKitServices['projectPathService']>
-  getWorkspaceService(overrides?: Partial<AopsKitContext>): Promise<AopsKitServices['workspaceService']>
-  createWorkspaceService(overrides?: Partial<AopsKitContext>): Promise<AopsKitServices['workspaceService']>
-  getWorkspaceMemberService(overrides?: Partial<AopsKitContext>): Promise<AopsKitServices['workspaceMemberService']>
-  createWorkspaceMemberService(overrides?: Partial<AopsKitContext>): Promise<AopsKitServices['workspaceMemberService']>
-  getProjectMemberService(overrides?: Partial<AopsKitContext>): Promise<AopsKitServices['projectMemberService']>
-  createProjectMemberService(overrides?: Partial<AopsKitContext>): Promise<AopsKitServices['projectMemberService']>
-  getPromptService(overrides?: Partial<AopsKitContext>): Promise<AopsKitServices['promptService']>
-  createPromptService(overrides?: Partial<AopsKitContext>): Promise<AopsKitServices['promptService']>
-  getPromptVersionService(overrides?: Partial<AopsKitContext>): Promise<AopsKitServices['promptVersionService']>
-  createPromptVersionService(overrides?: Partial<AopsKitContext>): Promise<AopsKitServices['promptVersionService']>
-  getResourceService(overrides?: Partial<AopsKitContext>): Promise<AopsKitServices['resourceService']>
-  createResourceService(overrides?: Partial<AopsKitContext>): Promise<AopsKitServices['resourceService']>
-  getSkillService(overrides?: Partial<AopsKitContext>): Promise<AopsKitServices['skillService']>
-  createSkillService(overrides?: Partial<AopsKitContext>): Promise<AopsKitServices['skillService']>
-  getSkillVersionService(overrides?: Partial<AopsKitContext>): Promise<AopsKitServices['skillVersionService']>
-  createSkillVersionService(overrides?: Partial<AopsKitContext>): Promise<AopsKitServices['skillVersionService']>
-  getSkillSetService(overrides?: Partial<AopsKitContext>): Promise<AopsKitServices['skillSetService']>
-  createSkillSetService(overrides?: Partial<AopsKitContext>): Promise<AopsKitServices['skillSetService']>
-  getSkillSetItemService(overrides?: Partial<AopsKitContext>): Promise<AopsKitServices['skillSetItemService']>
-  createSkillSetItemService(overrides?: Partial<AopsKitContext>): Promise<AopsKitServices['skillSetItemService']>
-  getKanbanBoardService(overrides?: Partial<AopsKitContext>): Promise<AopsKitServices['kanbanBoardService']>
-  createKanbanBoardService(overrides?: Partial<AopsKitContext>): Promise<AopsKitServices['kanbanBoardService']>
-  getKanbanColumnService(overrides?: Partial<AopsKitContext>): Promise<AopsKitServices['kanbanColumnService']>
-  createKanbanColumnService(overrides?: Partial<AopsKitContext>): Promise<AopsKitServices['kanbanColumnService']>
-  getSprintService(overrides?: Partial<AopsKitContext>): Promise<AopsKitServices['sprintService']>
-  createSprintService(overrides?: Partial<AopsKitContext>): Promise<AopsKitServices['sprintService']>
-  getSprintItemService(overrides?: Partial<AopsKitContext>): Promise<AopsKitServices['sprintItemService']>
-  createSprintItemService(overrides?: Partial<AopsKitContext>): Promise<AopsKitServices['sprintItemService']>
-  getTaskService(overrides?: Partial<AopsKitContext>): Promise<AopsKitServices['taskService']>
-  createTaskService(overrides?: Partial<AopsKitContext>): Promise<AopsKitServices['taskService']>
-  getTaskCommentService(overrides?: Partial<AopsKitContext>): Promise<AopsKitServices['taskCommentService']>
-  createTaskCommentService(overrides?: Partial<AopsKitContext>): Promise<AopsKitServices['taskCommentService']>
-  getAgentSessionService(overrides?: Partial<AopsKitContext>): Promise<AopsKitServices['agentSessionService']>
-  createAgentSessionService(overrides?: Partial<AopsKitContext>): Promise<AopsKitServices['agentSessionService']>
-  getAgentRunService(overrides?: Partial<AopsKitContext>): Promise<AopsKitServices['agentRunService']>
-  createAgentRunService(overrides?: Partial<AopsKitContext>): Promise<AopsKitServices['agentRunService']>
-  getArtifactService(overrides?: Partial<AopsKitContext>): Promise<AopsKitServices['artifactService']>
-  createArtifactService(overrides?: Partial<AopsKitContext>): Promise<AopsKitServices['artifactService']>
-  getArtifactLinkService(overrides?: Partial<AopsKitContext>): Promise<AopsKitServices['artifactLinkService']>
-  createArtifactLinkService(overrides?: Partial<AopsKitContext>): Promise<AopsKitServices['artifactLinkService']>
-  getCodexChatThreadService(overrides?: Partial<AopsKitContext>): Promise<AopsKitServices['codexChatThreadService']>
-  createCodexChatThreadService(overrides?: Partial<AopsKitContext>): Promise<AopsKitServices['codexChatThreadService']>
-  getCodexChatMessageService(overrides?: Partial<AopsKitContext>): Promise<AopsKitServices['codexChatMessageService']>
-  createCodexChatMessageService(overrides?: Partial<AopsKitContext>): Promise<AopsKitServices['codexChatMessageService']>
-  getCodexChatSettingService(overrides?: Partial<AopsKitContext>): Promise<AopsKitServices['codexChatSettingService']>
-  createCodexChatSettingService(overrides?: Partial<AopsKitContext>): Promise<AopsKitServices['codexChatSettingService']>
-  getProjectSummaryService(overrides?: Partial<AopsKitContext>): Promise<AopsKitServices['projectSummaryService']>
-  createProjectSummaryService(overrides?: Partial<AopsKitContext>): Promise<AopsKitServices['projectSummaryService']>
-  getMemoryItemService(overrides?: Partial<AopsKitContext>): Promise<AopsKitServices['memoryItemService']>
-  createMemoryItemService(overrides?: Partial<AopsKitContext>): Promise<AopsKitServices['memoryItemService']>
-  getTagService(overrides?: Partial<AopsKitContext>): Promise<AopsKitServices['tagService']>
-  createTagService(overrides?: Partial<AopsKitContext>): Promise<AopsKitServices['tagService']>
-  getProjectRepository(overrides?: Partial<AopsKitContext>): Promise<AopsKitRepositories['projectRepository']>
-  getProjectPathRepository(overrides?: Partial<AopsKitContext>): Promise<AopsKitRepositories['projectPathRepository']>
-  getWorkspaceRepository(overrides?: Partial<AopsKitContext>): Promise<AopsKitRepositories['workspaceRepository']>
-  getWorkspaceMemberRepository(overrides?: Partial<AopsKitContext>): Promise<AopsKitRepositories['workspaceMemberRepository']>
-  getProjectMemberRepository(overrides?: Partial<AopsKitContext>): Promise<AopsKitRepositories['projectMemberRepository']>
-  getPromptRepository(overrides?: Partial<AopsKitContext>): Promise<AopsKitRepositories['promptRepository']>
-  getPromptVersionRepository(overrides?: Partial<AopsKitContext>): Promise<AopsKitRepositories['promptVersionRepository']>
-  getResourceRepository(overrides?: Partial<AopsKitContext>): Promise<AopsKitRepositories['resourceRepository']>
-  getSkillRepository(overrides?: Partial<AopsKitContext>): Promise<AopsKitRepositories['skillRepository']>
-  getSkillVersionRepository(overrides?: Partial<AopsKitContext>): Promise<AopsKitRepositories['skillVersionRepository']>
-  getSkillSetRepository(overrides?: Partial<AopsKitContext>): Promise<AopsKitRepositories['skillSetRepository']>
-  getSkillSetItemRepository(overrides?: Partial<AopsKitContext>): Promise<AopsKitRepositories['skillSetItemRepository']>
-  getKanbanBoardRepository(overrides?: Partial<AopsKitContext>): Promise<AopsKitRepositories['kanbanBoardRepository']>
-  getKanbanColumnRepository(overrides?: Partial<AopsKitContext>): Promise<AopsKitRepositories['kanbanColumnRepository']>
-  getSprintRepository(overrides?: Partial<AopsKitContext>): Promise<AopsKitRepositories['sprintRepository']>
-  getSprintItemRepository(overrides?: Partial<AopsKitContext>): Promise<AopsKitRepositories['sprintItemRepository']>
-  getTaskRepository(overrides?: Partial<AopsKitContext>): Promise<AopsKitRepositories['taskRepository']>
-  getTaskCommentRepository(overrides?: Partial<AopsKitContext>): Promise<AopsKitRepositories['taskCommentRepository']>
-  getAgentSessionRepository(overrides?: Partial<AopsKitContext>): Promise<AopsKitRepositories['agentSessionRepository']>
-  getAgentRunRepository(overrides?: Partial<AopsKitContext>): Promise<AopsKitRepositories['agentRunRepository']>
-  getArtifactRepository(overrides?: Partial<AopsKitContext>): Promise<AopsKitRepositories['artifactRepository']>
-  getArtifactLinkRepository(overrides?: Partial<AopsKitContext>): Promise<AopsKitRepositories['artifactLinkRepository']>
-  getCodexChatThreadRepository(overrides?: Partial<AopsKitContext>): Promise<AopsKitRepositories['codexChatThreadRepository']>
-  getCodexChatMessageRepository(overrides?: Partial<AopsKitContext>): Promise<AopsKitRepositories['codexChatMessageRepository']>
-  getCodexChatSettingRepository(overrides?: Partial<AopsKitContext>): Promise<AopsKitRepositories['codexChatSettingRepository']>
-  getProjectSummaryRepository(overrides?: Partial<AopsKitContext>): Promise<AopsKitRepositories['projectSummaryRepository']>
-  getMemoryItemRepository(overrides?: Partial<AopsKitContext>): Promise<AopsKitRepositories['memoryItemRepository']>
-  getTagRepository(overrides?: Partial<AopsKitContext>): Promise<AopsKitRepositories['tagRepository']>
-  getAll(overrides?: Partial<AopsKitContext>): Promise<AopsKitServices>
-  createAll(overrides?: Partial<AopsKitContext>): Promise<AopsKitServices>
+export interface AgentspaceKitProvider {
+  getProjectService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['projectService']>
+  createProjectService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['projectService']>
+  getProjectPathService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['projectPathService']>
+  createProjectPathService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['projectPathService']>
+  getWorkspaceService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['workspaceService']>
+  createWorkspaceService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['workspaceService']>
+  getWorkspaceMemberService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['workspaceMemberService']>
+  createWorkspaceMemberService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['workspaceMemberService']>
+  getProjectMemberService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['projectMemberService']>
+  createProjectMemberService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['projectMemberService']>
+  getPromptService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['promptService']>
+  createPromptService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['promptService']>
+  getPromptVersionService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['promptVersionService']>
+  createPromptVersionService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['promptVersionService']>
+  getResourceService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['resourceService']>
+  createResourceService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['resourceService']>
+  getSkillService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['skillService']>
+  createSkillService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['skillService']>
+  getSkillVersionService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['skillVersionService']>
+  createSkillVersionService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['skillVersionService']>
+  getSkillSetService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['skillSetService']>
+  createSkillSetService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['skillSetService']>
+  getSkillSetItemService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['skillSetItemService']>
+  createSkillSetItemService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['skillSetItemService']>
+  getKanbanBoardService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['kanbanBoardService']>
+  createKanbanBoardService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['kanbanBoardService']>
+  getKanbanColumnService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['kanbanColumnService']>
+  createKanbanColumnService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['kanbanColumnService']>
+  getSprintService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['sprintService']>
+  createSprintService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['sprintService']>
+  getSprintItemService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['sprintItemService']>
+  createSprintItemService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['sprintItemService']>
+  getTaskService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['taskService']>
+  createTaskService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['taskService']>
+  getTaskCommentService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['taskCommentService']>
+  createTaskCommentService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['taskCommentService']>
+  getAgentSessionService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['agentSessionService']>
+  createAgentSessionService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['agentSessionService']>
+  getAgentRunService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['agentRunService']>
+  createAgentRunService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['agentRunService']>
+  getArtifactService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['artifactService']>
+  createArtifactService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['artifactService']>
+  getArtifactLinkService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['artifactLinkService']>
+  createArtifactLinkService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['artifactLinkService']>
+  getCodexChatThreadService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['codexChatThreadService']>
+  createCodexChatThreadService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['codexChatThreadService']>
+  getCodexChatMessageService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['codexChatMessageService']>
+  createCodexChatMessageService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['codexChatMessageService']>
+  getCodexChatSettingService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['codexChatSettingService']>
+  createCodexChatSettingService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['codexChatSettingService']>
+  getProjectSummaryService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['projectSummaryService']>
+  createProjectSummaryService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['projectSummaryService']>
+  getMemoryItemService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['memoryItemService']>
+  createMemoryItemService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['memoryItemService']>
+  getTagService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['tagService']>
+  createTagService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['tagService']>
+  getProjectRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['projectRepository']>
+  getProjectPathRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['projectPathRepository']>
+  getWorkspaceRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['workspaceRepository']>
+  getWorkspaceMemberRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['workspaceMemberRepository']>
+  getProjectMemberRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['projectMemberRepository']>
+  getPromptRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['promptRepository']>
+  getPromptVersionRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['promptVersionRepository']>
+  getResourceRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['resourceRepository']>
+  getSkillRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['skillRepository']>
+  getSkillVersionRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['skillVersionRepository']>
+  getSkillSetRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['skillSetRepository']>
+  getSkillSetItemRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['skillSetItemRepository']>
+  getKanbanBoardRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['kanbanBoardRepository']>
+  getKanbanColumnRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['kanbanColumnRepository']>
+  getSprintRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['sprintRepository']>
+  getSprintItemRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['sprintItemRepository']>
+  getTaskRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['taskRepository']>
+  getTaskCommentRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['taskCommentRepository']>
+  getAgentSessionRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['agentSessionRepository']>
+  getAgentRunRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['agentRunRepository']>
+  getArtifactRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['artifactRepository']>
+  getArtifactLinkRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['artifactLinkRepository']>
+  getCodexChatThreadRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['codexChatThreadRepository']>
+  getCodexChatMessageRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['codexChatMessageRepository']>
+  getCodexChatSettingRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['codexChatSettingRepository']>
+  getProjectSummaryRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['projectSummaryRepository']>
+  getMemoryItemRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['memoryItemRepository']>
+  getTagRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['tagRepository']>
+  getAll(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices>
+  createAll(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices>
   clearServiceCache(cacheKey?: string): void
   clearProjectServiceCache(cacheKey?: string): void
   clearProjectPathServiceCache(cacheKey?: string): void
@@ -261,25 +261,25 @@ export interface AopsKitProvider {
   clearMemoryItemServiceCache(cacheKey?: string): void
   clearTagServiceCache(cacheKey?: string): void
   reset(options?: { services?: boolean; repositories?: boolean }): void
-  getRegistryStats(): AopsKitDomainServiceRegistryStats
-  resolveLogger(overrides?: Partial<AopsKitContext>): Promise<XfLogger | undefined>
+  getRegistryStats(): AgentspaceKitDomainServiceRegistryStats
+  resolveLogger(overrides?: Partial<AgentspaceKitContext>): Promise<XfLogger | undefined>
 }
 
-export interface AopsKitProviderOptions {
+export interface AgentspaceKitProviderOptions {
   name?: string
-  getContext: (overrides?: Partial<AopsKitContext>) => Promise<AopsKitContext> | AopsKitContext
-  staticConfig: AopsKitStaticConfig
-  resolveLogger?: (context: AopsKitContext) => XfLogger | undefined
-  getCacheKey?: (context: AopsKitContext) => string | null
-  cache?: Partial<Record<keyof AopsKitServices, ServiceCacheOptions>> & ServiceCacheOptions
+  getContext: (overrides?: Partial<AgentspaceKitContext>) => Promise<AgentspaceKitContext> | AgentspaceKitContext
+  staticConfig: AgentspaceKitStaticConfig
+  resolveLogger?: (context: AgentspaceKitContext) => XfLogger | undefined
+  getCacheKey?: (context: AgentspaceKitContext) => string | null
+  cache?: Partial<Record<keyof AgentspaceKitServices, ServiceCacheOptions>> & ServiceCacheOptions
   metrics?: MetricsCollector
   resilience?: {
     services?: { retry?: RetryOptions; timeoutMs?: number; breaker?: CircuitBreaker }
     repositories?: { retry?: RetryOptions; timeoutMs?: number; breaker?: CircuitBreaker }
   }
   transformService?: (
-    name: keyof AopsKitServices,
-    instance: AopsKitServices[keyof AopsKitServices]
-  ) => AopsKitServices[keyof AopsKitServices]
+    name: keyof AgentspaceKitServices,
+    instance: AgentspaceKitServices[keyof AgentspaceKitServices]
+  ) => AgentspaceKitServices[keyof AgentspaceKitServices]
   hooks?: Record<string, unknown>
 }

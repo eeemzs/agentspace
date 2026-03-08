@@ -7,20 +7,20 @@ export const EnvSchema = z.object({
   AOPS_PG_URL: z.string().url().optional(),
 })
 
-export type AopsKitEnvConfig = {
+export type AgentspaceKitEnvConfig = {
   tenantId: string
   logLevel: string
   repoUrl: string
 }
 
-export type AopsKitEnvEntry = {
+export type AgentspaceKitEnvEntry = {
   label: string
-  config: AopsKitEnvConfig
+  config: AgentspaceKitEnvConfig
 }
 
-const AOPS_ENV_KEYS = ['envDefault'] as const
-export type AopsKitEnvKey = (typeof AOPS_ENV_KEYS)[number]
-export const DEFAULT_AOPS_ENV_KEY: AopsKitEnvKey = 'envDefault'
+const AGENTSPACE_ENV_KEYS = ['envDefault'] as const
+export type AgentspaceKitEnvKey = (typeof AGENTSPACE_ENV_KEYS)[number]
+export const DEFAULT_AGENTSPACE_ENV_KEY: AgentspaceKitEnvKey = 'envDefault'
 
 function resolveRepoUrl(params: { explicit?: string; fallback?: string; label: string }): string {
   const value = params.explicit ?? params.fallback
@@ -30,7 +30,7 @@ function resolveRepoUrl(params: { explicit?: string; fallback?: string; label: s
   return value
 }
 
-function buildEnvConfigurations(): Record<AopsKitEnvKey, AopsKitEnvEntry> {
+function buildEnvConfigurations(): Record<AgentspaceKitEnvKey, AgentspaceKitEnvEntry> {
   const parsed = EnvSchema.safeParse(process.env)
   const e = parsed.success ? parsed.data : ({} as z.infer<typeof EnvSchema>)
 
@@ -50,54 +50,54 @@ function buildEnvConfigurations(): Record<AopsKitEnvKey, AopsKitEnvEntry> {
   }
 }
 
-let cachedEnvConfigurations: Record<AopsKitEnvKey, AopsKitEnvEntry> | null = null
+let cachedEnvConfigurations: Record<AgentspaceKitEnvKey, AgentspaceKitEnvEntry> | null = null
 
-function getEnvConfigurations(): Record<AopsKitEnvKey, AopsKitEnvEntry> {
+function getEnvConfigurations(): Record<AgentspaceKitEnvKey, AgentspaceKitEnvEntry> {
   if (!cachedEnvConfigurations) {
     cachedEnvConfigurations = buildEnvConfigurations()
   }
   return cachedEnvConfigurations
 }
 
-function getAopsKitEnvMatrixInternal(): Array<{ key: AopsKitEnvKey } & AopsKitEnvEntry> {
+function getAgentspaceKitEnvMatrixInternal(): Array<{ key: AgentspaceKitEnvKey } & AgentspaceKitEnvEntry> {
   const envConfigurations = getEnvConfigurations()
-  return (Object.entries(envConfigurations) as Array<[AopsKitEnvKey, AopsKitEnvEntry]>).map(([key, entry]) => ({
+  return (Object.entries(envConfigurations) as Array<[AgentspaceKitEnvKey, AgentspaceKitEnvEntry]>).map(([key, entry]) => ({
     key,
     ...entry,
   }))
 }
 
-function createEnvProxy(): AopsKitEnvConfig {
-  return new Proxy({} as AopsKitEnvConfig, {
+function createEnvProxy(): AgentspaceKitEnvConfig {
+  return new Proxy({} as AgentspaceKitEnvConfig, {
     get(_target, prop) {
       if (typeof prop !== 'string') return undefined
-      const cfg = getAopsKitEnvConfig()
+      const cfg = getAgentspaceKitEnvConfig()
       if (!(prop in cfg)) return undefined
-      return cfg[prop as keyof AopsKitEnvConfig]
+      return cfg[prop as keyof AgentspaceKitEnvConfig]
     },
     ownKeys() {
-      return Reflect.ownKeys(getAopsKitEnvConfig())
+      return Reflect.ownKeys(getAgentspaceKitEnvConfig())
     },
     getOwnPropertyDescriptor(_target, prop) {
-      const cfg = getAopsKitEnvConfig()
+      const cfg = getAgentspaceKitEnvConfig()
       if (typeof prop === 'string' && prop in cfg) {
-        return { enumerable: true, configurable: true, value: cfg[prop as keyof AopsKitEnvConfig] }
+        return { enumerable: true, configurable: true, value: cfg[prop as keyof AgentspaceKitEnvConfig] }
       }
       return undefined
     },
   })
 }
 
-function createEnvMatrixProxy(): Array<{ key: AopsKitEnvKey } & AopsKitEnvEntry> {
-  return new Proxy([] as Array<{ key: AopsKitEnvKey } & AopsKitEnvEntry>, {
+function createEnvMatrixProxy(): Array<{ key: AgentspaceKitEnvKey } & AgentspaceKitEnvEntry> {
+  return new Proxy([] as Array<{ key: AgentspaceKitEnvKey } & AgentspaceKitEnvEntry>, {
     get(_target, prop) {
-      return Reflect.get(getAopsKitEnvMatrixInternal(), prop)
+      return Reflect.get(getAgentspaceKitEnvMatrixInternal(), prop)
     },
     ownKeys() {
-      return Reflect.ownKeys(getAopsKitEnvMatrixInternal())
+      return Reflect.ownKeys(getAgentspaceKitEnvMatrixInternal())
     },
     getOwnPropertyDescriptor(_target, prop) {
-      const matrix = getAopsKitEnvMatrixInternal()
+      const matrix = getAgentspaceKitEnvMatrixInternal()
       const value = Reflect.get(matrix, prop)
       if (value === undefined) return undefined
       return { enumerable: true, configurable: true, value }
@@ -105,10 +105,10 @@ function createEnvMatrixProxy(): Array<{ key: AopsKitEnvKey } & AopsKitEnvEntry>
   })
 }
 
-export const env: AopsKitEnvConfig = createEnvProxy()
+export const env: AgentspaceKitEnvConfig = createEnvProxy()
 
-export const aopsEnvMatrix: Array<{ key: AopsKitEnvKey } & AopsKitEnvEntry> = createEnvMatrixProxy()
+export const agentspaceEnvMatrix: Array<{ key: AgentspaceKitEnvKey } & AgentspaceKitEnvEntry> = createEnvMatrixProxy()
 
-export function getAopsKitEnvConfig(key: AopsKitEnvKey = DEFAULT_AOPS_ENV_KEY): AopsKitEnvConfig {
+export function getAgentspaceKitEnvConfig(key: AgentspaceKitEnvKey = DEFAULT_AGENTSPACE_ENV_KEY): AgentspaceKitEnvConfig {
   return getEnvConfigurations()[key].config
 }

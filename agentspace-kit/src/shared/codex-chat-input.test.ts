@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
 import {
-  normalizeAopsOperationInputForCompatibility,
-  normalizeAopsToolInputForCompatibility,
+  normalizeAgentspaceOperationInputForCompatibility,
+  normalizeAgentspaceToolInputForCompatibility,
   normalizeCodexChatMessageCreateInput,
 } from './codex-chat-input.js'
 
@@ -38,7 +38,7 @@ describe('codex-chat input compatibility helper', () => {
   })
 
   it('maps legacy top-level list-messages fields into filter/options', () => {
-    const normalized = normalizeAopsOperationInputForCompatibility('codex-chat-message.list-messages', {
+    const normalized = normalizeAgentspaceOperationInputForCompatibility('codex-chat-message.list-messages', {
       workspaceId: 'workspace-1',
       externalThreadId: 'thread-ext-1',
       role: 'user',
@@ -60,7 +60,7 @@ describe('codex-chat input compatibility helper', () => {
   })
 
   it('maps top-level list-threads fields into filter/options for agentspace tool ids', () => {
-    const normalized = normalizeAopsToolInputForCompatibility('agentspace.codex-chat-thread.list-threads', {
+    const normalized = normalizeAgentspaceToolInputForCompatibility('agentspace.codex-chat-thread.list-threads', {
       workspaceId: 'workspace-1',
       externalThreadId: 'thread-ext-2',
       limit: 25,

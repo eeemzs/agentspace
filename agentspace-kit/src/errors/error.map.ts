@@ -15,19 +15,19 @@ export type TranslateOptions = {
   overrideResourceWith?: BmResourceInline<never, ILabelsAopsServerErrorsTags>
 }
 
-type AopsErrorTagKey = KeysOf<ILabelsAopsServerErrorsTags>
+type AgentspaceErrorTagKey = KeysOf<ILabelsAopsServerErrorsTags>
 
-const FALLBACK_KEY: AopsErrorTagKey = 'error__unexpected'
+const FALLBACK_KEY: AgentspaceErrorTagKey = 'error__unexpected'
 
-function resolvePrimaryKey(friendly: XfFriendlyError): AopsErrorTagKey {
+function resolvePrimaryKey(friendly: XfFriendlyError): AgentspaceErrorTagKey {
   const first = friendly.messages[0]?.key
   if (!first) return FALLBACK_KEY
   const tags = aopsErrorsResources.tags ?? {}
-  if (first in tags) return first as AopsErrorTagKey
+  if (first in tags) return first as AgentspaceErrorTagKey
   return FALLBACK_KEY
 }
 
-function translateKey(key: AopsErrorTagKey, translateOpts?: TranslateOptions): string {
+function translateKey(key: AgentspaceErrorTagKey, translateOpts?: TranslateOptions): string {
   const locale = translateOpts?.locale ?? 'en'
   const defaultLocale = translateOpts?.defaultLocale ?? 'en'
   const i18nBm = new I18nBm<never, ILabelsAopsServerErrorsTags>({
@@ -59,7 +59,7 @@ export function mapErrorToFriendlyText(
   translateOpts?: TranslateOptions
 ): {
   translatedMessageText: string
-  translationKey: AopsErrorTagKey
+  translationKey: AgentspaceErrorTagKey
   errorCode?: string
   domainTag?: string
   friendly: XfFriendlyError

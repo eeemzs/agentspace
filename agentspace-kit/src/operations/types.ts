@@ -1,32 +1,32 @@
-export type AopsOperationKind = 'list' | 'get' | 'create' | 'update' | 'delete' | 'custom'
-export type AopsOperationEffect = 'none' | 'db' | 'mixed'
-export type AopsOperationSchemaRef = { $ref: string }
-export type AopsOperationSchema = AopsOperationSchemaRef | Record<string, unknown>
+export type AgentspaceOperationKind = 'list' | 'get' | 'create' | 'update' | 'delete' | 'custom'
+export type AgentspaceOperationEffect = 'none' | 'db' | 'mixed'
+export type AgentspaceOperationSchemaRef = { $ref: string }
+export type AgentspaceOperationSchema = AgentspaceOperationSchemaRef | Record<string, unknown>
 
-export type AopsOperationArgument = {
+export type AgentspaceOperationArgument = {
   name: string
   optional: boolean
 }
 
-export type AopsOperationPolicy = Record<string, unknown>
+export type AgentspaceOperationPolicy = Record<string, unknown>
 
-export type AopsOperationSpec = {
+export type AgentspaceOperationSpec = {
   operationId: string
   toolId: string
   serviceKey: string
   serviceEntity: string
   methodName: string
-  kind: AopsOperationKind
-  args: AopsOperationArgument[]
+  kind: AgentspaceOperationKind
+  args: AgentspaceOperationArgument[]
   summary?: string
   tags?: string[]
-  sideEffect?: AopsOperationEffect
-  inputSchema?: AopsOperationSchema
-  outputSchema?: AopsOperationSchema
-  policy?: AopsOperationPolicy
+  sideEffect?: AgentspaceOperationEffect
+  inputSchema?: AgentspaceOperationSchema
+  outputSchema?: AgentspaceOperationSchema
+  policy?: AgentspaceOperationPolicy
   examples?: string[]
 }
 
-export type DefineAopsKitOperationInput = Omit<AopsOperationSpec, 'toolId'> & {
+export type DefineAgentspaceKitOperationInput = Omit<AgentspaceOperationSpec, 'toolId'> & {
   toolId?: string
 }

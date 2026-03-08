@@ -4,27 +4,27 @@ import path from 'node:path'
 import { Effect } from 'effect'
 import { config as loadDotEnv } from 'dotenv'
 
-import { createAopsKitWithEnv } from '../domain-services/unified.js'
-import type { AopsKitServices } from '../domain-services/types.js'
-import { getAopsKitEnvConfig } from '../config/config.js'
-import { hardDeleteAopsProjectCascade } from '../calls/project-delete.js'
+import { createAgentspaceKitWithEnv } from '../domain-services/unified.js'
+import type { AgentspaceKitServices } from '../domain-services/types.js'
+import { getAgentspaceKitEnvConfig } from '../config/config.js'
+import { hardDeleteAgentspaceProjectCascade } from '../calls/project-delete.js'
 import {
   normalizeNonEmpty,
   resolveWorkspaceAliasValue,
   toMissingRequiredArgToken,
   toRecord,
 } from '../shared/tool-input.js'
-import { normalizeAopsOperationInputForCompatibility } from '../shared/codex-chat-input.js'
-import type { AopsOperationContract } from './contract.js'
-import { getAopsOperationContractById, getAopsOperationContractByToolId } from './contract.js'
-import type { AopsOperationInput, AopsOperationOutput, AopsTypedOperationId } from './io-types.js'
+import { normalizeAgentspaceOperationInputForCompatibility } from '../shared/codex-chat-input.js'
+import type { AgentspaceOperationContract } from './contract.js'
+import { getAgentspaceOperationContractById, getAgentspaceOperationContractByToolId } from './contract.js'
+import type { AgentspaceOperationInput, AgentspaceOperationOutput, AgentspaceTypedOperationId } from './io-types.js'
 
 type ToolInput = Record<string, unknown>
-type AopsKitInstance = ReturnType<typeof createAopsKitWithEnv>['kit']
+type AgentspaceKitInstance = ReturnType<typeof createAgentspaceKitWithEnv>['kit']
 
 let envLoaded = false
-let cachedServices: Promise<AopsKitServices> | null = null
-let cachedKit: Promise<AopsKitInstance> | null = null
+let cachedServices: Promise<AgentspaceKitServices> | null = null
+let cachedKit: Promise<AgentspaceKitInstance> | null = null
 
 function resolveWorkspaceIdFromHostContext(payload: ToolInput): string | undefined {
   const hostContext = toRecord(payload.__hostContext)
@@ -179,12 +179,12 @@ function loadEnvOnce(): void {
   }
 }
 
-async function getKit(): Promise<AopsKitInstance> {
+async function getKit(): Promise<AgentspaceKitInstance> {
   if (cachedKit) return cachedKit
   cachedKit = (async () => {
     loadEnvOnce()
-    const envConfig = getAopsKitEnvConfig()
-    const { kit } = createAopsKitWithEnv({
+    const envConfig = getAgentspaceKitEnvConfig()
+    const { kit } = createAgentspaceKitWithEnv({
       envConfig,
       baseContext: { tenantId: envConfig.tenantId },
     })
@@ -193,7 +193,7 @@ async function getKit(): Promise<AopsKitInstance> {
   return cachedKit
 }
 
-async function getServices(): Promise<AopsKitServices> {
+async function getServices(): Promise<AgentspaceKitServices> {
   if (cachedServices) return cachedServices
   cachedServices = (async () => {
     const kit = await getKit()
@@ -202,21 +202,21 @@ async function getServices(): Promise<AopsKitServices> {
   return cachedServices
 }
 
-function resolveOperationByToolId(toolId: string): AopsOperationContract {
-  const operation = getAopsOperationContractByToolId(toolId)
+function resolveOperationByToolId(toolId: string): AgentspaceOperationContract {
+  const operation = getAgentspaceOperationContractByToolId(toolId)
   if (operation) return operation
-  throw new Error(`unknown_aops_tool:${toolId}`)
+  throw new Error(`unknown_agentspace_tool:${toolId}`)
 }
 
-function resolveOperationById(operationId: string): AopsOperationContract {
-  const operation = getAopsOperationContractById(operationId)
+function resolveOperationById(operationId: string): AgentspaceOperationContract {
+  const operation = getAgentspaceOperationContractById(operationId)
   if (operation) return operation
-  throw new Error(`unknown_aops_operation:${operationId}`)
+  throw new Error(`unknown_agentspace_operation:${operationId}`)
 }
 
-async function runSpecialOperation(operation: AopsOperationContract, payload: ToolInput): Promise<unknown> {
-  if (operation.methodName !== 'hardDeleteAopsProjectCascade') {
-    throw new Error(`unknown_aops_special_operation:${operation.operationId}`)
+async function runSpecialOperation(operation: AgentspaceOperationContract, payload: ToolInput): Promise<unknown> {
+  if (operation.methodName !== 'hardDeleteAgentspaceProjectCascade') {
+    throw new Error(`unknown_agentspace_special_operation:${operation.operationId}`)
   }
 
   const workspaceId = resolveWorkspaceIdValue(payload)
@@ -225,12 +225,12 @@ async function runSpecialOperation(operation: AopsOperationContract, payload: To
   if (!projectId) throw new Error(toMissingRequiredArgToken('projectId'))
 
   const kit = await getKit()
-  return hardDeleteAopsProjectCascade({ kit, workspaceId, projectId })
+  return hardDeleteAgentspaceProjectCascade({ kit, workspaceId, projectId })
 }
 
-async function runResolvedOperation(operation: AopsOperationContract, input: unknown): Promise<unknown> {
-  const payload = normalizeAopsOperationInputForCompatibility(
-    operation.operationId as AopsTypedOperationId,
+async function runResolvedOperation(operation: AgentspaceOperationContract, input: unknown): Promise<unknown> {
+  const payload = normalizeAgentspaceOperationInputForCompatibility(
+    operation.operationId as AgentspaceTypedOperationId,
     toRecord(input),
   )
 
@@ -239,14 +239,14 @@ async function runResolvedOperation(operation: AopsOperationContract, input: unk
   }
 
   const services = await getServices()
-  const service = services[operation.serviceKey as keyof AopsKitServices]
+  const service = services[operation.serviceKey as keyof AgentspaceKitServices]
   if (!service || typeof service !== 'object') {
-    throw new Error(`missing_aops_service:${operation.serviceKey}`)
+    throw new Error(`missing_agentspace_service:${operation.serviceKey}`)
   }
 
   const method = Reflect.get(service, operation.methodName)
   if (typeof method !== 'function') {
-    throw new Error(`missing_aops_service_method:${operation.serviceKey}.${operation.methodName}`)
+    throw new Error(`missing_agentspace_service_method:${operation.serviceKey}.${operation.methodName}`)
   }
 
   const args: unknown[] = []
@@ -266,39 +266,39 @@ async function runResolvedOperation(operation: AopsOperationContract, input: unk
   return Effect.runPromise(effect as Effect.Effect<unknown, unknown>)
 }
 
-export async function runAopsKitOperationByToolId(toolId: string, input: unknown): Promise<unknown> {
+export async function runAgentspaceKitOperationByToolId(toolId: string, input: unknown): Promise<unknown> {
   const operation = resolveOperationByToolId(toolId)
   return runResolvedOperation(operation, input)
 }
 
-export async function runAopsKitOperationById<TId extends AopsTypedOperationId>(
+export async function runAgentspaceKitOperationById<TId extends AgentspaceTypedOperationId>(
   operationId: TId,
-  input: AopsOperationInput<TId>,
-): Promise<AopsOperationOutput<TId>>
-export async function runAopsKitOperationById(operationId: string, input: unknown): Promise<unknown>
-export async function runAopsKitOperationById(operationId: string, input: unknown): Promise<unknown> {
+  input: AgentspaceOperationInput<TId>,
+): Promise<AgentspaceOperationOutput<TId>>
+export async function runAgentspaceKitOperationById(operationId: string, input: unknown): Promise<unknown>
+export async function runAgentspaceKitOperationById(operationId: string, input: unknown): Promise<unknown> {
   const operation = resolveOperationById(operationId)
   return runResolvedOperation(operation, input)
 }
 
-export async function runAopsKitOperationByTypedId<TId extends AopsTypedOperationId>(
+export async function runAgentspaceKitOperationByTypedId<TId extends AgentspaceTypedOperationId>(
   operationId: TId,
-  input: AopsOperationInput<TId>,
-): Promise<AopsOperationOutput<TId>> {
-  return runAopsKitOperationById(operationId, input)
+  input: AgentspaceOperationInput<TId>,
+): Promise<AgentspaceOperationOutput<TId>> {
+  return runAgentspaceKitOperationById(operationId, input)
 }
 
-export async function runAopsKitOperation(
+export async function runAgentspaceKitOperation(
   input: unknown,
   identifier: { toolId: string } | { operationId: string },
 ): Promise<unknown> {
   if ('toolId' in identifier) {
-    return runAopsKitOperationByToolId(identifier.toolId, input)
+    return runAgentspaceKitOperationByToolId(identifier.toolId, input)
   }
-  return runAopsKitOperationById(identifier.operationId, input)
+  return runAgentspaceKitOperationById(identifier.operationId, input)
 }
 
-export function clearAopsKitOperationCaches(): void {
+export function clearAgentspaceKitOperationCaches(): void {
   cachedServices = null
   cachedKit = null
 }

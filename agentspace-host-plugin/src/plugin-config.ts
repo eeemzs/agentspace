@@ -1,30 +1,30 @@
 import type {
-  AopsOperationInput,
-  AopsOperationOutput,
-  AopsTypedOperationId,
+  AgentspaceOperationInput,
+  AgentspaceOperationOutput,
+  AgentspaceTypedOperationId,
 } from '@aopslab/domain-kit-agentspace'
 import { normalizeNonEmpty, toRecord } from '@aopslab/domain-kit-agentspace/shared'
 
 import type { HostPluginTimeoutOptions } from './lifecycle-guards.js'
 
-export type AgentspaceRunner = <TId extends AopsTypedOperationId>(
+export type AgentspaceRunner = <TId extends AgentspaceTypedOperationId>(
   operationId: TId,
-  input: AopsOperationInput<TId>,
-) => Promise<AopsOperationOutput<TId>>
+  input: AgentspaceOperationInput<TId>,
+) => Promise<AgentspaceOperationOutput<TId>>
 
 export type AgentspacePluginOptions = {
   runner?: AgentspaceRunner
   defaultTenantId?: string
   refreshProjectionOnCreate?: boolean
   requiredRuntimeEnv?: string[]
-} & HostPluginTimeoutOptions<AopsTypedOperationId>
+} & HostPluginTimeoutOptions<AgentspaceTypedOperationId>
 
 export type AgentspaceResolvedPluginOptions = {
   runner?: AgentspaceRunner
   defaultTenantId?: string
   refreshProjectionOnCreate: boolean
   requiredRuntimeEnv: string[]
-} & HostPluginTimeoutOptions<AopsTypedOperationId>
+} & HostPluginTimeoutOptions<AgentspaceTypedOperationId>
 
 const DEFAULT_REQUIRED_RUNTIME_ENV = ['AOPS_PG_URL']
 
@@ -52,7 +52,7 @@ function normalizeRuntimeEnvList(value: unknown): string[] {
 
 function normalizeOperationTimeoutByOperationId(
   value: unknown,
-): Partial<Record<AopsTypedOperationId, number>> | undefined {
+): Partial<Record<AgentspaceTypedOperationId, number>> | undefined {
   if (value === undefined) return undefined
   const record = toRecord(value)
   if (Object.keys(record).length === 0 && value && typeof value === 'object' && !Array.isArray(value)) {
@@ -61,7 +61,7 @@ function normalizeOperationTimeoutByOperationId(
   if (Object.keys(record).length === 0) {
     throw toConfigError('operationTimeoutByOperationId', 'must_be_record')
   }
-  const normalized: Partial<Record<AopsTypedOperationId, number>> = {}
+  const normalized: Partial<Record<AgentspaceTypedOperationId, number>> = {}
   for (const [operationIdRaw, timeoutRaw] of Object.entries(record)) {
     const operationId = normalizeNonEmpty(operationIdRaw)
     if (!operationId) {
@@ -71,7 +71,7 @@ function normalizeOperationTimeoutByOperationId(
     if (timeout === null) {
       throw toConfigError(`operationTimeoutByOperationId.${operationId}`, 'must_be_positive_number')
     }
-    normalized[operationId as AopsTypedOperationId] = timeout
+    normalized[operationId as AgentspaceTypedOperationId] = timeout
   }
   return normalized
 }

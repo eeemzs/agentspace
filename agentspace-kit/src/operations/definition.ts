@@ -1,7 +1,7 @@
 import type {
-  DefineAopsKitOperationInput,
-  AopsOperationArgument,
-  AopsOperationSpec,
+  DefineAgentspaceKitOperationInput,
+  AgentspaceOperationArgument,
+  AgentspaceOperationSpec,
 } from './types.js'
 
 const TOOL_PREFIX = 'agentspace.'
@@ -22,7 +22,7 @@ function normalizeTags(tags: string[] | undefined): string[] | undefined {
   return [...unique]
 }
 
-function cloneArgs(args: AopsOperationArgument[] | undefined): AopsOperationArgument[] {
+function cloneArgs(args: AgentspaceOperationArgument[] | undefined): AgentspaceOperationArgument[] {
   if (!args || args.length === 0) return []
   return args.map((arg) => ({
     name: String(arg.name ?? '').trim(),
@@ -37,7 +37,7 @@ function normalizeExamples(examples: string[] | undefined): string[] | undefined
   return normalized
 }
 
-export function normalizeAopsOperationId(value: string): string {
+export function normalizeAgentspaceOperationId(value: string): string {
   return value
     .trim()
     .replace(/\s+/g, '-')
@@ -49,11 +49,11 @@ export function normalizeAopsOperationId(value: string): string {
     .toLowerCase()
 }
 
-export function buildAopsToolIdFromOperation(operationId: string): string {
-  return `${TOOL_PREFIX}${normalizeAopsOperationId(operationId)}`
+export function buildAgentspaceToolIdFromOperation(operationId: string): string {
+  return `${TOOL_PREFIX}${normalizeAgentspaceOperationId(operationId)}`
 }
 
-function normalizeAopsToolId(toolId: string): string {
+function normalizeAgentspaceToolId(toolId: string): string {
   const normalized = String(toolId ?? '').trim().toLowerCase()
   if (!normalized) return normalized
   return normalized
@@ -65,8 +65,8 @@ function normalizeAopsToolId(toolId: string): string {
     .replace(/[.-]+$/, '')
 }
 
-export function defineAopsKitOperation(input: DefineAopsKitOperationInput): AopsOperationSpec {
-  const operationId = normalizeAopsOperationId(input.operationId)
+export function defineAgentspaceKitOperation(input: DefineAgentspaceKitOperationInput): AgentspaceOperationSpec {
+  const operationId = normalizeAgentspaceOperationId(input.operationId)
   if (!operationId) throw new Error('invalid_aops_operation_id')
 
   const serviceKey = normalizeNonEmpty(input.serviceKey)
@@ -78,8 +78,8 @@ export function defineAopsKitOperation(input: DefineAopsKitOperationInput): Aops
   const methodName = normalizeNonEmpty(input.methodName)
   if (!methodName) throw new Error(`invalid_aops_operation_method_name:${operationId}`)
 
-  const toolIdSource = input.toolId ?? buildAopsToolIdFromOperation(operationId)
-  const toolId = normalizeAopsToolId(toolIdSource)
+  const toolIdSource = input.toolId ?? buildAgentspaceToolIdFromOperation(operationId)
+  const toolId = normalizeAgentspaceToolId(toolIdSource)
   if (!toolId) throw new Error(`invalid_aops_operation_tool_id:${operationId}`)
 
   const summary = normalizeNonEmpty(input.summary ?? '')
@@ -104,11 +104,11 @@ export function defineAopsKitOperation(input: DefineAopsKitOperationInput): Aops
   }
 }
 
-export function defineAopsKitOperations(input: DefineAopsKitOperationInput[]): AopsOperationSpec[] {
-  return input.map(defineAopsKitOperation)
+export function defineAgentspaceKitOperations(input: DefineAgentspaceKitOperationInput[]): AgentspaceOperationSpec[] {
+  return input.map(defineAgentspaceKitOperation)
 }
 
-export function cloneAopsOperationSpec(spec: AopsOperationSpec): AopsOperationSpec {
+export function cloneAgentspaceOperationSpec(spec: AgentspaceOperationSpec): AgentspaceOperationSpec {
   return {
     ...spec,
     args: cloneArgs(spec.args),

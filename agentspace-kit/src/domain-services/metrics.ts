@@ -1,9 +1,9 @@
-import type { AopsKitServices } from './types.js';
+import type { AgentspaceKitServices } from './types.js';
 
 /**
  * Metrics placeholder. İsterseniz Prometheus benzeri çıktı üretmek için genişletin.
  */
-export function renderAopsKitMetrics(_services: Partial<AopsKitServices>): string {
+export function renderAgentspaceKitMetrics(_services: Partial<AgentspaceKitServices>): string {
   //==> custom metrics renderer <==//
-  return '# AopsKit metrics not implemented';
+  return '# AgentspaceKit metrics not implemented';
 }

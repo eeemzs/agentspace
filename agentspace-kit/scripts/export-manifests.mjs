@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url'
 import {
   buildAgentspaceDomainCapabilityManifest,
   buildAgentspaceHostRouteProjection,
-  listAopsOperationContracts,
+  listAgentspaceOperationContracts,
 } from '../dist/index.js'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -78,7 +78,7 @@ async function main() {
     ...(cli.manifestVersion ? { manifestVersion: cli.manifestVersion } : {}),
   })
   const hostRoutes = buildAgentspaceHostRouteProjection({ refresh: true })
-  const operationContracts = listAopsOperationContracts({ refresh: true })
+  const operationContracts = listAgentspaceOperationContracts({ refresh: true })
 
   const dcmPath = path.join(outDir, 'dcm.json')
   const routesPath = path.join(outDir, 'host-routes.json')

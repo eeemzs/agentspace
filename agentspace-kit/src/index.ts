@@ -1,20 +1,20 @@
 import {
-  buildAopsDomainCapabilityManifest,
-  buildAopsHostRouteProjection,
+  buildAgentspaceDomainCapabilityManifest as buildAgentspaceDomainCapabilityManifestInternal,
+  buildAgentspaceHostRouteProjection as buildAgentspaceHostRouteProjectionInternal,
 } from './operations/index.js'
 import {
-  getAopsOperationById,
-  getAopsOperationByToolId,
-  listAopsOperationSpecs,
+  getAgentspaceOperationById as getAgentspaceOperationByIdInternal,
+  getAgentspaceOperationByToolId as getAgentspaceOperationByToolIdInternal,
+  listAgentspaceOperationSpecs as listAgentspaceOperationSpecsInternal,
 } from './operations/catalog.js'
 import {
-  runAopsKitOperationByToolId,
-  runAopsKitOperationByTypedId,
+  runAgentspaceKitOperationByToolId as runAgentspaceKitOperationByToolIdInternal,
+  runAgentspaceKitOperationByTypedId as runAgentspaceKitOperationByTypedIdInternal,
 } from './operations/executor.js'
-import type { AopsOperationInput, AopsOperationOutput, AopsTypedOperationId } from './operations/index.js'
-import type { AopsDomainCapabilityManifest } from './operations/dcm.js'
-import type { AopsHostRouteProjectionEntry } from './operations/host-projection.js'
-import type { AopsOperationSpec } from './operations/types.js'
+import type { AgentspaceOperationInput, AgentspaceOperationOutput, AgentspaceTypedOperationId } from './operations/index.js'
+import type { AgentspaceDomainCapabilityManifest } from './operations/dcm.js'
+import type { AgentspaceHostRouteProjectionEntry } from './operations/host-projection.js'
+import type { AgentspaceOperationSpec } from './operations/types.js'
 
 export * from './domain-services/index.js'
 export * from './domain-services/unified.js'
@@ -33,8 +33,8 @@ export * from './shared/index.js'
 
 export const AGENTSPACE_KIT_DOMAIN_ID = 'agentspace' as const
 
-export type AgentspaceKitOperationSpec = AopsOperationSpec
-export type AgentspaceKitOperationId = AopsOperationSpec['operationId']
+export type AgentspaceKitOperationSpec = AgentspaceOperationSpec
+export type AgentspaceKitOperationId = AgentspaceOperationSpec['operationId']
 
 function normalizeAgentspaceToolId(toolId: string): string {
   return String(toolId ?? '').trim().toLowerCase()
@@ -43,35 +43,35 @@ function normalizeAgentspaceToolId(toolId: string): string {
 export function listAgentspaceKitOperations(
   options?: { refresh?: boolean },
 ): readonly AgentspaceKitOperationSpec[] {
-  return listAopsOperationSpecs(options)
+  return listAgentspaceOperationSpecsInternal(options)
 }
 
 export function getAgentspaceKitOperationByTypedId(
   operationId: string,
   options?: { refresh?: boolean },
 ): AgentspaceKitOperationSpec | null {
-  return getAopsOperationById(operationId, options)
+  return getAgentspaceOperationByIdInternal(operationId, options)
 }
 
 export function getAgentspaceKitOperationByToolId(
   toolId: string,
   options?: { refresh?: boolean },
 ): AgentspaceKitOperationSpec | null {
-  return getAopsOperationByToolId(normalizeAgentspaceToolId(toolId), options)
+  return getAgentspaceOperationByToolIdInternal(normalizeAgentspaceToolId(toolId), options)
 }
 
 export async function runAgentspaceKitOperationByToolId(
   toolId: string,
   input: unknown,
 ): Promise<unknown> {
-  return runAopsKitOperationByToolId(normalizeAgentspaceToolId(toolId), input)
+  return runAgentspaceKitOperationByToolIdInternal(normalizeAgentspaceToolId(toolId), input)
 }
 
-export async function runAgentspaceKitOperationByTypedId<TId extends AopsTypedOperationId>(
+export async function runAgentspaceKitOperationByTypedId<TId extends AgentspaceTypedOperationId>(
   operationId: TId,
-  input: AopsOperationInput<TId>,
-): Promise<AopsOperationOutput<TId>> {
-  return runAopsKitOperationByTypedId(operationId, input)
+  input: AgentspaceOperationInput<TId>,
+): Promise<AgentspaceOperationOutput<TId>> {
+  return runAgentspaceKitOperationByTypedIdInternal(operationId, input)
 }
 
 export function buildAgentspaceDomainCapabilityManifest(options?: {
@@ -79,12 +79,12 @@ export function buildAgentspaceDomainCapabilityManifest(options?: {
   domainVersion?: string
   includeDocs?: boolean
   refresh?: boolean
-}): AopsDomainCapabilityManifest {
-  return buildAopsDomainCapabilityManifest(options)
+}): AgentspaceDomainCapabilityManifest {
+  return buildAgentspaceDomainCapabilityManifestInternal(options)
 }
 
 export function buildAgentspaceHostRouteProjection(options?: {
   refresh?: boolean
-}): AopsHostRouteProjectionEntry[] {
-  return buildAopsHostRouteProjection(options)
+}): AgentspaceHostRouteProjectionEntry[] {
+  return buildAgentspaceHostRouteProjectionInternal(options)
 }
