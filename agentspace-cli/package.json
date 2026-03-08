@@ -1,0 +1,40 @@
+{
+  "name": "@aopslab/domain-cli-agentspace",
+  "version": "0.0.1",
+  "private": false,
+  "type": "module",
+  "description": "Agentspace CLI (canonical invoke + generated sugar + optional hooks).",
+  "bin": {
+    "agentspace": "bin/agentspace",
+    "agentspace-cli": "bin/agentspace"
+  },
+  "files": [
+    "bin",
+    "dist",
+    "src",
+    "scripts"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.app.json",
+    "postbuild": "pnpm run manifest:emit",
+    "build:all": "pnpm run build",
+    "start:node": "node dist/main.js",
+    "start:tsx": "tsx src/main.ts",
+    "typecheck": "tsc -p tsconfig.app.json --noEmit",
+    "manifest:print": "tsx scripts/manifest-cli.ts print",
+    "manifest:emit": "tsx scripts/manifest-cli.ts emit --out-dir dist/manifests",
+    "manifest:check": "tsx scripts/manifest-cli.ts check --out-dir dist/manifests"
+  },
+  "dependencies": {
+    "@aopslab/domain-host-plugin-agentspace": "workspace:*",
+    "@aopslab/domain-tooling-agentspace": "workspace:*",
+    "@aopslab/xf-core": "catalog:",
+    "dotenv": "catalog:"
+  },
+  "main": "dist/main.js",
+  "publishConfig": {
+    "access": "restricted",
+    "registry": "https://npm.pkg.github.com"
+  },
+  "packageManager": "pnpm@10.0.0"
+}

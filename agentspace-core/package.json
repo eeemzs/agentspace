@@ -1,0 +1,30 @@
+{
+  "name": "@aopslab/domain-core-agentspace",
+  "version": "0.0.1",
+  "type": "module",
+  "private": false,
+  "description": "Agentspace core helpers and resources.",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -b tsconfig.lib.json"
+  },
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "resources",
+    "!**/*.tsbuildinfo"
+  ],
+  "publishConfig": {
+    "access": "restricted",
+    "registry": "https://npm.pkg.github.com"
+  }
+}

@@ -1,0 +1,34 @@
+// Single entry-point for Drizzle schema exports.
+//
+// DrizzleKit supports loading a schema from a file path; by exporting all tables from here,
+// the repo-level `drizzle.aops.config.ts` can reference one file instead of listing dozens.
+
+export * from '../agentRun/drizzle/drizzle.schema.agentRun.js'
+export * from '../agentSession/drizzle/drizzle.schema.agentSession.js'
+export * from '../artifact/drizzle/drizzle.schema.artifact.js'
+export * from '../artifactLink/drizzle/drizzle.schema.artifactLink.js'
+export * from '../codexChatMessage/drizzle/drizzle.schema.codexChatMessage.js'
+export * from '../codexChatSetting/drizzle/drizzle.schema.codexChatSetting.js'
+export * from '../codexChatThread/drizzle/drizzle.schema.codexChatThread.js'
+export * from '../kanbanBoard/drizzle/drizzle.schema.kanbanBoard.js'
+export * from '../kanbanColumn/drizzle/drizzle.schema.kanbanColumn.js'
+export * from '../memoryItem/drizzle/drizzle.schema.memoryItem.js'
+export * from '../project/drizzle/drizzle.schema.project.js'
+export * from '../projectPath/drizzle/drizzle.schema.projectPath.js'
+export * from '../projectMember/drizzle/drizzle.schema.projectMember.js'
+export * from '../projectSummary/drizzle/drizzle.schema.projectSummary.js'
+export * from '../prompt/drizzle/drizzle.schema.prompt.js'
+export * from '../promptVersion/drizzle/drizzle.schema.promptVersion.js'
+export * from '../resource/drizzle/drizzle.schema.resource.js'
+export * from '../skill/drizzle/drizzle.schema.skill.js'
+export * from '../skillSet/drizzle/drizzle.schema.skillSet.js'
+export * from '../skillSetItem/drizzle/drizzle.schema.skillSetItem.js'
+export * from '../skillVersion/drizzle/drizzle.schema.skillVersion.js'
+export * from '../sprint/drizzle/drizzle.schema.sprint.js'
+export * from '../sprintItem/drizzle/drizzle.schema.sprintItem.js'
+export * from '../tag/drizzle/drizzle.schema.tag.js'
+export * from '../task/drizzle/drizzle.schema.task.js'
+export * from '../taskComment/drizzle/drizzle.schema.taskComment.js'
+export * from '../workspace/drizzle/drizzle.schema.workspace.js'
+export * from '../workspaceMember/drizzle/drizzle.schema.workspaceMember.js'
+

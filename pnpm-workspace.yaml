@@ -1,0 +1,38 @@
+packages:
+  - "agentspace-cli"
+  - "agentspace-tooling"
+  - "agentspace-tests"
+  - "agentspace-dm"
+  - "agentspace-kit"
+  - "agentspace-core"
+  - "agentspace-ops"
+  - "agentspace-host-plugin"
+
+catalogMode: strict
+
+catalog:
+  "ajv": ^8.17.1
+  "@aopslab/xf-bm": ^0.1.86
+  "@aopslab/xf-core": ^0.1.67
+  "@aopslab/xf-db": ^0.1.72
+  "@aopslab/xf-db-drizzle": ^0.1.78
+  "@aopslab/xf-db-mongoose": ^0.1.76
+  "@aopslab/xf-db-redis": ^0.1.73
+  "@aopslab/xf-dm": ^0.1.81
+  "@aopslab/xf-dm-kits": ^0.1.11
+  "@aopslab/xf-i18n": ^0.1.72
+  "@aopslab/xf-logger": ^0.1.60
+  "@aopslab/xf-validation": ^0.1.77
+  "@changesets/cli": ^2.29.8
+  "@types/node": ^25.2.0
+  "@types/pg": ^8.15.6
+  "dotenv": ^17.2.3
+  "drizzle-kit": ^0.31.8
+  "drizzle-orm": ^0.45.1
+  "effect": ^3.19.15
+  "pg": ^8.19.0
+  "tslib": ^2.3.0
+  "tsx": ^4.21.0
+  "typescript": 5.9.3
+  "vitest": ^4.0.18
+  "zod": ^4.3.6
