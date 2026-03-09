@@ -15,6 +15,7 @@ export {
   TaskService, type TaskServiceOptions,
   TaskCommentService, type TaskCommentServiceOptions,
   WorkflowInstanceService, type WorkflowInstanceServiceOptions,
+  WorkflowDefinitionService, type WorkflowDefinitionServiceOptions,
   WorkflowStepRunService, type WorkflowStepRunServiceOptions,
   AgentSessionService, type AgentSessionServiceOptions,
   AgentRunService, type AgentRunServiceOptions,

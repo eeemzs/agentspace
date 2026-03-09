@@ -30,5 +30,6 @@ export type {
   IRepositoryPortProjectMember,
   IRepositoryPortProjectPath,
   IRepositoryPortWorkflowInstance,
+  IRepositoryPortWorkflowDefinition,
   IRepositoryPortWorkflowStepRun,
 } from '../../application/ports/repository-ports/index.js';

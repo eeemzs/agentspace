@@ -5,11 +5,11 @@ import type { XfLogger } from '@aopslab/xf-logger'
 
 import type { AgentspaceKitProviderOptions, AgentspaceKitProvider, AgentspaceKitContext, AgentspaceKitStaticConfig, AgentspaceKitServiceProviderOptions, AgentspaceKitServices, AgentspaceKitRepositories, AgentspaceKitDomainServiceRegistryStats } from './types.js'
 
-import { RepositoryFactoryProject, RepositoryFactoryProjectPath, RepositoryFactoryWorkspace, RepositoryFactoryWorkspaceMember, RepositoryFactoryProjectMember, RepositoryFactoryPrompt, RepositoryFactoryPromptVersion, RepositoryFactoryResource, RepositoryFactorySkill, RepositoryFactorySkillVersion, RepositoryFactorySkillSet, RepositoryFactorySkillSetItem, RepositoryFactoryKanbanBoard, RepositoryFactoryKanbanColumn, RepositoryFactorySprint, RepositoryFactorySprintItem, RepositoryFactoryTask, RepositoryFactoryTaskComment, RepositoryFactoryAgentSession, RepositoryFactoryAgentRun, RepositoryFactoryAgentRunEvent, RepositoryFactoryArtifact, RepositoryFactoryArtifactLink, RepositoryFactoryCodexChatThread, RepositoryFactoryCodexChatMessage, RepositoryFactoryCodexChatSetting, RepositoryFactoryProjectSummary, RepositoryFactoryMemoryItem, RepositoryFactoryTag, RepositoryFactoryWorkflowInstance, RepositoryFactoryWorkflowStepRun } from '@aopslab/domain-dm-agentspace/factories'
-import { ProjectService, ProjectPathService, WorkspaceService, WorkspaceMemberService, ProjectMemberService, PromptService, PromptVersionService, ResourceService, SkillService, SkillVersionService, SkillSetService, SkillSetItemService, KanbanBoardService, KanbanColumnService, SprintService, SprintItemService, TaskService, TaskCommentService, AgentSessionService, AgentRunService, AgentRunEventService, ArtifactService, ArtifactLinkService, CodexChatThreadService, CodexChatMessageService, CodexChatSettingService, ProjectSummaryService, MemoryItemService, TagService, WorkflowInstanceService, WorkflowStepRunService } from '@aopslab/domain-dm-agentspace/services'
+import { RepositoryFactoryProject, RepositoryFactoryProjectPath, RepositoryFactoryWorkspace, RepositoryFactoryWorkspaceMember, RepositoryFactoryProjectMember, RepositoryFactoryPrompt, RepositoryFactoryPromptVersion, RepositoryFactoryResource, RepositoryFactorySkill, RepositoryFactorySkillVersion, RepositoryFactorySkillSet, RepositoryFactorySkillSetItem, RepositoryFactoryKanbanBoard, RepositoryFactoryKanbanColumn, RepositoryFactorySprint, RepositoryFactorySprintItem, RepositoryFactoryTask, RepositoryFactoryTaskComment, RepositoryFactoryAgentSession, RepositoryFactoryAgentRun, RepositoryFactoryAgentRunEvent, RepositoryFactoryArtifact, RepositoryFactoryArtifactLink, RepositoryFactoryCodexChatThread, RepositoryFactoryCodexChatMessage, RepositoryFactoryCodexChatSetting, RepositoryFactoryProjectSummary, RepositoryFactoryMemoryItem, RepositoryFactoryTag, RepositoryFactoryWorkflowDefinition, RepositoryFactoryWorkflowInstance, RepositoryFactoryWorkflowStepRun } from '@aopslab/domain-dm-agentspace/factories'
+import { ProjectService, ProjectPathService, WorkspaceService, WorkspaceMemberService, ProjectMemberService, PromptService, PromptVersionService, ResourceService, SkillService, SkillVersionService, SkillSetService, SkillSetItemService, KanbanBoardService, KanbanColumnService, SprintService, SprintItemService, TaskService, TaskCommentService, AgentSessionService, AgentRunService, AgentRunEventService, ArtifactService, ArtifactLinkService, CodexChatThreadService, CodexChatMessageService, CodexChatSettingService, ProjectSummaryService, MemoryItemService, TagService, WorkflowDefinitionService, WorkflowInstanceService, WorkflowStepRunService } from '@aopslab/domain-dm-agentspace/services'
 
 function computeConfigKey(name: string, cfg: AgentspaceKitServiceProviderOptions): string {
-  const sigs = [fingerprintRepositoryConfig(cfg.projectRepositoryConfig), fingerprintRepositoryConfig(cfg.projectPathRepositoryConfig), fingerprintRepositoryConfig(cfg.workspaceRepositoryConfig), fingerprintRepositoryConfig(cfg.workspaceMemberRepositoryConfig), fingerprintRepositoryConfig(cfg.projectMemberRepositoryConfig), fingerprintRepositoryConfig(cfg.promptRepositoryConfig), fingerprintRepositoryConfig(cfg.promptVersionRepositoryConfig), fingerprintRepositoryConfig(cfg.resourceRepositoryConfig), fingerprintRepositoryConfig(cfg.skillRepositoryConfig), fingerprintRepositoryConfig(cfg.skillVersionRepositoryConfig), fingerprintRepositoryConfig(cfg.skillSetRepositoryConfig), fingerprintRepositoryConfig(cfg.skillSetItemRepositoryConfig), fingerprintRepositoryConfig(cfg.kanbanBoardRepositoryConfig), fingerprintRepositoryConfig(cfg.kanbanColumnRepositoryConfig), fingerprintRepositoryConfig(cfg.sprintRepositoryConfig), fingerprintRepositoryConfig(cfg.sprintItemRepositoryConfig), fingerprintRepositoryConfig(cfg.taskRepositoryConfig), fingerprintRepositoryConfig(cfg.taskCommentRepositoryConfig), fingerprintRepositoryConfig(cfg.agentSessionRepositoryConfig), fingerprintRepositoryConfig(cfg.agentRunRepositoryConfig), fingerprintRepositoryConfig(cfg.agentRunEventRepositoryConfig), fingerprintRepositoryConfig(cfg.artifactRepositoryConfig), fingerprintRepositoryConfig(cfg.artifactLinkRepositoryConfig), fingerprintRepositoryConfig(cfg.codexChatThreadRepositoryConfig), fingerprintRepositoryConfig(cfg.codexChatMessageRepositoryConfig), fingerprintRepositoryConfig(cfg.codexChatSettingRepositoryConfig), fingerprintRepositoryConfig(cfg.projectSummaryRepositoryConfig), fingerprintRepositoryConfig(cfg.memoryItemRepositoryConfig), fingerprintRepositoryConfig(cfg.tagRepositoryConfig), fingerprintRepositoryConfig(cfg.workflowInstanceRepositoryConfig), fingerprintRepositoryConfig(cfg.workflowStepRunRepositoryConfig)].filter(Boolean)
+  const sigs = [fingerprintRepositoryConfig(cfg.projectRepositoryConfig), fingerprintRepositoryConfig(cfg.projectPathRepositoryConfig), fingerprintRepositoryConfig(cfg.workspaceRepositoryConfig), fingerprintRepositoryConfig(cfg.workspaceMemberRepositoryConfig), fingerprintRepositoryConfig(cfg.projectMemberRepositoryConfig), fingerprintRepositoryConfig(cfg.promptRepositoryConfig), fingerprintRepositoryConfig(cfg.promptVersionRepositoryConfig), fingerprintRepositoryConfig(cfg.resourceRepositoryConfig), fingerprintRepositoryConfig(cfg.skillRepositoryConfig), fingerprintRepositoryConfig(cfg.skillVersionRepositoryConfig), fingerprintRepositoryConfig(cfg.skillSetRepositoryConfig), fingerprintRepositoryConfig(cfg.skillSetItemRepositoryConfig), fingerprintRepositoryConfig(cfg.kanbanBoardRepositoryConfig), fingerprintRepositoryConfig(cfg.kanbanColumnRepositoryConfig), fingerprintRepositoryConfig(cfg.sprintRepositoryConfig), fingerprintRepositoryConfig(cfg.sprintItemRepositoryConfig), fingerprintRepositoryConfig(cfg.taskRepositoryConfig), fingerprintRepositoryConfig(cfg.taskCommentRepositoryConfig), fingerprintRepositoryConfig(cfg.agentSessionRepositoryConfig), fingerprintRepositoryConfig(cfg.agentRunRepositoryConfig), fingerprintRepositoryConfig(cfg.agentRunEventRepositoryConfig), fingerprintRepositoryConfig(cfg.artifactRepositoryConfig), fingerprintRepositoryConfig(cfg.artifactLinkRepositoryConfig), fingerprintRepositoryConfig(cfg.codexChatThreadRepositoryConfig), fingerprintRepositoryConfig(cfg.codexChatMessageRepositoryConfig), fingerprintRepositoryConfig(cfg.codexChatSettingRepositoryConfig), fingerprintRepositoryConfig(cfg.projectSummaryRepositoryConfig), fingerprintRepositoryConfig(cfg.memoryItemRepositoryConfig), fingerprintRepositoryConfig(cfg.tagRepositoryConfig), fingerprintRepositoryConfig(cfg.workflowDefinitionRepositoryConfig), fingerprintRepositoryConfig(cfg.workflowInstanceRepositoryConfig), fingerprintRepositoryConfig(cfg.workflowStepRunRepositoryConfig)].filter(Boolean)
   return [name, cfg.tenantId ?? '', ...sigs].join('|')
 }
 
@@ -49,6 +49,7 @@ function buildResolvedConfig(staticCfg: AgentspaceKitStaticConfig, ctx: Agentspa
     projectSummaryRepositoryConfig: buildRepositoryConfig(staticCfg.projectSummaryRepository, tenantId),
     memoryItemRepositoryConfig: buildRepositoryConfig(staticCfg.memoryItemRepository, tenantId),
     tagRepositoryConfig: buildRepositoryConfig(staticCfg.tagRepository, tenantId),
+    workflowDefinitionRepositoryConfig: buildRepositoryConfig(staticCfg.workflowDefinitionRepository, tenantId),
     workflowInstanceRepositoryConfig: buildRepositoryConfig(staticCfg.workflowInstanceRepository, tenantId),
     workflowStepRunRepositoryConfig: buildRepositoryConfig(staticCfg.workflowStepRunRepository, tenantId),
   }
@@ -303,6 +304,14 @@ memoryItemRepository: async (cfg, logger) => {
 tagRepository: async (cfg, logger) => {
       const eff = RepositoryFactoryTag.create({
         repositoryConfig: cfg.tagRepositoryConfig,
+        logger,
+        logLevel: cfg.logLevel,
+      })
+      return await Effect.runPromise(eff)
+    },
+workflowDefinitionRepository: async (cfg, logger) => {
+      const eff = RepositoryFactoryWorkflowDefinition.create({
+        repositoryConfig: cfg.workflowDefinitionRepositoryConfig,
         logger,
         logLevel: cfg.logLevel,
       })
@@ -564,6 +573,13 @@ tagService: async (ctx, _deps, repos, logger) => {
         locale: ctx.locale,
       })
     },
+workflowDefinitionService: async (ctx, _deps, repos, logger) => {
+      return new WorkflowDefinitionService({
+        workflowDefinitionRepository: repos.workflowDefinitionRepository,
+        logger,
+        locale: ctx.locale,
+      })
+    },
 workflowInstanceService: async (ctx, _deps, repos, logger) => {
       return new WorkflowInstanceService({
         workflowInstanceRepository: repos.workflowInstanceRepository,
@@ -628,6 +644,7 @@ workflowStepRunService: async (ctx, _deps, repos, logger) => {
         projectSummaryService: stats.services.projectSummaryService,
         memoryItemService: stats.services.memoryItemService,
         tagService: stats.services.tagService,
+        workflowDefinitionService: stats.services.workflowDefinitionService,
         workflowInstanceService: stats.services.workflowInstanceService,
         workflowStepRunService: stats.services.workflowStepRunService,
       },
@@ -661,6 +678,7 @@ workflowStepRunService: async (ctx, _deps, repos, logger) => {
         projectSummaryRepository: !!stats.repositories.projectSummaryRepository,
         memoryItemRepository: !!stats.repositories.memoryItemRepository,
         tagRepository: !!stats.repositories.tagRepository,
+        workflowDefinitionRepository: !!stats.repositories.workflowDefinitionRepository,
         workflowInstanceRepository: !!stats.repositories.workflowInstanceRepository,
         workflowStepRunRepository: !!stats.repositories.workflowStepRunRepository,
       },
@@ -842,6 +860,12 @@ workflowStepRunService: async (ctx, _deps, repos, logger) => {
     async createTagService(overrides) {
       return gp.createService('tagService', overrides)
     },
+    async getWorkflowDefinitionService(overrides) {
+      return gp.getService('workflowDefinitionService', overrides)
+    },
+    async createWorkflowDefinitionService(overrides) {
+      return gp.createService('workflowDefinitionService', overrides)
+    },
     async getWorkflowInstanceService(overrides) {
       return gp.getService('workflowInstanceService', overrides)
     },
@@ -940,6 +964,9 @@ workflowStepRunService: async (ctx, _deps, repos, logger) => {
     },
     async getTagRepository(overrides) {
       return gp.getRepository('tagRepository', overrides)
+    },
+    async getWorkflowDefinitionRepository(overrides) {
+      return gp.getRepository('workflowDefinitionRepository', overrides)
     },
     async getWorkflowInstanceRepository(overrides) {
       return gp.getRepository('workflowInstanceRepository', overrides)
@@ -1042,6 +1069,9 @@ workflowStepRunService: async (ctx, _deps, repos, logger) => {
     },
     clearTagServiceCache(cacheKey?: string) {
       gp.clearServiceCache('tagService', cacheKey)
+    },
+    clearWorkflowDefinitionServiceCache(cacheKey?: string) {
+      gp.clearServiceCache('workflowDefinitionService', cacheKey)
     },
     clearWorkflowInstanceServiceCache(cacheKey?: string) {
       gp.clearServiceCache('workflowInstanceService', cacheKey)
