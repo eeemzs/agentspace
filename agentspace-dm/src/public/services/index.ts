@@ -14,6 +14,8 @@ export {
   SprintItemService, type SprintItemServiceOptions,
   TaskService, type TaskServiceOptions,
   TaskCommentService, type TaskCommentServiceOptions,
+  WorkflowInstanceService, type WorkflowInstanceServiceOptions,
+  WorkflowStepRunService, type WorkflowStepRunServiceOptions,
   AgentSessionService, type AgentSessionServiceOptions,
   AgentRunService, type AgentRunServiceOptions,
   AgentRunEventService, type AgentRunEventServiceOptions,
