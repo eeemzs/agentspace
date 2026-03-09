@@ -16,6 +16,7 @@ export {
   TaskCommentService, type TaskCommentServiceOptions,
   AgentSessionService, type AgentSessionServiceOptions,
   AgentRunService, type AgentRunServiceOptions,
+  AgentRunEventService, type AgentRunEventServiceOptions,
   ArtifactService, type ArtifactServiceOptions,
   ArtifactLinkService, type ArtifactLinkServiceOptions,
   CodexChatMessageService, type CodexChatMessageServiceOptions,

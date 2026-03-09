@@ -4,6 +4,7 @@
 // the repo-level `drizzle.aops.config.ts` can reference one file instead of listing dozens.
 
 export * from '../agentRun/drizzle/drizzle.schema.agentRun.js'
+export * from '../agentRunEvent/drizzle/drizzle.schema.agentRunEvent.js'
 export * from '../agentSession/drizzle/drizzle.schema.agentSession.js'
 export * from '../artifact/drizzle/drizzle.schema.artifact.js'
 export * from '../artifactLink/drizzle/drizzle.schema.artifactLink.js'
@@ -31,4 +32,3 @@ export * from '../task/drizzle/drizzle.schema.task.js'
 export * from '../taskComment/drizzle/drizzle.schema.taskComment.js'
 export * from '../workspace/drizzle/drizzle.schema.workspace.js'
 export * from '../workspaceMember/drizzle/drizzle.schema.workspaceMember.js'
-
