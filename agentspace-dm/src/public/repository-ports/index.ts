@@ -16,6 +16,7 @@ export type {
   IRepositoryPortTaskComment,
   IRepositoryPortAgentSession,
   IRepositoryPortAgentRun,
+  IRepositoryPortAgentRunEvent,
   IRepositoryPortArtifact,
   IRepositoryPortArtifactLink,
   IRepositoryPortCodexChatMessage,
@@ -28,4 +29,6 @@ export type {
   IRepositoryPortWorkspaceMember,
   IRepositoryPortProjectMember,
   IRepositoryPortProjectPath,
+  IRepositoryPortWorkflowInstance,
+  IRepositoryPortWorkflowStepRun,
 } from '../../application/ports/repository-ports/index.js';
