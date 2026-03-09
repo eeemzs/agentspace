@@ -126,7 +126,6 @@ export class WorkflowDefinitionService implements IWorkflowDefinitionServicePort
         this.workflowDefinitionRepository.upsert(validated, {
           workspaceId: validated.workspaceId,
           definitionId: validated.definitionId,
-          ...(validated.projectId ? { projectId: validated.projectId } : {}),
           ...(matchEq ?? {}),
         }).pipe(
           Effect.mapError(mapDbError({ stage, operation: 'upsert', factory: XfErrorFactory.upsertFailed }))

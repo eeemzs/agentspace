@@ -87,7 +87,6 @@ describe('workflowDefinition persistence contract', () => {
         matchEq: {
           workspaceId: 'ws-1',
           definitionId: 'wf-template-1',
-          projectId: 'project-1',
         },
       }),
     ])
