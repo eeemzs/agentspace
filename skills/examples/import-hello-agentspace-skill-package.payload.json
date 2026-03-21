@@ -1,0 +1,27 @@
+{
+  "data": {
+    "workspaceId": "<workspace-id>",
+    "scopeType": "global",
+    "createdBy": "smoke",
+    "updatedBy": "smoke",
+    "bundle": {
+      "sourcePath": "/Volumes/d/dev-js2/domains/agentspace/skills/examples/hello-agentspace-skill-package",
+      "metadata": {
+        "source": "repo-example",
+        "purpose": "smoke"
+      },
+      "files": [
+        {
+          "path": "SKILL.md",
+          "kind": "instruction",
+          "content": "---\nname: hello-agentspace-skill\ndescription: Minimal sample skill package for Agentspace import, export, and materialize smoke flows.\n---\n\n# Hello Agentspace Skill\n\nUse this sample package to smoke test the canonical Agentspace skill-package\nflow.\n\n## Purpose\n\n1. verify `skill-version.import-skill-package`\n2. verify `skill-version.export-skill-package`\n3. verify `skill-version.materialize-skill-package`\n\n## Working notes\n\n1. `SKILL.md` is the canonical entry file.\n2. Additional files stay relative to the package root.\n3. Keep package contents small and deterministic for smoke use.\n\n## Checklist\n\nRead `references/checklist.md` before mutating a live runtime.\n"
+        },
+        {
+          "path": "references/checklist.md",
+          "kind": "reference",
+          "content": "# Smoke Checklist\n\n1. Use a non-production Agentspace repo first.\n2. Keep `workspaceId` explicit in import payloads.\n3. Use `manifest get dcm` or `manifest show cli` before guessing command\n   shapes.\n4. Materialize into a temp directory, not into an existing skill folder.\n"
+        }
+      ]
+    }
+  }
+}
