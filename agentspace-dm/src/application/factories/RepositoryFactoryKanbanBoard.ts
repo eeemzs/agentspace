@@ -1,9 +1,9 @@
-﻿import { createRepositoryFactory } from '@aopslab/xf-dm'
 import { IRepositoryPortKanbanBoard } from '../ports/repository-ports/index.js'
-import { KanbanBoardDrizzleRepo } from '../../infrastructure/repositories/index.js'
+import { KanbanBoardDrizzleRepo, KanbanBoardDrizzleSqliteRepo } from '../../infrastructure/repositories/index.js'
+import { createAgentspaceDrizzleRepositoryFactory } from './drizzleDialect.js'
 
-export const RepositoryFactoryKanbanBoard = createRepositoryFactory<IRepositoryPortKanbanBoard>({
+export const RepositoryFactoryKanbanBoard = createAgentspaceDrizzleRepositoryFactory<IRepositoryPortKanbanBoard>({
   moduleName: 'RepositoryFactoryKanbanBoard',
-  mongoRepo: undefined,
-  drizzleRepo: KanbanBoardDrizzleRepo,
-});
+  pgRepo: KanbanBoardDrizzleRepo,
+  sqliteRepo: KanbanBoardDrizzleSqliteRepo,
+})

@@ -145,6 +145,44 @@ describe('agentspace host-plugin lifecycle guards', () => {
     })
   })
 
+  it('returns a not_found envelope for foreign-key reference failures', async () => {
+    const runner = vi.fn(async () => {
+      throw new Error(
+        'insert into "memory_items" violates foreign key constraint "memory_items_workspaceId_workspaces_id_fk"',
+      )
+    })
+    const plugin = createAgentspacePlugin({ runner })
+    const route = findRouteByOperation(plugin.manifest.routes, 'memory-item.add-memory-item')
+
+    const response = await plugin.execute({
+      request: createDomainRequest({
+        method: route.method,
+        body: {
+          data: {
+            workspaceId: 'workspace-input-5',
+            projectId: 'project-5',
+            scopeType: 'project',
+            scopeId: 'project-5',
+            kind: 'start',
+            content: 'probe',
+          },
+        },
+        context: { tenantId: 'tenant-1' },
+      }),
+      match: { route, params: {} },
+    })
+
+    expect(response).toMatchObject({
+      status: 404,
+      data: {
+        ok: false,
+        errorCode: 'agentspace_operation_failed.invalid_reference',
+        operation: 'memory-item.add-memory-item',
+        message: 'Referenced workspace/project/scope record was not found for the supplied ids.',
+      },
+    })
+  })
+
   it('returns runtime_env_missing envelope for default runner when required env is absent', async () => {
     const plugin = createAgentspacePlugin({
       requiredRuntimeEnv: ['AOPS_TEST_REQUIRED_ENV_KEY_MISSING'],
@@ -231,6 +269,40 @@ describe('agentspace host-plugin lifecycle guards', () => {
     expect(payload.options).toMatchObject({
       limit: 25,
     })
+  })
+
+  it('injects workspace into memory-item create data from request context when omitted', async () => {
+    const runner = vi.fn(async () => ({ ok: true }))
+    const plugin = createAgentspacePlugin({ runner })
+    const route = findRouteByOperation(plugin.manifest.routes, 'memory-item.create')
+
+    const response = await plugin.execute({
+      request: createDomainRequest({
+        method: route.method,
+        body: {
+          data: {
+            projectId: 'project-1',
+            content: 'resume note',
+            scopeType: 'project',
+            state: 'published',
+          },
+        },
+        context: { tenantId: 'tenant-1', workspaceId: 'workspace-context-1' },
+      }),
+      match: { route, params: {} },
+    })
+
+    expect(response).toEqual({ ok: true })
+    expect(runner).toHaveBeenCalledTimes(1)
+    expect(runner).toHaveBeenCalledWith(
+      'memory-item.create',
+      expect.objectContaining({
+        data: expect.objectContaining({
+          workspaceId: 'workspace-context-1',
+          projectId: 'project-1',
+        }),
+      }),
+    )
   })
 
   it('reports runtime env readiness in health details', async () => {

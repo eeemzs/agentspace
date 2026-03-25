@@ -45,7 +45,17 @@ export type ArtifactType = (typeof ARTIFACT_TYPES)[number]
 export const ARTIFACT_LINK_REF_TYPES = ['task', 'agent-run', 'prompt-version', 'skill-version', 'resource', 'other'] as const
 export type ArtifactLinkRefType = (typeof ARTIFACT_LINK_REF_TYPES)[number]
 
-export const MEMORY_ITEM_KINDS = ['decision', 'rule', 'note', 'lesson', 'context', 'constraint'] as const
+export const MEMORY_ITEM_KINDS = [
+  'decision',
+  'rule',
+  'note',
+  'lesson',
+  'context',
+  'constraint',
+  'resume',
+  'start',
+  'request',
+] as const
 export type MemoryItemKind = (typeof MEMORY_ITEM_KINDS)[number]
 
 export const CODEX_CHAT_MESSAGE_ROLES = ['user', 'assistant', 'system'] as const

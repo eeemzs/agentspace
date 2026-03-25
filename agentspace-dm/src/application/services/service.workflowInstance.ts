@@ -59,4 +59,21 @@ export class WorkflowInstanceService implements IWorkflowInstanceServicePort {
       ))
     )
   }
+
+  listWorkflowInstances(
+    filter: Partial<IbmWorkflowInstance> = {},
+    options?: DbQueryOptions<IbmWorkflowInstance>
+  ): Effect.Effect<IbmWorkflowInstance[], WorkflowInstanceServiceError> {
+    const stage = 'WorkflowInstanceService::listWorkflowInstances'
+    return pipe(
+      validateInput(filter, 'filter', { stage }),
+      Effect.flatMap((filter) => this.workflowInstanceRepository.find({ matchEq: filter, options } as any).pipe(
+        Effect.mapError(mapDbError({ stage, operation: 'find', factory: XfErrorFactory.notFound }))
+      )),
+      Effect.tapError((e) => Effect.sync(() => {
+        const info = effectErrorInfo(e)
+        this.logger?.error({ error: info.unwrapped, stage }, 'Error in listWorkflowInstances')
+      }))
+    )
+  }
 }

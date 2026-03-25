@@ -1,9 +1,9 @@
-﻿import { createRepositoryFactory } from '@aopslab/xf-dm'
 import { IRepositoryPortTaskComment } from '../ports/repository-ports/index.js'
-import { TaskCommentDrizzleRepo } from '../../infrastructure/repositories/index.js'
+import { TaskCommentDrizzleRepo, TaskCommentDrizzleSqliteRepo } from '../../infrastructure/repositories/index.js'
+import { createAgentspaceDrizzleRepositoryFactory } from './drizzleDialect.js'
 
-export const RepositoryFactoryTaskComment = createRepositoryFactory<IRepositoryPortTaskComment>({
+export const RepositoryFactoryTaskComment = createAgentspaceDrizzleRepositoryFactory<IRepositoryPortTaskComment>({
   moduleName: 'RepositoryFactoryTaskComment',
-  mongoRepo: undefined,
-  drizzleRepo: TaskCommentDrizzleRepo,
-});
+  pgRepo: TaskCommentDrizzleRepo,
+  sqliteRepo: TaskCommentDrizzleSqliteRepo,
+})

@@ -6,6 +6,7 @@ import {
   getAgentspaceOperationIoSchemaRefs,
   listAgentspaceOperationSpecs,
   mapErrorToFriendly,
+  parseAgentspaceToolInput,
   runAgentspaceKitOperationByTypedId,
   type AgentspaceOperationInput,
   type AgentspaceTypedOperationId,
@@ -47,8 +48,11 @@ const HOST_CONTEXT_INPUT_KEYS = new Set([
   'locale',
   'fallbackLocale',
 ])
+void HOST_CONTEXT_INPUT_KEYS
 
 const DATA_WORKSPACE_FALLBACK_OPERATIONS = new Set<AgentspaceTypedOperationId>([
+  'memory-item.add-memory-item',
+  'memory-item.create',
   'prompt.create',
   'project.create',
   'project-path.create',
@@ -94,6 +98,14 @@ const UNSAFE_RUNTIME_MESSAGE_PATTERNS = [
   /\bdrizzle/i,
 ]
 const RUNTIME_FAILURE_MESSAGE = 'Runtime operation failed. Check server logs for details.'
+const INVALID_REFERENCE_MESSAGE_PATTERNS = [
+  /\bforeign key\b/i,
+  /violates foreign key constraint/i,
+  /is not present in table/i,
+  /anahtarı mevcut değildir/i,
+]
+const INVALID_REFERENCE_FAILURE_MESSAGE =
+  'Referenced workspace/project/scope record was not found for the supplied ids.'
 
 function buildRoutes(refresh: boolean): DomainRouteManifestEntry[] {
   return buildAgentspaceHostRouteProjection({ refresh }).map((route) => ({
@@ -265,8 +277,27 @@ function injectWorkspaceIdIntoDataArg(
   return { ...data, workspaceId }
 }
 
+function injectWorkspaceFallbacksIntoInput(
+  state: AgentspacePluginState,
+  operationId: AgentspaceTypedOperationId,
+  input: Record<string, unknown>,
+): Record<string, unknown> {
+  if (!('data' in input)) return input
+  const nextData = injectWorkspaceIdIntoDataArg(state, operationId, input, 'data', input.data)
+  if (nextData === input.data) return input
+  return { ...input, data: nextData }
+}
+void hasRequiredOperationArg
+void assignTypedValue
+void injectWorkspaceIdIntoDataArg
+void injectWorkspaceFallbacksIntoInput
+
 function isUnsafeRuntimeMessage(message: string): boolean {
   return UNSAFE_RUNTIME_MESSAGE_PATTERNS.some((pattern) => pattern.test(message))
+}
+
+function isInvalidReferenceMessage(message: string): boolean {
+  return INVALID_REFERENCE_MESSAGE_PATTERNS.some((pattern) => pattern.test(message))
 }
 
 function toExecutionReason(error: unknown, friendlyCode?: string, friendlyMessage?: string): string {
@@ -276,17 +307,26 @@ function toExecutionReason(error: unknown, friendlyCode?: string, friendlyMessag
     normalizeNonEmpty(error instanceof Error ? error.message : error),
   ].filter(Boolean) as string[]
 
+  if (candidates.some((candidate) => isInvalidReferenceMessage(candidate))) {
+    return 'invalid_reference'
+  }
+
   for (const candidate of candidates) {
     const lower = candidate.trim().toLowerCase()
     if (!lower) continue
 
-    if (lower.startsWith('agentspace.validation')) return 'invalid_input'
-    if (lower.startsWith('agentspace.notfound')) return 'not_found'
-    if (lower.startsWith('agentspace.unauthorized')) return 'unauthorized'
-    if (lower.startsWith('agentspace.forbidden')) return 'forbidden'
-    if (lower.startsWith('agentspace.conflict')) return 'conflict'
-    if (lower.startsWith('agentspace.ratelimit')) return 'rate_limit'
-    if (lower.startsWith('agentspace.serviceunavailable')) return 'service_unavailable'
+    if (lower.startsWith('aops.validation') || lower.startsWith('agentspace.validation')) return 'invalid_input'
+    if (lower.startsWith('aops.notfound') || lower.startsWith('agentspace.notfound')) return 'not_found'
+    if (lower.startsWith('aops.unauthorized') || lower.startsWith('agentspace.unauthorized')) return 'unauthorized'
+    if (lower.startsWith('aops.forbidden') || lower.startsWith('agentspace.forbidden')) return 'forbidden'
+    if (lower.startsWith('aops.conflict') || lower.startsWith('agentspace.conflict')) return 'conflict'
+    if (lower.startsWith('aops.ratelimit') || lower.startsWith('agentspace.ratelimit')) return 'rate_limit'
+    if (
+      lower.startsWith('aops.serviceunavailable') ||
+      lower.startsWith('agentspace.serviceunavailable')
+    ) {
+      return 'service_unavailable'
+    }
 
     const colonPrefix = lower.match(/^([a-z][a-z0-9_]+):/)
     if (colonPrefix && colonPrefix[1] !== 'failed') {
@@ -309,7 +349,7 @@ function toExecutionReason(error: unknown, friendlyCode?: string, friendlyMessag
 function toErrorStatus(reason: string, message: string): number {
   if (reason === 'unauthorized' || message.toLowerCase() === 'unauthorized') return 401
   if (reason === 'forbidden' || message.toLowerCase() === 'forbidden') return 403
-  if (reason === 'not_found' || /record not found/i.test(message)) return 404
+  if (reason === 'not_found' || reason === 'invalid_reference' || /record not found/i.test(message)) return 404
   if (reason === 'conflict') return 409
   if (reason === 'workspace_context_required' || reason === 'workspace_scope_required') return 409
   if (reason === 'rate_limit') return 429
@@ -334,8 +374,9 @@ function toErrorStatus(reason: string, message: string): number {
   return 500
 }
 
-function toSafeErrorMessage(message: string, status: number): string {
+function toSafeErrorMessage(reason: string, message: string, status: number): string {
   const normalized = normalizeNonEmpty(message) ?? ''
+  if (reason === 'invalid_reference') return INVALID_REFERENCE_FAILURE_MESSAGE
   if (status === 404) {
     if (!normalized || normalized === RUNTIME_FAILURE_MESSAGE || isUnsafeRuntimeMessage(normalized)) {
       return 'Record not found'
@@ -360,27 +401,8 @@ function toTypedOperationInput<TId extends AgentspaceTypedOperationId>(
   operationId: TId,
   input: Record<string, unknown>,
 ): AgentspaceOperationInput<TId> {
-  const args = state.requiredArgsByOperationId.get(operationId) ?? []
-  const allowedOperationArgs = new Set(args.map((arg) => arg.name))
-  for (const key of Object.keys(input)) {
-    if (allowedOperationArgs.has(key)) continue
-    if (HOST_CONTEXT_INPUT_KEYS.has(key)) continue
-    throw new Error(`unknown_input_arg:${key}`)
-  }
-
-  const typed: Partial<AgentspaceOperationInput<TId>> = {}
-  for (const arg of args) {
-    const rawValue =
-      arg.name === 'workspaceId'
-        ? resolveWorkspaceAliasValue(input)
-        : input[arg.name]
-    const normalizedRawValue = injectWorkspaceIdIntoDataArg(state, operationId, input, arg.name, rawValue)
-    if (!arg.optional && !hasRequiredOperationArg(input, arg.name)) {
-      throw new Error(toMissingRequiredArgToken(arg.name))
-    }
-    if (normalizedRawValue !== undefined) assignTypedValue<AgentspaceOperationInput<TId>>(typed, arg.name, normalizedRawValue)
-  }
-  return typed as AgentspaceOperationInput<TId>
+  void state
+  return parseAgentspaceToolInput(operationId, input)
 }
 
 function parseMaybeJson(value: string): unknown {
@@ -510,7 +532,8 @@ export function createAgentspacePlugin(options: AgentspacePluginOptions = {}): D
       try {
         ensureRuntimeEnvReady(state, resolvedOptions.requiredRuntimeEnv, enforceRuntimeEnv)
         const scopedInput = buildContextScopedInput(inputBase, request.context, resolvedOptions.defaultTenantId)
-        const input = normalizeAgentspaceOperationInputForCompatibility(operationId, scopedInput)
+        const normalizedInput = normalizeAgentspaceOperationInputForCompatibility(operationId, scopedInput)
+        const input = injectWorkspaceFallbacksIntoInput(state, operationId, normalizedInput)
         const typedInput = toTypedOperationInput(state, operationId, input)
         validateInputBySchema(state, operationId, typedInput as Record<string, unknown>)
         const output = await runWithOperationTimeout(operationId, operationTimeoutMs, () =>
@@ -529,7 +552,7 @@ export function createAgentspacePlugin(options: AgentspacePluginOptions = {}): D
           derivedStatus === 500 && typeof friendly.status === 'number' && Number.isFinite(friendly.status)
             ? friendly.status
             : derivedStatus
-        const safeMessage = toSafeErrorMessage(rawMessage || friendly.message, status)
+        const safeMessage = toSafeErrorMessage(reason, rawMessage || friendly.message, status)
 
         console.error('[agentspace-plugin] operation failed', {
           operationId,

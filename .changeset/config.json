@@ -3,22 +3,10 @@
   "changelog": "@changesets/cli/changelog",
   "commit": false,
   "fixed": [],
-  "linked": [
-    [
-      "@aopslab/domain-cli-agentspace",
-      "@aopslab/domain-core-agentspace",
-      "@aopslab/domain-dm-agentspace",
-      "@aopslab/domain-host-plugin-agentspace",
-      "@aopslab/domain-kit-agentspace",
-      "@aopslab/domain-ops-agentspace",
-      "@aopslab/domain-tooling-agentspace"
-    ]
-  ],
+  "linked": [],
   "access": "restricted",
   "baseBranch": "master",
   "updateInternalDependencies": "patch",
   "bumpVersionsWithWorkspaceProtocolOnly": true,
-  "ignore": [
-    "@aopslab/domain-tests-agentspace"
-  ]
+  "ignore": []
 }

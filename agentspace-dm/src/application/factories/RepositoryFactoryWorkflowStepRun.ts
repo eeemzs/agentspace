@@ -1,9 +1,9 @@
-import { createRepositoryFactory } from '@aopslab/xf-dm'
 import { IRepositoryPortWorkflowStepRun } from '../ports/repository-ports/index.js'
-import { WorkflowStepRunDrizzleRepo } from '../../infrastructure/repositories/index.js'
+import { WorkflowStepRunDrizzleRepo, WorkflowStepRunDrizzleSqliteRepo } from '../../infrastructure/repositories/index.js'
+import { createAgentspaceDrizzleRepositoryFactory } from './drizzleDialect.js'
 
-export const RepositoryFactoryWorkflowStepRun = createRepositoryFactory<IRepositoryPortWorkflowStepRun>({
+export const RepositoryFactoryWorkflowStepRun = createAgentspaceDrizzleRepositoryFactory<IRepositoryPortWorkflowStepRun>({
   moduleName: 'RepositoryFactoryWorkflowStepRun',
-  mongoRepo: undefined,
-  drizzleRepo: WorkflowStepRunDrizzleRepo,
+  pgRepo: WorkflowStepRunDrizzleRepo,
+  sqliteRepo: WorkflowStepRunDrizzleSqliteRepo,
 })

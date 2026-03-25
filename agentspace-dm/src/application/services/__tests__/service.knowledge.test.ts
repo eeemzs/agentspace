@@ -21,6 +21,7 @@ describe('ResourceService', () => {
 
     const created = await Effect.runPromise(
       service.createResource({
+        workspaceId: 'workspace-1',
         name: 'Spec',
         resourceType: 'spec',
         scopeType: 'project',
@@ -58,6 +59,7 @@ describe('MemoryItemService', () => {
 
     const created = await Effect.runPromise(
       service.addMemoryItem({
+        workspaceId: 'workspace-1',
         scopeType: 'project',
         projectId: 'project-1',
         kind: 'decision',
@@ -72,6 +74,67 @@ describe('MemoryItemService', () => {
     expect(repo.patchById).toHaveBeenCalledWith('mem-1', { importance: 3 })
     expect(updated.importance).toBe(3)
   })
+
+  it('searches memory items with retrieval ranking instead of raw importance order', async () => {
+    const repo = makeRepo()
+    repo.find.mockImplementation(() => Effect.succeed([
+      {
+        id: 'mem-legacy',
+        workspaceId: 'workspace-1',
+        projectId: 'project-1',
+        scopeType: 'project',
+        kind: 'decision',
+        content: 'General retrospective note',
+        importance: 95,
+        updatedAt: '2025-11-01T00:00:00.000Z',
+      },
+      {
+        id: 'mem-linked',
+        workspaceId: 'workspace-1',
+        projectId: 'project-1',
+        scopeType: 'project',
+        kind: 'issue',
+        content: 'Triage flaky workflow run before approval loop repeats',
+        tags: ['triage', 'workflow'],
+        sourceType: 'projectman.issue',
+        sourceId: 'issue-7',
+        importance: 20,
+        updatedAt: '2026-03-09T10:00:00.000Z',
+      },
+      {
+        id: 'mem-unrelated',
+        workspaceId: 'workspace-1',
+        projectId: 'project-1',
+        scopeType: 'project',
+        kind: 'note',
+        content: 'Marketing launch prep',
+        importance: 5,
+        updatedAt: '2026-03-09T11:00:00.000Z',
+      },
+    ]))
+
+    const service = new MemoryItemService({ memoryItemRepository: repo as any })
+
+    const results = await Effect.runPromise(
+      service.searchMemoryItems(
+        { projectId: 'project-1' },
+        {
+          query: 'triage flaky workflow approval',
+          runtimeProfile: 'workflow-triage',
+          workflowId: 'workflow-1',
+          subject: { type: 'projectman.issue', id: 'issue-7' },
+          tags: ['triage', 'workflow'],
+        },
+        { limit: 2 }
+      )
+    )
+
+    expect(results.map((entry) => entry.id)).toEqual(['mem-linked', 'mem-legacy'])
+    expect(repo.find).toHaveBeenCalledWith({
+      matchEq: { projectId: 'project-1' },
+      options: expect.objectContaining({ limit: 48, offset: undefined }),
+    })
+  })
 })
 
 describe('ProjectSummaryService', () => {
@@ -82,7 +145,7 @@ describe('ProjectSummaryService', () => {
 
     const service = new ProjectSummaryService({ projectSummaryRepository: repo as any })
     const result = await Effect.runPromise(
-      service.upsertProjectSummary({ projectId: 'project-1', summary: 'Kickoff done' })
+      service.upsertProjectSummary({ workspaceId: 'workspace-1', projectId: 'project-1', summary: 'Kickoff done' })
     )
 
     expect(repo.create).toHaveBeenCalledTimes(1)
@@ -96,7 +159,7 @@ describe('ProjectSummaryService', () => {
 
     const service = new ProjectSummaryService({ projectSummaryRepository: repo as any })
     const result = await Effect.runPromise(
-      service.upsertProjectSummary({ projectId: 'project-1', summary: 'Updated' })
+      service.upsertProjectSummary({ workspaceId: 'workspace-1', projectId: 'project-1', summary: 'Updated' })
     )
 
     expect(repo.patchById).toHaveBeenCalledWith('sum-1', { summary: 'Updated' })

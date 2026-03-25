@@ -1,9 +1,9 @@
-import { createRepositoryFactory } from '@aopslab/xf-dm'
 import { IRepositoryPortAgentRunEvent } from '../ports/repository-ports/index.js'
-import { AgentRunEventDrizzleRepo } from '../../infrastructure/repositories/index.js'
+import { AgentRunEventDrizzleRepo, AgentRunEventDrizzleSqliteRepo } from '../../infrastructure/repositories/index.js'
+import { createAgentspaceDrizzleRepositoryFactory } from './drizzleDialect.js'
 
-export const RepositoryFactoryAgentRunEvent = createRepositoryFactory<IRepositoryPortAgentRunEvent>({
+export const RepositoryFactoryAgentRunEvent = createAgentspaceDrizzleRepositoryFactory<IRepositoryPortAgentRunEvent>({
   moduleName: 'RepositoryFactoryAgentRunEvent',
-  mongoRepo: undefined,
-  drizzleRepo: AgentRunEventDrizzleRepo,
+  pgRepo: AgentRunEventDrizzleRepo,
+  sqliteRepo: AgentRunEventDrizzleSqliteRepo,
 })

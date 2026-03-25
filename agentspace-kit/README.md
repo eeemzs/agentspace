@@ -26,7 +26,10 @@ const service = await kit.getProjectService()
 
 - `TENANT_ID`
 - `LOG_LEVEL`
-- `AOPS_PG_URL` (tum repository'ler icin ortak URL)
+- `AGENTSPACE_REPO_URL` (ortak repo URL; pg/sqlite)
+- `AGENTSPACE_SQLITE_URL` (sqlite repo URL)
+- `AGENTSPACE_PG_URL` (postgres repo URL)
+- `AOPS_PG_URL` (geriye donuk ortak fallback)
 
 ## Sundugu Yuzey
 
@@ -78,4 +81,3 @@ Repositories:
 
 - `tenantId` context icinde zorunludur.
 - Cache key varsayilan olarak `locale|fallbackLocale` uzerinden hesaplanir.
-

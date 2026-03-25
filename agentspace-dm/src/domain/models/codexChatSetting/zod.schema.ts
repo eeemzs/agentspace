@@ -7,18 +7,29 @@ import {
 } from '../../types.js'
 import { ICodexChatSettingZodCtx } from './resources.js'
 
+const CODEX_CHAT_SERVICE_TIERS = ['fast', 'flex'] as const
+const CODEX_CHAT_PERSONALITIES = ['friendly', 'pragmatic', 'none'] as const
+const CODEX_CHAT_APPROVALS_REVIEWERS = ['user', 'guardian_subagent'] as const
+
 export const codexChatSettingZodSchema = z.object({
   ...IbmZodSchema.shape,
   workspaceId: z.string(),
   userId: z.string(),
-  binaryPath: z.string().optional(),
-  model: z.string().optional(),
-  reasoningEffort: z.enum(CODEX_CHAT_REASONING_EFFORTS).optional(),
-  profile: z.string().optional(),
+  binaryPath: z.string().nullable().optional(),
+  model: z.string().nullable().optional(),
+  modelProvider: z.string().nullable().optional(),
+  reasoningEffort: z.enum(CODEX_CHAT_REASONING_EFFORTS).nullable().optional(),
+  profile: z.string().nullable().optional(),
+  serviceTier: z.enum(CODEX_CHAT_SERVICE_TIERS).nullable().optional(),
+  personality: z.enum(CODEX_CHAT_PERSONALITIES).nullable().optional(),
+  approvalsReviewer: z.enum(CODEX_CHAT_APPROVALS_REVIEWERS).nullable().optional(),
   executionMode: z.enum(CODEX_CHAT_EXECUTION_MODES),
   sandboxMode: z.enum(CODEX_CHAT_SANDBOX_MODES),
-  manualCwd: z.string().optional(),
+  manualCwd: z.string().nullable().optional(),
   autoStart: z.boolean().optional(),
+  persistExtendedHistory: z.boolean().optional(),
+  experimentalApi: z.boolean().optional(),
+  optOutNotificationMethods: z.string().nullable().optional(),
   createdBy: z.string().optional(),
   updatedBy: z.string().optional(),
 })
@@ -36,4 +47,3 @@ export const codexChatSettingZodSchemaInsert = codexChatSettingZodSchema
 export const createCodexChatSettingZodSchemaWithContext = (_ctx?: ICodexChatSettingZodCtx) => {
   return codexChatSettingZodSchema.strict()
 }
-

@@ -4,6 +4,7 @@ import {
   getAgentspaceKitOperationByToolId,
   getAgentspaceKitOperationByTypedId,
   listAgentspaceKitOperations as listAgentspaceKitOperationsFromKit,
+  parseAgentspaceToolInput,
   runAgentspaceKitOperationByTypedId,
 } from '@aopslab/domain-kit-agentspace'
 
@@ -253,7 +254,8 @@ export async function runAgentspaceOperationById(
   if (!spec) {
     throw new Error(`unknown_agentspace_operation:${operationId}`)
   }
-  return runAgentspaceKitOperationByTypedId(spec.operationId as never, input as never)
+  const parsedInput = parseAgentspaceToolInput(spec.operationId as never, toRecord(input))
+  return runAgentspaceKitOperationByTypedId(spec.operationId as never, parsedInput as never)
 }
 
 export async function runAgentspaceToolById(
@@ -268,7 +270,8 @@ export async function runAgentspaceToolById(
     if (!direct) {
       throw new Error(`unknown_agentspace_tool:${identifier}`)
     }
-    return runAgentspaceKitOperationByTypedId(direct.operationId as never, input as never)
+    const parsedInput = parseAgentspaceToolInput(direct.operationId as never, toRecord(input))
+    return runAgentspaceKitOperationByTypedId(direct.operationId as never, parsedInput as never)
   }
   return runAgentspaceOperationById(operationId, input, options)
 }

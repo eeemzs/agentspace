@@ -12,6 +12,7 @@ export interface IArtifactServicePort {
   storeArtifact(data: IbmArtifactInsert): Effect.Effect<IbmArtifact, ArtifactServiceError>
   linkArtifact(data: ArtifactLinkInput): Effect.Effect<IbmArtifactLink, ArtifactServiceError>
   listArtifactsByRef(refType: IbmArtifactLink['refType'], refId: string, projectId?: string): Effect.Effect<IbmArtifact[], ArtifactServiceError>
+  removeArtifact(id: string): Effect.Effect<void, ArtifactServiceError>
 }
 
 export interface IArtifactLookupPort {

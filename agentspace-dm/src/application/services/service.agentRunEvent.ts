@@ -59,5 +59,21 @@ export class AgentRunEventService implements IAgentRunEventServicePort {
       ))
     )
   }
-
+  
+  listAgentRunEvents(
+    filter: Partial<IbmAgentRunEvent> = {},
+    options?: DbQueryOptions<IbmAgentRunEvent>
+  ): Effect.Effect<IbmAgentRunEvent[], AgentRunEventServiceError> {
+    const stage = 'AgentRunEventService::listAgentRunEvents'
+    return pipe(
+      validateInput(filter, 'filter', { stage }),
+      Effect.flatMap((filter) => this.agentRunEventRepository.find({ matchEq: filter, options } as any).pipe(
+        Effect.mapError(mapDbError({ stage, operation: 'find', factory: XfErrorFactory.notFound }))
+      )),
+      Effect.tapError((e) => Effect.sync(() => {
+        const info = effectErrorInfo(e)
+        this.logger?.error({ error: info.unwrapped, stage }, 'Error in listAgentRunEvents')
+      }))
+    )
+  }
 }

@@ -22,6 +22,11 @@ import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { buildAgentspaceHostRegistrationManifest } from './host-registration.js'
+import {
+  ensureAgentspaceSqliteSchemaReady,
+  getDefaultAgentspaceSqliteRepoUrl,
+  isSqliteRepoUrl,
+} from './sqlite-bootstrap.js'
 
 type OptionValue = boolean | string | string[]
 
@@ -834,11 +839,11 @@ async function runAgentspaceToolById(identifier: string, input: unknown = {}): P
 function inferDefaultRepoUrl(processEnv: NodeJS.ProcessEnv): string {
   const envFallback =
     normalizeNonEmptyString(processEnv.AGENTSPACE_REPO_URL) ??
+    normalizeNonEmptyString(processEnv.AGENTSPACE_SQLITE_URL) ??
+    normalizeNonEmptyString(processEnv.AGENTSPACE_PG_URL) ??
     normalizeNonEmptyString(processEnv.AOPS_PG_URL) ??
     normalizeNonEmptyString(processEnv.DEV_PG_URL)
-  if (envFallback) return envFallback
-
-  throw new Error('missing_repo_url:provide --repo-url or AGENTSPACE_REPO_URL/AOPS_PG_URL/DEV_PG_URL')
+  return envFallback ?? getDefaultAgentspaceSqliteRepoUrl()
 }
 
 function buildRuntimeContext(parsed: ParsedArgv): RuntimeContext {
@@ -854,8 +859,12 @@ function buildRuntimeContext(parsed: ParsedArgv): RuntimeContext {
 
   const repoUrlOption = getStringOption(parsed, 'repo-url')
   const repoUrl = repoUrlOption ? repoUrlOption.trim() : inferDefaultRepoUrl(process.env)
+
   process.env.AGENTSPACE_REPO_URL = repoUrl
+  process.env.AGENTSPACE_SQLITE_URL = isSqliteRepoUrl(repoUrl) ? repoUrl : ''
+  process.env.AGENTSPACE_PG_URL = isSqliteRepoUrl(repoUrl) ? '' : repoUrl
   process.env.AOPS_PG_URL = repoUrl
+  ensureAgentspaceSqliteSchemaReady(repoUrl)
 
   if (!normalizeNonEmptyString(process.env.AOPS_PG_URL)) {
     throw new Error('missing_repo_url:empty')

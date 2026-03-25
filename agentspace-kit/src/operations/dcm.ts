@@ -2,6 +2,7 @@ import type { AgentspaceOperationContract, AgentspaceOperationSideEffect } from 
 import type { AgentspaceOperationPolicy } from './types.js'
 import { listAgentspaceOperationContracts } from './contract.js'
 import { getAgentspaceContractSchema, resolveAgentspaceSchemaRefName } from './schemas.js'
+import { normalizeAgentspaceOperationId } from './definition.js'
 
 export type AgentspaceDomainCapabilityOperation = {
   operationId: string
@@ -60,6 +61,40 @@ export type BuildAgentspaceDomainCapabilityManifestOptions = {
   includeDocs?: boolean
   refresh?: boolean
 }
+
+const OPERATION_DOCS_OVERRIDES = new Map<string, AgentspaceDomainCapabilityOperationDocs>([
+  [
+    normalizeAgentspaceOperationId('skill-version.import-skill-package'),
+    {
+      summary: 'Import a canonical filesystem skill package into skill and skill-version records.',
+      notes: [
+        'Use the custom input envelope: {"data":{...}}.',
+        'data.bundle.files must include SKILL.md as the canonical entry file.',
+        'For project-scoped imports, provide projectId or scopeId consistently with scopeType=project.',
+      ],
+    },
+  ],
+  [
+    normalizeAgentspaceOperationId('skill-version.export-skill-package'),
+    {
+      summary: 'Export a canonical filesystem skill package from a skill version.',
+      notes: [
+        'Returns the canonical filesystem package rooted at SKILL.md.',
+        'Export output is intended to round-trip back into import-skill-package without compatibility shims.',
+      ],
+    },
+  ],
+  [
+    normalizeAgentspaceOperationId('skill-version.materialize-skill-package'),
+    {
+      summary: 'Materialize a canonical filesystem skill package to an output directory.',
+      notes: [
+        'Use the custom input envelope: {"id":"<skill-version-id>","data":{...}}.',
+        'data.outputDir is required; set overwrite=true to replace an existing materialized package.',
+      ],
+    },
+  ],
+])
 
 function humanizeResource(resource: string): string {
   const normalized = resource
@@ -164,10 +199,21 @@ function toOperationDocs(operation: AgentspaceOperationContract): AgentspaceDoma
   if (requiredArgs.length > 0) notes.push(`required args: ${requiredArgs.join(', ')}`)
   if (optionalArgs.length > 0) notes.push(`optional args: ${optionalArgs.join(', ')}`)
 
-  return {
-    summary: chooseOperationSummary(operation),
+  const baseDocs: AgentspaceDomainCapabilityOperationDocs = {
+    summary: operation.summary ?? chooseOperationSummary(operation),
     ...(notes.length > 0 ? { notes } : {}),
     ...(operation.examples && operation.examples.length > 0 ? { examples: [...operation.examples] } : {}),
+  }
+  const override = OPERATION_DOCS_OVERRIDES.get(normalizeAgentspaceOperationId(operation.operationId))
+  if (!override) return baseDocs
+
+  const mergedNotes = [...(baseDocs.notes ?? []), ...(override.notes ?? [])]
+  const mergedExamples = override.examples ?? baseDocs.examples
+
+  return {
+    summary: override.summary ?? baseDocs.summary,
+    ...(mergedNotes.length > 0 ? { notes: mergedNotes } : {}),
+    ...(mergedExamples && mergedExamples.length > 0 ? { examples: mergedExamples } : {}),
   }
 }
 
@@ -208,6 +254,11 @@ export function buildAgentspaceDomainCapabilityManifest(
     manifest.docs = {
       domain: {
         summary: 'Manage Agentspace workspace state such as projects, tasks, prompts, skills, chat threads, memory items, agent runs, and related runtime records.',
+        notes: [
+          'Canonical skill package standard: aops-skill-package-v1.',
+          'Canonical package entry file: SKILL.md.',
+          'If manifests or projections look stale after a domain change, run `pnpm run manifest:sync`, then `aops-cli host diagnostics --reset --warmup`, then `aops-cli agent tools --domain agentspace --workspace-name Default`.',
+        ],
       },
       resources: buildResourceDocs(operations),
       operations: Object.fromEntries(operations.map((operation) => [operation.operationId, toOperationDocs(operation)])),

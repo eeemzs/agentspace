@@ -8,7 +8,7 @@
   invalid,
   xfAddMsg,
 } from '@aopslab/xf-core'
-import { RepositoryError } from '@aopslab/xf-db'
+import { RepositoryError, type RepositoryErrorCode } from '@aopslab/xf-db'
 import * as Cause from 'effect/Cause'
 import { FiberFailureCauseId } from 'effect/Runtime'
 import { normalizeNonEmpty } from '../shared/tool-input.js'
@@ -62,6 +62,39 @@ const UNAUTHORIZED_PATTERNS = [/^unauthorized$/i, /auth required/i, /missing acc
 const FORBIDDEN_PATTERNS = [/^forbidden$/i, /permission denied/i]
 const CONFLICT_PATTERNS = [/duplicate/i, /already exists/i, /conflict/i, /e11000/i]
 const RATE_LIMIT_PATTERNS = [/rate limit/i, /too many requests/i, /too many attempts/i]
+const INVALID_REFERENCE_PATTERNS = [
+  /\bforeign key\b/i,
+  /violates foreign key/i,
+  /foreign key kısıtlamasını ihlal ediyor/i,
+  /anahtarı mevcut değildir/i,
+  /is not present in table/i,
+]
+
+function normalizeRepositoryErrorCode(value: unknown): RepositoryErrorCode | undefined {
+  switch (value) {
+    case 'NotFound':
+    case 'UniqueViolation':
+    case 'MultipleRecordsFound':
+    case 'MultipleRecordsReturned':
+    case 'NoRecordReturned':
+    case 'DeleteRecordNotFound':
+    case 'ForeignKeyViolation':
+    case 'NotNullViolation':
+    case 'CheckViolation':
+    case 'Exception':
+      return value
+    default:
+      return undefined
+  }
+}
+
+function isRepositoryErrorLike(candidate: unknown): candidate is {
+  message?: unknown
+  code?: unknown
+  _tag?: unknown
+} {
+  return Boolean(candidate) && typeof candidate === 'object' && (candidate instanceof RepositoryError || (candidate as { _tag?: unknown })._tag === 'RepositoryError')
+}
 
 function extractTrace(error: unknown): { stage?: string; operation?: string } | undefined {
   if (!error || typeof error !== 'object') return undefined
@@ -135,8 +168,23 @@ function classifyCandidate(candidate: unknown): XfFriendlyError | null {
   if (candidate instanceof XfNotFoundError) {
     return wrapNotFound(candidate)
   }
-  if (candidate instanceof RepositoryError) {
-    const message = normalizeNonEmpty(candidate.message) ?? ''
+  if (isRepositoryErrorLike(candidate)) {
+    const message = normalizeNonEmpty(extractCandidateMessage(candidate)) ?? ''
+    const code = normalizeRepositoryErrorCode(candidate.code)
+    if (
+      code === 'NotFound' ||
+      code === 'DeleteRecordNotFound' ||
+      code === 'NoRecordReturned' ||
+      code === 'ForeignKeyViolation'
+    ) {
+      return wrapNotFound(candidate)
+    }
+    if (code === 'UniqueViolation' || code === 'MultipleRecordsFound' || code === 'MultipleRecordsReturned') {
+      return wrapConflict(candidate)
+    }
+    if (code === 'NotNullViolation' || code === 'CheckViolation') {
+      return wrapValidation(candidate)
+    }
     if (matches(CONFLICT_PATTERNS, message)) return wrapConflict(candidate)
     return wrapServiceUnavailable(candidate)
   }
@@ -168,6 +216,32 @@ function classifyCandidate(candidate: unknown): XfFriendlyError | null {
 
 function matches(patterns: RegExp[], value: string): boolean {
   return patterns.some((rx) => rx.test(value))
+}
+
+function extractCandidateMessage(candidate: unknown): string {
+  if (typeof candidate === 'string') return candidate
+  if (candidate instanceof Error) return candidate.message
+  if (candidate && typeof candidate === 'object' && 'message' in candidate) {
+    const value = (candidate as { message?: unknown }).message
+    return typeof value === 'string' ? value : ''
+  }
+  return ''
+}
+
+function extractCandidateSearchText(candidate: unknown): string {
+  const parts = [extractCandidateMessage(candidate)]
+  if (candidate && typeof candidate === 'object') {
+    try {
+      parts.push(JSON.stringify(candidate))
+    } catch {
+      // ignore
+    }
+  }
+  return parts.filter(Boolean).join(' ')
+}
+
+function hasInvalidReferenceSignal(candidate: unknown): boolean {
+  return matches(INVALID_REFERENCE_PATTERNS, extractCandidateSearchText(candidate))
 }
 
 function buildFriendly(partial: Omit<XfFriendlyError, 'scope' | 'severity'> & { severity?: 'user' | 'system' }): XfFriendlyError {
@@ -277,6 +351,10 @@ function wrapUnexpected(error: unknown): XfFriendlyError {
 export function toFriendlyError(inputError: unknown): XfFriendlyError {
   const unwrapped = unwrapEffectError(inputError)
   const candidates = collectErrorCandidates(unwrapped)
+  const invalidReferenceCandidate = candidates.find((candidate) => hasInvalidReferenceSignal(candidate))
+  if (invalidReferenceCandidate) {
+    return wrapNotFound(invalidReferenceCandidate)
+  }
   for (const candidate of candidates) {
     const classified = classifyCandidate(candidate)
     if (classified) return classified

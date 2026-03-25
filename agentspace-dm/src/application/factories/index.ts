@@ -95,3 +95,4 @@ export * from './ServiceProjectMemberBuilder.js';
 export * from './RepositoryFactoryWorkspace.js';
 export * from './RepositoryFactoryWorkspaceMember.js';
 export * from './RepositoryFactoryProjectMember.js';
+export * from './drizzleDialect.js';

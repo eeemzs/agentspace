@@ -4,6 +4,7 @@ export type AgentspaceOperationCatalogRow = {
   toolId: string
   operationId: string
   summary: string
+  examples?: readonly string[]
   serviceKey: string
   serviceEntity: string
   methodName: string
@@ -12,6 +13,16 @@ export type AgentspaceOperationCatalogRow = {
 }
 
 export const AGENTSPACE_OPERATION_CATALOG_ROWS = [
+  {
+    "toolId": "aops-backup-capability-list",
+    "operationId": "backup-capability.list",
+    "summary": "List domain-owned backup capability catalog metadata.",
+    "serviceKey": "__calls__",
+    "serviceEntity": "backup-capability",
+    "methodName": "listBackupCapabilityCatalog",
+    "kind": "list",
+    "args": []
+  },
   {
     "toolId": "aops-agent-run-attach-run-to-task",
     "operationId": "agent-run.attach-run-to-task",
@@ -115,6 +126,59 @@ export const AGENTSPACE_OPERATION_CATALOG_ROWS = [
       {
         "name": "data",
         "optional": false
+      }
+    ]
+  },
+  {
+    "toolId": "aops-agent-run-event-create",
+    "operationId": "agent-run-event.create",
+    "summary": "Create agent-run-event.",
+    "serviceKey": "agentRunEventService",
+    "serviceEntity": "agent-run-event",
+    "methodName": "create",
+    "kind": "create",
+    "args": [
+      {
+        "name": "data",
+        "optional": false
+      }
+    ]
+  },
+  {
+    "toolId": "aops-agent-run-event-get-by-id",
+    "operationId": "agent-run-event.get-by-id",
+    "summary": "Get by id agent-run-event.",
+    "serviceKey": "agentRunEventService",
+    "serviceEntity": "agent-run-event",
+    "methodName": "getById",
+    "kind": "get",
+    "args": [
+      {
+        "name": "id",
+        "optional": false
+      },
+      {
+        "name": "options",
+        "optional": true
+      }
+    ]
+  },
+  {
+    "toolId": "aops-agent-run-event-list-agent-run-events",
+    "operationId": "agent-run-event.list-agent-run-events",
+    "summary": "List agent run events agent-run-event.",
+    "serviceKey": "agentRunEventService",
+    "serviceEntity": "agent-run-event",
+    "methodName": "listAgentRunEvents",
+    "kind": "list",
+    "args": [
+      {
+        "name": "filter",
+        "optional": true
+      },
+      {
+        "name": "options",
+        "optional": true
       }
     ]
   },
@@ -379,6 +443,21 @@ export const AGENTSPACE_OPERATION_CATALOG_ROWS = [
     "args": [
       {
         "name": "data",
+        "optional": false
+      }
+    ]
+  },
+  {
+    "toolId": "aops-artifact-remove-artifact",
+    "operationId": "artifact.remove-artifact",
+    "summary": "Remove artifact artifact.",
+    "serviceKey": "artifactService",
+    "serviceEntity": "artifact",
+    "methodName": "removeArtifact",
+    "kind": "delete",
+    "args": [
+      {
+        "name": "id",
         "optional": false
       }
     ]
@@ -1135,7 +1214,7 @@ export const AGENTSPACE_OPERATION_CATALOG_ROWS = [
   {
     "toolId": "aops-memory-item-search-memory-items",
     "operationId": "memory-item.search-memory-items",
-    "summary": "Search memory items memory-item.",
+    "summary": "Search memory items with retrieval ranking, recency, and linkage signals.",
     "serviceKey": "memoryItemService",
     "serviceEntity": "memory-item",
     "methodName": "searchMemoryItems",
@@ -1146,9 +1225,16 @@ export const AGENTSPACE_OPERATION_CATALOG_ROWS = [
         "optional": true
       },
       {
+        "name": "retrieval",
+        "optional": true
+      },
+      {
         "name": "options",
         "optional": true
       }
+    ],
+    "examples": [
+      "{\"filter\":{\"projectId\":\"<projectId>\"},\"retrieval\":{\"query\":\"triage flaky workflow run\",\"subject\":{\"type\":\"projectman.issue\",\"id\":\"<issueId>\"},\"workflowId\":\"<workflowId>\",\"runtimeProfile\":\"investigation\"},\"options\":{\"limit\":8}}"
     ]
   },
   {
@@ -2292,13 +2378,16 @@ export const AGENTSPACE_OPERATION_CATALOG_ROWS = [
     ]
   },
   {
-    "toolId": "aops-skill-version-export-openai-skill-version",
-    "operationId": "skill-version.export-openai-skill-version",
-    "summary": "Export OpenAI skill bundle skill-version.",
+    "toolId": "aops-skill-version-export-skill-package",
+    "operationId": "skill-version.export-skill-package",
+    "summary": "Export a canonical filesystem skill package from a skill version.",
     "serviceKey": "skillVersionService",
     "serviceEntity": "skill-version",
-    "methodName": "exportOpenAiSkillVersion",
+    "methodName": "exportSkillPackage",
     "kind": "custom",
+    "examples": [
+      "{\"id\":\"<skill-version-id>\"}"
+    ],
     "args": [
       {
         "name": "id",
@@ -2345,13 +2434,16 @@ export const AGENTSPACE_OPERATION_CATALOG_ROWS = [
     ]
   },
   {
-    "toolId": "aops-skill-version-import-openai-skill",
-    "operationId": "skill-version.import-openai-skill",
-    "summary": "Import OpenAI skill bundle skill-version.",
+    "toolId": "aops-skill-version-import-skill-package",
+    "operationId": "skill-version.import-skill-package",
+    "summary": "Import a canonical filesystem skill package into skill and skill-version records.",
     "serviceKey": "skillVersionService",
     "serviceEntity": "skill-version",
-    "methodName": "importOpenAiSkill",
+    "methodName": "importSkillPackage",
     "kind": "custom",
+    "examples": [
+      "{\"data\":{\"workspaceId\":\"<workspace-id>\",\"scopeType\":\"global\",\"createdBy\":\"cli\",\"updatedBy\":\"cli\",\"bundle\":{\"sourcePath\":\"/tmp/my-skill\",\"files\":[{\"path\":\"SKILL.md\",\"kind\":\"instruction\",\"content\":\"---\\nname: my-skill\\ndescription: Example skill\\n---\\n\\n# My Skill\\n\"}]}}}"
+    ],
     "args": [
       {
         "name": "data",
@@ -2379,13 +2471,16 @@ export const AGENTSPACE_OPERATION_CATALOG_ROWS = [
     ]
   },
   {
-    "toolId": "aops-skill-version-materialize-openai-skill-version",
-    "operationId": "skill-version.materialize-openai-skill-version",
-    "summary": "Materialize OpenAI skill bundle to filesystem skill-version.",
+    "toolId": "aops-skill-version-materialize-skill-package",
+    "operationId": "skill-version.materialize-skill-package",
+    "summary": "Materialize a canonical filesystem skill package to an output directory.",
     "serviceKey": "skillVersionService",
     "serviceEntity": "skill-version",
-    "methodName": "materializeOpenAiSkillVersion",
+    "methodName": "materializeSkillPackage",
     "kind": "custom",
+    "examples": [
+      "{\"id\":\"<skill-version-id>\",\"data\":{\"outputDir\":\"/tmp/materialized-skill\",\"overwrite\":true}}"
+    ],
     "args": [
       {
         "name": "id",
@@ -3371,6 +3466,180 @@ export const AGENTSPACE_OPERATION_CATALOG_ROWS = [
       {
         "name": "patch",
         "optional": false
+      }
+    ]
+  },
+  {
+    "toolId": "aops-workflow-definition-create",
+    "operationId": "workflow-definition.create",
+    "summary": "Create workflow-definition.",
+    "serviceKey": "workflowDefinitionService",
+    "serviceEntity": "workflow-definition",
+    "methodName": "create",
+    "kind": "create",
+    "args": [
+      {
+        "name": "data",
+        "optional": false
+      }
+    ]
+  },
+  {
+    "toolId": "aops-workflow-definition-get-by-id",
+    "operationId": "workflow-definition.get-by-id",
+    "summary": "Get by id workflow-definition.",
+    "serviceKey": "workflowDefinitionService",
+    "serviceEntity": "workflow-definition",
+    "methodName": "getById",
+    "kind": "get",
+    "args": [
+      {
+        "name": "id",
+        "optional": false
+      },
+      {
+        "name": "options",
+        "optional": true
+      }
+    ]
+  },
+  {
+    "toolId": "aops-workflow-definition-list-workflow-definitions",
+    "operationId": "workflow-definition.list-workflow-definitions",
+    "summary": "List workflow definitions workflow-definition.",
+    "serviceKey": "workflowDefinitionService",
+    "serviceEntity": "workflow-definition",
+    "methodName": "listWorkflowDefinitions",
+    "kind": "list",
+    "args": [
+      {
+        "name": "filter",
+        "optional": true
+      },
+      {
+        "name": "options",
+        "optional": true
+      }
+    ]
+  },
+  {
+    "toolId": "aops-workflow-definition-upsert-workflow-definition",
+    "operationId": "workflow-definition.upsert-workflow-definition",
+    "summary": "Upsert workflow-definition.",
+    "serviceKey": "workflowDefinitionService",
+    "serviceEntity": "workflow-definition",
+    "methodName": "upsertWorkflowDefinition",
+    "kind": "update",
+    "args": [
+      {
+        "name": "data",
+        "optional": false
+      }
+    ]
+  },
+  {
+    "toolId": "aops-workflow-instance-create",
+    "operationId": "workflow-instance.create",
+    "summary": "Create workflow-instance.",
+    "serviceKey": "workflowInstanceService",
+    "serviceEntity": "workflow-instance",
+    "methodName": "create",
+    "kind": "create",
+    "args": [
+      {
+        "name": "data",
+        "optional": false
+      }
+    ]
+  },
+  {
+    "toolId": "aops-workflow-instance-get-by-id",
+    "operationId": "workflow-instance.get-by-id",
+    "summary": "Get by id workflow-instance.",
+    "serviceKey": "workflowInstanceService",
+    "serviceEntity": "workflow-instance",
+    "methodName": "getById",
+    "kind": "get",
+    "args": [
+      {
+        "name": "id",
+        "optional": false
+      },
+      {
+        "name": "options",
+        "optional": true
+      }
+    ]
+  },
+  {
+    "toolId": "aops-workflow-instance-list-workflow-instances",
+    "operationId": "workflow-instance.list-workflow-instances",
+    "summary": "List workflow instances workflow-instance.",
+    "serviceKey": "workflowInstanceService",
+    "serviceEntity": "workflow-instance",
+    "methodName": "listWorkflowInstances",
+    "kind": "list",
+    "args": [
+      {
+        "name": "filter",
+        "optional": true
+      },
+      {
+        "name": "options",
+        "optional": true
+      }
+    ]
+  },
+  {
+    "toolId": "aops-workflow-step-run-create",
+    "operationId": "workflow-step-run.create",
+    "summary": "Create workflow-step-run.",
+    "serviceKey": "workflowStepRunService",
+    "serviceEntity": "workflow-step-run",
+    "methodName": "create",
+    "kind": "create",
+    "args": [
+      {
+        "name": "data",
+        "optional": false
+      }
+    ]
+  },
+  {
+    "toolId": "aops-workflow-step-run-get-by-id",
+    "operationId": "workflow-step-run.get-by-id",
+    "summary": "Get by id workflow-step-run.",
+    "serviceKey": "workflowStepRunService",
+    "serviceEntity": "workflow-step-run",
+    "methodName": "getById",
+    "kind": "get",
+    "args": [
+      {
+        "name": "id",
+        "optional": false
+      },
+      {
+        "name": "options",
+        "optional": true
+      }
+    ]
+  },
+  {
+    "toolId": "aops-workflow-step-run-list-workflow-step-runs",
+    "operationId": "workflow-step-run.list-workflow-step-runs",
+    "summary": "List workflow step runs workflow-step-run.",
+    "serviceKey": "workflowStepRunService",
+    "serviceEntity": "workflow-step-run",
+    "methodName": "listWorkflowStepRuns",
+    "kind": "list",
+    "args": [
+      {
+        "name": "filter",
+        "optional": true
+      },
+      {
+        "name": "options",
+        "optional": true
       }
     ]
   },

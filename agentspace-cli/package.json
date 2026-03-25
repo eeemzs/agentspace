@@ -11,6 +11,7 @@
   "files": [
     "bin",
     "dist",
+    "resources",
     "src",
     "scripts"
   ],

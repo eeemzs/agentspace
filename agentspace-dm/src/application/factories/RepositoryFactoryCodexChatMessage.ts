@@ -1,10 +1,9 @@
-﻿import { createRepositoryFactory } from '@aopslab/xf-dm'
 import { IRepositoryPortCodexChatMessage } from '../ports/repository-ports/index.js'
-import { CodexChatMessageDrizzleRepo } from '../../infrastructure/repositories/index.js'
+import { CodexChatMessageDrizzleRepo, CodexChatMessageDrizzleSqliteRepo } from '../../infrastructure/repositories/index.js'
+import { createAgentspaceDrizzleRepositoryFactory } from './drizzleDialect.js'
 
-export const RepositoryFactoryCodexChatMessage = createRepositoryFactory<IRepositoryPortCodexChatMessage>({
+export const RepositoryFactoryCodexChatMessage = createAgentspaceDrizzleRepositoryFactory<IRepositoryPortCodexChatMessage>({
   moduleName: 'RepositoryFactoryCodexChatMessage',
-  mongoRepo: undefined,
-  drizzleRepo: CodexChatMessageDrizzleRepo,
+  pgRepo: CodexChatMessageDrizzleRepo,
+  sqliteRepo: CodexChatMessageDrizzleSqliteRepo,
 })
-

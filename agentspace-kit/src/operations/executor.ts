@@ -6,18 +6,19 @@ import { config as loadDotEnv } from 'dotenv'
 
 import { createAgentspaceKitWithEnv } from '../domain-services/unified.js'
 import type { AgentspaceKitServices } from '../domain-services/types.js'
-import { getAgentspaceKitEnvConfig } from '../config/config.js'
+import { clearAgentspaceKitEnvConfigCache, getAgentspaceKitEnvConfig } from '../config/config.js'
 import { hardDeleteAgentspaceProjectCascade } from '../calls/project-delete.js'
+import { listAgentspaceBackupCapabilityCatalog } from './backup-capability.js'
 import {
   normalizeNonEmpty,
   resolveWorkspaceAliasValue,
   toMissingRequiredArgToken,
   toRecord,
 } from '../shared/tool-input.js'
-import { normalizeAgentspaceOperationInputForCompatibility } from '../shared/codex-chat-input.js'
 import type { AgentspaceOperationContract } from './contract.js'
 import { getAgentspaceOperationContractById, getAgentspaceOperationContractByToolId } from './contract.js'
 import type { AgentspaceOperationInput, AgentspaceOperationOutput, AgentspaceTypedOperationId } from './io-types.js'
+import { parseAgentspaceToolInput } from './tool-input.js'
 
 type ToolInput = Record<string, unknown>
 type AgentspaceKitInstance = ReturnType<typeof createAgentspaceKitWithEnv>['kit']
@@ -25,6 +26,8 @@ type AgentspaceKitInstance = ReturnType<typeof createAgentspaceKitWithEnv>['kit'
 let envLoaded = false
 let cachedServices: Promise<AgentspaceKitServices> | null = null
 let cachedKit: Promise<AgentspaceKitInstance> | null = null
+let cachedKitSignature: string | null = null
+let cachedServicesSignature: string | null = null
 
 function resolveWorkspaceIdFromHostContext(payload: ToolInput): string | undefined {
   const hostContext = toRecord(payload.__hostContext)
@@ -179,10 +182,19 @@ function loadEnvOnce(): void {
   }
 }
 
+function buildAgentspaceKitRuntimeSignature(envConfig = getAgentspaceKitEnvConfig()): string {
+  return [envConfig.tenantId, envConfig.logLevel, envConfig.repoUrl].join('\n')
+}
+
 async function getKit(): Promise<AgentspaceKitInstance> {
-  if (cachedKit) return cachedKit
+  loadEnvOnce()
+  const envConfig = getAgentspaceKitEnvConfig()
+  const signature = buildAgentspaceKitRuntimeSignature(envConfig)
+  if (cachedKit && cachedKitSignature === signature) return cachedKit
+  cachedKitSignature = signature
+  cachedServices = null
+  cachedServicesSignature = null
   cachedKit = (async () => {
-    loadEnvOnce()
     const envConfig = getAgentspaceKitEnvConfig()
     const { kit } = createAgentspaceKitWithEnv({
       envConfig,
@@ -194,7 +206,9 @@ async function getKit(): Promise<AgentspaceKitInstance> {
 }
 
 async function getServices(): Promise<AgentspaceKitServices> {
-  if (cachedServices) return cachedServices
+  const signature = buildAgentspaceKitRuntimeSignature()
+  if (cachedServices && cachedServicesSignature === signature) return cachedServices
+  cachedServicesSignature = signature
   cachedServices = (async () => {
     const kit = await getKit()
     return kit.createAll()
@@ -215,6 +229,10 @@ function resolveOperationById(operationId: string): AgentspaceOperationContract 
 }
 
 async function runSpecialOperation(operation: AgentspaceOperationContract, payload: ToolInput): Promise<unknown> {
+  if (operation.methodName === 'listBackupCapabilityCatalog') {
+    void payload
+    return listAgentspaceBackupCapabilityCatalog()
+  }
   if (operation.methodName !== 'hardDeleteAgentspaceProjectCascade') {
     throw new Error(`unknown_agentspace_special_operation:${operation.operationId}`)
   }
@@ -229,10 +247,10 @@ async function runSpecialOperation(operation: AgentspaceOperationContract, paylo
 }
 
 async function runResolvedOperation(operation: AgentspaceOperationContract, input: unknown): Promise<unknown> {
-  const payload = normalizeAgentspaceOperationInputForCompatibility(
+  const payload = parseAgentspaceToolInput(
     operation.operationId as AgentspaceTypedOperationId,
     toRecord(input),
-  )
+  ) as ToolInput
 
   if (operation.serviceKey === '__calls__') {
     return runSpecialOperation(operation, payload)
@@ -299,6 +317,10 @@ export async function runAgentspaceKitOperation(
 }
 
 export function clearAgentspaceKitOperationCaches(): void {
+  envLoaded = false
   cachedServices = null
+  cachedServicesSignature = null
   cachedKit = null
+  cachedKitSignature = null
+  clearAgentspaceKitEnvConfigCache()
 }

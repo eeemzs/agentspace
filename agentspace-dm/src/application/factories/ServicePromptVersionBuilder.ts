@@ -5,11 +5,13 @@ import { LocaleOptions, RepositoryCreateParams } from '@aopslab/xf-dm'
 import { getParent, XfLogger } from '@aopslab/xf-logger'
 import { RedisConfig } from '@aopslab/xf-db-redis'
 import { RepositoryConfig } from '@aopslab/xf-db'
+import type { IUnitOfWork } from '@aopslab/xf-db'
 import type { IPromptVersionServicePort, IPromptServicePort } from '../ports/inbound/index.js'
-import type { IRepositoryPortPromptVersion } from '../ports/repository-ports/index.js'
+import type { IRepositoryPortPrompt, IRepositoryPortPromptVersion } from '../ports/repository-ports/index.js'
 import { PromptVersionService, type PromptVersionServiceOptions } from '../services/index.js'
 import { PromptVersionServiceError } from '../errors/PromptVersionServiceError.js'
 import { RepositoryFactoryPromptVersion } from './RepositoryFactoryPromptVersion.js'
+import { createAgentspaceDrizzleUnitOfWork } from './drizzleDialect.js'
 
 export interface PromptVersionServiceFactoryConfig {
   repositoryConfig?: RepositoryConfig
@@ -31,6 +33,7 @@ export interface PromptVersionServiceFactoryOverrides {
 
 export interface PromptVersionServiceFactoryDependencies {
   promptService?: IPromptServicePort
+  promptRepository?: IRepositoryPortPrompt
 }
 
 export class ServiceBuilderPromptVersion {
@@ -143,9 +146,16 @@ export class ServiceBuilderPromptVersion {
         )
       }
 
+      let unitOfWork: IUnitOfWork | undefined
+      if (config.repositoryConfig) {
+        unitOfWork = createAgentspaceDrizzleUnitOfWork(config.repositoryConfig)
+      }
+
       const serviceOptions: PromptVersionServiceOptions = {
         promptVersionRepository,
         promptService: self.serviceDependencies.promptService as IPromptServicePort,
+        promptRepository: self.serviceDependencies.promptRepository,
+        unitOfWork,
         logger,
         //==> custom-service-options
         // Map factory config / overrides to service options here.

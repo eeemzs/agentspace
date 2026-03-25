@@ -1,9 +1,9 @@
-﻿import { createRepositoryFactory } from '@aopslab/xf-dm'
 import { IRepositoryPortSprintItem } from '../ports/repository-ports/index.js'
-import { SprintItemDrizzleRepo } from '../../infrastructure/repositories/index.js'
+import { SprintItemDrizzleRepo, SprintItemDrizzleSqliteRepo } from '../../infrastructure/repositories/index.js'
+import { createAgentspaceDrizzleRepositoryFactory } from './drizzleDialect.js'
 
-export const RepositoryFactorySprintItem = createRepositoryFactory<IRepositoryPortSprintItem>({
+export const RepositoryFactorySprintItem = createAgentspaceDrizzleRepositoryFactory<IRepositoryPortSprintItem>({
   moduleName: 'RepositoryFactorySprintItem',
-  mongoRepo: undefined,
-  drizzleRepo: SprintItemDrizzleRepo,
-});
+  pgRepo: SprintItemDrizzleRepo,
+  sqliteRepo: SprintItemDrizzleSqliteRepo,
+})

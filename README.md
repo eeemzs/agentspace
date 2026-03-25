@@ -17,7 +17,17 @@ Agentspace domain workspace for dm, kit, host-plugin, tooling, cli, and tests.
 pnpm run build
 pnpm run test
 pnpm run manifest:sync
+pnpm run db:generate
+pnpm run db:migrate
+pnpm run db:push
 ```
+
+## Canonical Skill Package
+
+- Standard document: `./SKILL_PACKAGE_STANDARD.md`
+- Standard ID: `aops-skill-package-v1`
+- Canonical entry file: `SKILL.md`
+- Import/export/materialize flows are package-first and intentionally avoid backward-compatibility shims.
 
 ## CLI Examples
 
@@ -40,5 +50,31 @@ pnpm --filter @aopslab/domain-cli-agentspace run start:tsx -- op agentspace.proj
 ## Runtime Notes
 
 - Standalone CLI runtime defaults to host-plugin execution and can fall back to tooling mode with `--execution-mode tooling`.
-- Repo URL precedence is `--repo-url -> AGENTSPACE_REPO_URL -> AOPS_PG_URL -> DEV_PG_URL`.
+- Repo URL precedence is `--repo-url -> AGENTSPACE_REPO_URL -> AGENTSPACE_SQLITE_URL -> AGENTSPACE_PG_URL -> AOPS_PG_URL -> DEV_PG_URL -> file:~/.aops/agentspace.aops.sqlite`.
+- Hicbir repo source verilmezse CLI local sqlite fallback dosyasini bootstrap eder.
 - Workspace-scoped operations should receive either explicit payload workspace fields or `--workspace-id` context.
+
+## AOPS Hosted Refresh Recipe
+
+If you changed Agentspace contracts, manifests, or tool projections and the
+hosted runtime looks stale, use this sequence:
+
+```bash
+cd /Volumes/d/dev-js2/domains/agentspace
+pnpm run manifest:sync
+
+cd /Volumes/d/dev-js2/apps/aops
+aops-cli host diagnostics --reset --warmup
+aops-cli agent tools --domain agentspace --workspace-name Default
+```
+
+This is the deterministic recovery path for manifest drift, stale route
+projection, or `tool_not_found` after a domain change.
+
+## Drizzle Flow
+
+- PostgreSQL varsayilani icin `AGENTSPACE_PG_URL` veya `AGENTSPACE_REPO_URL` kullan.
+- SQLite icin `AGENTSPACE_DRIZZLE_DIALECT=sqlite` ve `AGENTSPACE_SQLITE_URL=file:/absolute/path/agentspace.sqlite` kullan.
+- Root `db:*` scriptleri once `agentspace-dm` paketini build eder, sonra uygun Drizzle config ile calisir.
+- SQLite config: `drizzle.agentspace.sqlite.config.ts`
+- PostgreSQL config: `drizzle.agentspace.config.ts`

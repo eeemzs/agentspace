@@ -16,12 +16,19 @@ export const ibmCodexChatSettingKeys = [
   'userId',
   'binaryPath',
   'model',
+  'modelProvider',
   'reasoningEffort',
   'profile',
+  'serviceTier',
+  'personality',
+  'approvalsReviewer',
   'executionMode',
   'sandboxMode',
   'manualCwd',
   'autoStart',
+  'persistExtendedHistory',
+  'experimentalApi',
+  'optOutNotificationMethods',
   'createdBy',
   'updatedBy',
 ] as const satisfies readonly (keyof IbmCodexChatSetting)[]
@@ -38,4 +45,3 @@ export const bmCodexChatSettingMlgFields = mlgFieldsOf<IbmCodexChatSetting>()()
 type _VerifyMlgFields = EnsureExactMlgKeys<IbmCodexChatSetting, typeof bmCodexChatSettingMlgFields>
 const _verifyMlgFields: _VerifyMlgFields = true
 void _verifyMlgFields
-

@@ -33,3 +33,23 @@ export {
   ProjectMemberService, type ProjectMemberServiceOptions,
   ProjectPathService, type ProjectPathServiceOptions,
 } from '../../application/services/index.js';
+
+export {
+  AGENTSPACE_BACKUP_SECTION_DEFINITIONS,
+  computeAgentspaceRestoreScope,
+  exportAgentspaceBackupTables,
+  filterAgentspaceRestoreRows,
+  listAgentspaceBackupSchemaCoverage,
+  listAgentspaceBackupSections,
+  resolveAgentspaceBackupDeletePlan,
+} from './agentspace-backup-contract.js'
+export type {
+  AgentspaceBackupDeletePlan,
+  AgentspaceBackupReadAdapter,
+  AgentspaceBackupRow,
+  AgentspaceBackupSectionDefinition,
+  AgentspaceBackupSectionKey,
+  AgentspaceBackupSectionSelection,
+  AgentspaceBackupTableSnapshot,
+  AgentspaceRestoreScope,
+} from './agentspace-backup-contract.js'

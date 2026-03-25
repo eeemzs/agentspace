@@ -1,9 +1,18 @@
-﻿import { Effect } from 'effect'
+import { Effect } from 'effect'
+import { DbQueryOptions } from '@aopslab/xf-db'
 import { SkillVersionServiceError } from '../../errors/SkillVersionServiceError.js'
 import { IbmResource, IbmSkill, IbmSkillVersion, IbmSkillVersionInsert } from '../../../domain/models/index.js'
-import { DbQueryOptions } from '@aopslab/xf-db'
 
-export interface OpenAiSkillFileInput {
+export const CANONICAL_SKILL_PACKAGE_ENTRY_FILE = 'SKILL.md'
+export const CANONICAL_SKILL_PACKAGE_STANDARD = 'aops-skill-package-v1'
+export const CANONICAL_SKILL_PACKAGE_FORMAT = 'filesystem-skill-package'
+
+export interface SkillPackageMetadata extends Record<string, unknown> {
+  source?: string
+  purpose?: string
+}
+
+export interface SkillPackageFileInput {
   path: string
   content: string
   kind?: string
@@ -11,14 +20,23 @@ export interface OpenAiSkillFileInput {
   mimeType?: string
 }
 
-export interface OpenAiSkillBundleInput {
-  files: OpenAiSkillFileInput[]
+export interface SkillPackageBundleInput {
+  files: SkillPackageFileInput[]
   entryFile?: string
-  metadata?: Record<string, unknown>
+  metadata?: SkillPackageMetadata
   sourcePath?: string
 }
 
-export interface ImportOpenAiSkillInput {
+export interface SkillPackageDescriptor {
+  entryFile: string
+  standard: string
+  format: string
+  fileCount: number
+  sourcePath?: string
+  metadata?: SkillPackageMetadata
+}
+
+export interface ImportSkillPackageInput {
   workspaceId: string
   projectId?: string
   scopeType: 'global' | 'project'
@@ -32,33 +50,32 @@ export interface ImportOpenAiSkillInput {
   createdBy?: string
   updatedBy?: string
   publish?: boolean
-  bundle: OpenAiSkillBundleInput
+  bundle: SkillPackageBundleInput
 }
 
-export interface ImportOpenAiSkillResult {
+export interface ImportSkillPackageResult {
   skill: IbmSkill
   skillVersion: IbmSkillVersion
   resource?: IbmResource
 }
 
-export interface ExportOpenAiSkillResult {
+export interface ExportSkillPackageResult {
   skillVersionId: string
   skillId: string
   skillName?: string
   workspaceId: string
   projectId?: string
-  entryFile: string
-  skillStandard: string
-  files: OpenAiSkillFileInput[]
-  metadata: Record<string, unknown>
+  files: SkillPackageFileInput[]
+  metadata: SkillPackageMetadata
+  package: SkillPackageDescriptor
 }
 
-export interface MaterializeOpenAiSkillInput {
+export interface MaterializeSkillPackageInput {
   outputDir: string
   overwrite?: boolean
 }
 
-export interface MaterializeOpenAiSkillResult {
+export interface MaterializeSkillPackageResult {
   skillVersionId: string
   outputDir: string
   writtenFiles: Array<{
@@ -79,12 +96,12 @@ export interface ISkillVersionServicePort {
   updateSkillVersion(id: string, patch: Partial<IbmSkillVersion>): Effect.Effect<IbmSkillVersion, SkillVersionServiceError>
   removeSkillVersion(id: string): Effect.Effect<void, SkillVersionServiceError>
   publishSkillVersion(id: string, updatedBy?: string): Effect.Effect<IbmSkillVersion, SkillVersionServiceError>
-  importOpenAiSkill(data: ImportOpenAiSkillInput): Effect.Effect<ImportOpenAiSkillResult, SkillVersionServiceError>
-  exportOpenAiSkillVersion(id: string): Effect.Effect<ExportOpenAiSkillResult, SkillVersionServiceError>
-  materializeOpenAiSkillVersion(
+  importSkillPackage(data: ImportSkillPackageInput): Effect.Effect<ImportSkillPackageResult, SkillVersionServiceError>
+  exportSkillPackage(id: string): Effect.Effect<ExportSkillPackageResult, SkillVersionServiceError>
+  materializeSkillPackage(
     id: string,
-    data: MaterializeOpenAiSkillInput
-  ): Effect.Effect<MaterializeOpenAiSkillResult, SkillVersionServiceError>
+    data: MaterializeSkillPackageInput
+  ): Effect.Effect<MaterializeSkillPackageResult, SkillVersionServiceError>
 }
 
 export interface ISkillVersionLookupPort {

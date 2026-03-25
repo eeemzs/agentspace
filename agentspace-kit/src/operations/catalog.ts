@@ -45,6 +45,7 @@ function buildOperationsInternal(): AgentspaceOperationSpec[] {
       args: cloneArgs(row.args),
       summary: row.summary,
       tags: [`resource:${row.serviceEntity}`, `action:${action}`],
+      ...('examples' in row && Array.isArray(row.examples) ? { examples: row.examples } : {}),
       ...toOperationSchemaRefs(row.operationId),
     })
     operations.push(operation)

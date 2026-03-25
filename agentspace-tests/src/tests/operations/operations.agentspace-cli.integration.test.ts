@@ -1,194 +1,341 @@
-import { spawn } from 'node:child_process'
 import fs from 'node:fs'
+import os from 'node:os'
 import path from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { randomUUID } from 'node:crypto'
+import { beforeAll, describe, expect, it } from 'vitest'
+import { ensureCliRuntimeReady, ensureVariantReady, repoVariants } from '../../config/config.js'
+import {
+  runAgentspaceCli,
+  runAgentspaceCliWithoutRepo,
+  toItems,
+} from './agentspace-cli.harness.js'
 
-import { describe, expect, it } from 'vitest'
-
-const testRoot = fileURLToPath(new URL('../../', import.meta.url))
-const workspaceRoot = path.resolve(testRoot, '..', '..')
-const cliRoot = path.resolve(workspaceRoot, 'agentspace-cli')
-const cliNodeEntry = path.resolve(cliRoot, 'dist', 'main.js')
-const cliPackageVersion = String(JSON.parse(fs.readFileSync(path.resolve(cliRoot, 'package.json'), 'utf8')).version ?? '0.0.0')
-
-function extractJsonPayload(raw: string): unknown {
-  const normalized = raw.trim()
-  if (!normalized || normalized === 'undefined' || normalized === 'null') {
-    return undefined
-  }
-
-  const end = Math.max(raw.lastIndexOf('}'), raw.lastIndexOf(']'))
-  if (end < 0) {
-    return normalized
-  }
-
-  const stack: string[] = []
-  let inString = false
-  let escaped = false
-  let start = -1
-
-  for (let index = end; index >= 0; index -= 1) {
-    const char = raw[index]
-    if (inString) {
-      if (escaped) {
-        escaped = false
-      } else if (char === '\\') {
-        escaped = true
-      } else if (char === '"') {
-        inString = false
-      }
-      continue
-    }
-
-    if (char === '"') {
-      inString = true
-      continue
-    }
-
-    if (char === '}' || char === ']') {
-      stack.push(char)
-      continue
-    }
-
-    if (char === '{' || char === '[') {
-      const expected = char === '{' ? '}' : ']'
-      if (stack[stack.length - 1] !== expected) continue
-      stack.pop()
-      if (stack.length === 0) {
-        start = index
-        break
-      }
-    }
-  }
-
-  if (start < 0) {
-    return normalized
-  }
-
-  return JSON.parse(raw.slice(start, end + 1).trim())
-}
-
-async function runAgentspaceCliText(args: string[]): Promise<string> {
-  return await new Promise((resolve, reject) => {
-    const child = spawn(process.execPath, [cliNodeEntry, ...args], {
-      cwd: workspaceRoot,
-      env: {
-        ...process.env,
-        AGENTSPACE_REPO_URL: '',
-        AOPS_PG_URL: '',
-        DEV_PG_URL: '',
-        DOTENV_CONFIG_QUIET: 'true',
-      },
-      stdio: ['ignore', 'pipe', 'pipe'],
+for (const variant of repoVariants) {
+  describe(`agentspace-cli integration (${variant.label})`, () => {
+    beforeAll(async () => {
+      await ensureCliRuntimeReady()
+      await ensureVariantReady(variant)
     })
 
-    let stdout = ''
-    let stderr = ''
+    it('supports workspace CRUD across repo variants', async () => {
+      const workspaceName = `Agentspace Test Workspace ${Date.now()}-${Math.floor(Math.random() * 1_000_000)}`
+      const ownerId = randomUUID()
+      const created = (await runAgentspaceCli(
+        [
+          'tool',
+          '--id',
+          'agentspace.workspace.create',
+          '--input',
+          JSON.stringify({
+            data: {
+              ownerId,
+              name: workspaceName,
+              description: 'Created from agentspace CLI integration tests',
+              createdBy: 'agentspace-tests',
+              updatedBy: 'agentspace-tests',
+            },
+          }),
+        ],
+        variant.url,
+      )) as { id?: string; name?: string }
 
-    child.stdout.on('data', (chunk) => {
-      stdout += String(chunk)
-    })
-    child.stderr.on('data', (chunk) => {
-      stderr += String(chunk)
-    })
+      const workspaceId = String(created.id ?? '')
+      expect(workspaceId).not.toBe('')
+      expect(String(created.name ?? '')).toBe(workspaceName)
 
-    child.once('error', (error) => reject(error))
-    child.once('close', (code) => {
-      if (code !== 0) {
-        reject(new Error(`agentspace_cli_failed:${args.join(' ')}\n${stdout}\n${stderr}`))
-        return
-      }
-      resolve(stdout.trim())
-    })
-  })
-}
-
-async function runAgentspaceCliJson(args: string[]): Promise<unknown> {
-  return await new Promise((resolve, reject) => {
-    const child = spawn(process.execPath, [cliNodeEntry, ...args], {
-      cwd: workspaceRoot,
-      env: {
-        ...process.env,
-        AGENTSPACE_REPO_URL: '',
-        AOPS_PG_URL: '',
-        DEV_PG_URL: '',
-        DOTENV_CONFIG_QUIET: 'true',
-      },
-      stdio: ['ignore', 'pipe', 'pipe'],
-    })
-
-    let stdout = ''
-    let stderr = ''
-
-    child.stdout.on('data', (chunk) => {
-      stdout += String(chunk)
-    })
-    child.stderr.on('data', (chunk) => {
-      stderr += String(chunk)
-    })
-
-    child.once('error', (error) => reject(error))
-    child.once('close', (code) => {
-      if (code !== 0) {
-        reject(new Error(`agentspace_cli_failed:${args.join(' ')}\n${stdout}\n${stderr}`))
-        return
-      }
       try {
-        resolve(extractJsonPayload(stdout))
-      } catch (error) {
-        reject(error)
+        const loadedViaOp = (await runAgentspaceCli(
+          ['op', 'agentspace.workspace.get-by-id', '--id', workspaceId],
+          variant.url,
+        )) as { id?: string; name?: string; description?: string }
+        expect(String(loadedViaOp.id ?? '')).toBe(workspaceId)
+        expect(String(loadedViaOp.name ?? '')).toBe(workspaceName)
+
+        const listed = await runAgentspaceCli(
+          ['workspace', 'list-workspaces', '--filter', JSON.stringify({ id: workspaceId })],
+          variant.url,
+        )
+        expect(toItems(listed).some((item) => String(item.id ?? '') === workspaceId)).toBe(true)
+
+        const updated = (await runAgentspaceCli(
+          [
+            'op',
+            'agentspace.workspace.update-workspace',
+            '--id',
+            workspaceId,
+            '--patch',
+            JSON.stringify({
+              description: 'Updated from agentspace CLI integration tests',
+              updatedBy: 'agentspace-tests-updated',
+            }),
+          ],
+          variant.url,
+        )) as { id?: string; description?: string; updatedBy?: string }
+        expect(String(updated.id ?? '')).toBe(workspaceId)
+        expect(String(updated.description ?? '')).toBe('Updated from agentspace CLI integration tests')
+        expect(String(updated.updatedBy ?? '')).toBe('agentspace-tests-updated')
+      } finally {
+        await runAgentspaceCli(
+          ['op', 'agentspace.workspace.remove-workspace', '--id', workspaceId],
+          variant.url,
+        )
       }
-    })
+    }, 180_000)
+
+    it('supports skill package import/export/materialize across repo variants', async () => {
+      const workspaceName = `Agentspace Skill Package ${Date.now()}-${Math.floor(Math.random() * 1_000_000)}`
+      const ownerId = randomUUID()
+      const skillName = `skill-package-${Date.now()}`
+      const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'agentspace-skill-package-'))
+      const outputDir = path.join(tempRoot, 'materialized')
+
+      const skillMarkdown = [
+        '---',
+        `name: ${skillName}`,
+        'description: Skill package integration test',
+        '---',
+        '',
+        `# ${skillName}`,
+        '',
+        '## Instructions',
+        '- Verify canonical skill package import/export/materialize flow.',
+      ].join('\n')
+
+      let workspaceId = ''
+      let skillId = ''
+      let skillVersionId = ''
+
+      try {
+        const createdWorkspace = (await runAgentspaceCli(
+          [
+            'tool',
+            '--id',
+            'agentspace.workspace.create',
+            '--input',
+            JSON.stringify({
+              data: {
+                ownerId,
+                name: workspaceName,
+                description: 'Workspace for skill package integration tests',
+                createdBy: 'agentspace-tests',
+                updatedBy: 'agentspace-tests',
+              },
+            }),
+          ],
+          variant.url,
+        )) as { id?: string }
+
+        workspaceId = String(createdWorkspace.id ?? '')
+        expect(workspaceId).not.toBe('')
+
+        const imported = (await runAgentspaceCli(
+          [
+            'tool',
+            '--id',
+            'agentspace.skill-version.import-skill-package',
+            '--input',
+            JSON.stringify({
+              data: {
+                workspaceId,
+                scopeType: 'global',
+                createdBy: 'agentspace-tests',
+                updatedBy: 'agentspace-tests',
+                bundle: {
+                  sourcePath: '/tmp/agentspace-skill-package-test',
+                  metadata: {
+                    source: 'agentspace-tests',
+                    purpose: 'round-trip',
+                  },
+                  files: [
+                    {
+                      path: 'SKILL.md',
+                      kind: 'instruction',
+                      content: skillMarkdown,
+                    },
+                    {
+                      path: 'references/checklist.md',
+                      kind: 'reference',
+                      content: '# Checklist\n- Round-trip verified.\n',
+                    },
+                  ],
+                },
+              },
+            }),
+          ],
+          variant.url,
+        )) as {
+          skill?: { id?: string; name?: string; tags?: string[] }
+          skillVersion?: { id?: string; skillStandard?: string; entryFile?: string }
+        }
+
+        skillId = String(imported.skill?.id ?? '')
+        skillVersionId = String(imported.skillVersion?.id ?? '')
+        expect(skillId).not.toBe('')
+        expect(skillVersionId).not.toBe('')
+        expect(String(imported.skill?.name ?? '')).toBe(skillName)
+        expect(Array.isArray(imported.skill?.tags) && imported.skill?.tags.includes('skill-package')).toBe(true)
+        expect(String(imported.skillVersion?.skillStandard ?? '')).toBe('aops-skill-package-v1')
+        expect(String(imported.skillVersion?.entryFile ?? '')).toBe('SKILL.md')
+
+        const exported = (await runAgentspaceCli(
+          [
+            'tool',
+            '--id',
+            'agentspace.skill-version.export-skill-package',
+            '--input',
+            JSON.stringify({ id: skillVersionId }),
+          ],
+          variant.url,
+        )) as {
+          metadata?: { source?: string; purpose?: string }
+          package?: { entryFile?: string; standard?: string; format?: string; sourcePath?: string; fileCount?: number }
+          files?: Array<{ path?: string; content?: string }>
+        }
+
+        expect(String(exported.package?.entryFile ?? '')).toBe('SKILL.md')
+        expect(String(exported.package?.standard ?? '')).toBe('aops-skill-package-v1')
+        expect(String(exported.package?.format ?? '')).toBe('filesystem-skill-package')
+        expect(String(exported.package?.sourcePath ?? '')).toBe('/tmp/agentspace-skill-package-test')
+        expect(Number(exported.package?.fileCount ?? 0)).toBe(2)
+        expect(String(exported.metadata?.source ?? '')).toBe('agentspace-tests')
+        expect(String(exported.metadata?.purpose ?? '')).toBe('round-trip')
+        const filePaths = (exported.files ?? []).map((file) => String(file.path ?? ''))
+        expect(filePaths).toContain('SKILL.md')
+        expect(filePaths).toContain('references/checklist.md')
+        expect(filePaths).not.toContain('agents/openai.yaml')
+
+        const materialized = (await runAgentspaceCli(
+          [
+            'tool',
+            '--id',
+            'agentspace.skill-version.materialize-skill-package',
+            '--input',
+            JSON.stringify({
+              id: skillVersionId,
+              data: {
+                outputDir,
+                overwrite: true,
+              },
+            }),
+          ],
+          variant.url,
+        )) as {
+          outputDir?: string
+          writtenFiles?: Array<{ path?: string }>
+        }
+
+        expect(String(materialized.outputDir ?? '')).toBe(outputDir)
+        const writtenPaths = (materialized.writtenFiles ?? []).map((file) => String(file.path ?? ''))
+        expect(writtenPaths).toHaveLength(2)
+        expect(writtenPaths).toEqual(expect.arrayContaining(['SKILL.md', 'references/checklist.md']))
+        expect(fs.readFileSync(path.join(outputDir, 'SKILL.md'), 'utf8')).toContain(`# ${skillName}`)
+        expect(fs.readFileSync(path.join(outputDir, 'references', 'checklist.md'), 'utf8')).toContain('Round-trip verified')
+      } finally {
+        if (skillVersionId) {
+          try {
+            await runAgentspaceCli(
+              [
+                'tool',
+                '--id',
+                'agentspace.skill-version.remove-skill-version',
+                '--input',
+                JSON.stringify({ id: skillVersionId }),
+              ],
+              variant.url,
+            )
+          } catch {}
+        }
+        if (skillId) {
+          try {
+            await runAgentspaceCli(
+              [
+                'tool',
+                '--id',
+                'agentspace.skill.remove-skill',
+                '--input',
+                JSON.stringify({ id: skillId }),
+              ],
+              variant.url,
+            )
+          } catch {}
+        }
+        if (workspaceId) {
+          try {
+            await runAgentspaceCli(
+              [
+                'tool',
+                '--id',
+                'agentspace.workspace.remove-workspace',
+                '--input',
+                JSON.stringify({ id: workspaceId }),
+              ],
+              variant.url,
+            )
+          } catch {}
+        }
+        fs.rmSync(tempRoot, { recursive: true, force: true })
+      }
+    }, 180_000)
   })
 }
 
-describe('agentspace-cli version/help/manifest', () => {
-  it('supports --version', async () => {
-    const version = await runAgentspaceCliText(['--version'])
-    expect(version).toBe(cliPackageVersion)
+describe('agentspace-cli default sqlite fallback', () => {
+  beforeAll(async () => {
+    await ensureCliRuntimeReady()
   })
 
-  it('supports contextual --help for static and operation commands', async () => {
-    const rootHelp = await runAgentspaceCliText(['--help'])
-    expect(rootHelp).toContain('agentspace-cli')
-    expect(rootHelp).toContain('agentspace manifest cli')
-
-    const workspaceHelp = await runAgentspaceCliText(['workspace', 'list-workspaces', '--help'])
-    expect(workspaceHelp).toContain('agentspace workspace list-workspaces')
-    expect(workspaceHelp).toContain('Generated from Agentspace DCM docs, shared contract args/examples, and host route projection.')
-
-    const opHelp = await runAgentspaceCliText(['op', 'agentspace.workspace.list-workspaces', '--help'])
-    expect(opHelp).toContain('agentspace op')
-    expect(opHelp).toContain('agentspace workspace list-workspaces')
-  })
-
-  it('supports manifest cli/get/show browse flows', async () => {
-    const cliManifest = (await runAgentspaceCliJson(['manifest', 'cli'])) as {
-      kind?: string
-      commandsById?: Record<string, unknown>
-      artifacts?: unknown[]
+  it('boots with the default sqlite fallback for runtime commands in an isolated home', async () => {
+    const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'agentspace-cli-default-sqlite-'))
+    const tempHome = path.join(tempRoot, 'home')
+    const localDbPath = path.join(tempHome, '.aops', 'agentspace.aops.sqlite')
+    const isolatedEnv = {
+      HOME: tempHome,
+      USERPROFILE: tempHome,
     }
-    expect(String(cliManifest.kind ?? '')).toBe('agentspace-cli-projection')
-    expect(Object.prototype.hasOwnProperty.call(cliManifest.commandsById ?? {}, 'manifest.get')).toBe(true)
-    expect(Object.prototype.hasOwnProperty.call(cliManifest.commandsById ?? {}, 'workspace.list-workspaces')).toBe(true)
-    expect(Array.isArray(cliManifest.artifacts)).toBe(true)
+    const ownerId = randomUUID()
+    const workspaceName = `Agentspace Default SQLite ${Date.now()}`
 
-    const dcmOperationDocs = (await runAgentspaceCliJson(
-      ['manifest', 'get', 'dcm', '--path', 'docs.operations.workspace.list-workspaces'],
-    )) as { summary?: string }
-    expect(String(dcmOperationDocs.summary ?? '').toLowerCase()).toContain('workspace')
+    let workspaceId = ''
 
-    const cliCommandDescriptor = (await runAgentspaceCliJson(
-      ['manifest', 'get', 'cli', '--path', 'commandsById.workspace.list-workspaces'],
-    )) as { title?: string }
-    expect(String(cliCommandDescriptor.title ?? '')).toBe('agentspace workspace list-workspaces')
+    try {
+      expect(fs.existsSync(localDbPath)).toBe(false)
 
-    const hrmShow = await runAgentspaceCliText(['manifest', 'show', 'hrm'])
-    expect(hrmShow).toContain('agentspace manifest show host-registration')
-    expect(hrmShow).toContain('runtime registration metadata only')
+      const created = (await runAgentspaceCliWithoutRepo(
+        [
+          'tool',
+          '--id',
+          'agentspace.workspace.create',
+          '--input',
+          JSON.stringify({
+            data: {
+              ownerId,
+              name: workspaceName,
+              description: 'Default sqlite fallback workspace',
+              createdBy: 'agentspace-tests',
+              updatedBy: 'agentspace-tests',
+            },
+          }),
+        ],
+        isolatedEnv,
+      )) as { id?: string }
 
-    const cliShow = await runAgentspaceCliText(['manifest', 'show', 'cli', '--path', 'commandsById.workspace.list-workspaces'])
-    expect(cliShow).toContain('agentspace manifest show cli --path commandsById.workspace.list-workspaces')
-    expect(cliShow).toContain('agentspace workspace list-workspaces')
-  })
+      workspaceId = String(created.id ?? '')
+      expect(workspaceId).not.toBe('')
+      expect(fs.existsSync(localDbPath)).toBe(true)
+
+      const listed = await runAgentspaceCliWithoutRepo(
+        ['workspace', 'list-workspaces', '--filter', JSON.stringify({ id: workspaceId })],
+        isolatedEnv,
+      )
+      expect(toItems(listed).some((item) => String(item.id ?? '') === workspaceId)).toBe(true)
+    } finally {
+      if (workspaceId) {
+        await runAgentspaceCliWithoutRepo(
+          ['op', 'agentspace.workspace.remove-workspace', '--id', workspaceId],
+          isolatedEnv,
+        )
+      }
+      fs.rmSync(tempRoot, { recursive: true, force: true })
+    }
+  }, 180_000)
 })

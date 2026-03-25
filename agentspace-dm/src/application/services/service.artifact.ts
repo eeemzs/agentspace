@@ -150,4 +150,17 @@ export class ArtifactService implements IArtifactServicePort {
       }))
     )
   }
+
+  removeArtifact(id: string): Effect.Effect<void, ArtifactServiceError> {
+    const stage = 'ArtifactService::removeArtifact'
+    return pipe(
+      validateInput(id, 'id', { stage }),
+      Effect.flatMap((artifactId) =>
+        this.artifactRepository.deleteById(artifactId).pipe(
+          Effect.mapError(mapDbError({ stage, operation: 'deleteById', factory: XfErrorFactory.upsertFailed }))
+        )
+      ),
+      Effect.map(() => undefined)
+    )
+  }
 }

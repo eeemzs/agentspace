@@ -1,6 +1,7 @@
 import type { Effect } from 'effect'
 
 import type { AgentspaceKitServices } from '../domain-services/types.js'
+import type { AgentspaceBackupCapabilityCatalog } from './backup-capability.js'
 import { AGENTSPACE_OPERATION_CATALOG_ROWS } from './catalog.data.js'
 
 type AgentspaceCatalogRow = (typeof AGENTSPACE_OPERATION_CATALOG_ROWS)[number]
@@ -8,6 +9,7 @@ type AgentspaceOperationId = Extract<AgentspaceCatalogRow['operationId'], string
 
 type AgentspaceSpecialMethods = {
   hardDeleteAgentspaceProjectCascade: (workspaceId: string, projectId: string) => Promise<unknown>
+  listBackupCapabilityCatalog: () => Promise<AgentspaceBackupCapabilityCatalog>
 }
 
 type AgentspaceServiceByKey = AgentspaceKitServices & {

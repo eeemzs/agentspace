@@ -96,6 +96,8 @@ export {
   ServiceFactoryWorkspaceMember,
   ServiceFactoryProjectMember,
   ServiceFactoryProjectPath,
+  createAgentspaceDrizzleUnitOfWork,
+  inferDrizzleDialectFromRepositoryConfig,
 } from '../../application/factories/index.js';
 
 export type {

@@ -59,4 +59,21 @@ export class WorkflowStepRunService implements IWorkflowStepRunServicePort {
       ))
     )
   }
+
+  listWorkflowStepRuns(
+    filter: Partial<IbmWorkflowStepRun> = {},
+    options?: DbQueryOptions<IbmWorkflowStepRun>
+  ): Effect.Effect<IbmWorkflowStepRun[], WorkflowStepRunServiceError> {
+    const stage = 'WorkflowStepRunService::listWorkflowStepRuns'
+    return pipe(
+      validateInput(filter, 'filter', { stage }),
+      Effect.flatMap((filter) => this.workflowStepRunRepository.find({ matchEq: filter, options } as any).pipe(
+        Effect.mapError(mapDbError({ stage, operation: 'find', factory: XfErrorFactory.notFound }))
+      )),
+      Effect.tapError((e) => Effect.sync(() => {
+        const info = effectErrorInfo(e)
+        this.logger?.error({ error: info.unwrapped, stage }, 'Error in listWorkflowStepRuns')
+      }))
+    )
+  }
 }

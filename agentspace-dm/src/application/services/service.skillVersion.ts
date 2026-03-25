@@ -7,8 +7,23 @@ import { pipe } from 'effect/Function'
 import { validateInput, XfErrorFactory, effectErrorInfo } from '@aopslab/xf-core'
 import { XfLogger } from '@aopslab/xf-logger'
 import type { IRepositoryPortSkillVersion } from '../ports/repository-ports/index.js'
+import {
+  CANONICAL_SKILL_PACKAGE_ENTRY_FILE,
+  CANONICAL_SKILL_PACKAGE_FORMAT,
+  CANONICAL_SKILL_PACKAGE_STANDARD,
+} from '../ports/inbound/index.js'
 import type {
-  ExportOpenAiSkillResult, ImportOpenAiSkillInput, ImportOpenAiSkillResult, ISkillVersionServicePort, ISkillServicePort, IResourceServicePort, MaterializeOpenAiSkillInput, MaterializeOpenAiSkillResult, OpenAiSkillFileInput, } from '../ports/inbound/index.js'
+  ExportSkillPackageResult,
+  ImportSkillPackageInput,
+  ImportSkillPackageResult,
+  ISkillVersionServicePort,
+  ISkillServicePort,
+  IResourceServicePort,
+  MaterializeSkillPackageInput,
+  MaterializeSkillPackageResult,
+  SkillPackageFileInput,
+  SkillPackageMetadata,
+} from '../ports/inbound/index.js'
 import { SkillVersionServiceError } from '../errors/SkillVersionServiceError.js'
 import { IbmResource, IbmResourceInsert, IbmSkill, IbmSkillVersion, IbmSkillVersionInsert, skillVersionZodSchemaInsert } from '../../domain/models/index.js'
 import { validateBmInputWithSchema } from './service.zod-validation.js'
@@ -25,21 +40,22 @@ export interface SkillVersionServiceOptions {
   locale?: string
 }
 
-const OPENAI_SKILL_ENTRY_FILE = 'SKILL.md'
-const OPENAI_SKILL_STANDARD = 'openai-skills-v1'
-const OPENAI_SKILL_TAG = 'openai-skill'
-const OPENAI_SKILL_FILE_LIMIT = 256
-const OPENAI_SKILL_FILE_MAX_BYTES = 512 * 1024
-const OPENAI_SKILL_TOTAL_MAX_BYTES = 4 * 1024 * 1024
+const SKILL_PACKAGE_ENTRY_FILE: typeof CANONICAL_SKILL_PACKAGE_ENTRY_FILE = 'SKILL.md'
+const SKILL_PACKAGE_STANDARD: typeof CANONICAL_SKILL_PACKAGE_STANDARD = 'aops-skill-package-v1'
+const SKILL_PACKAGE_FORMAT: typeof CANONICAL_SKILL_PACKAGE_FORMAT = 'filesystem-skill-package'
+const SKILL_PACKAGE_TAG = 'skill-package'
+const SKILL_PACKAGE_FILE_LIMIT = 256
+const SKILL_PACKAGE_FILE_MAX_BYTES = 512 * 1024
+const SKILL_PACKAGE_TOTAL_MAX_BYTES = 4 * 1024 * 1024
 
-type NormalizedOpenAiSkillFile = OpenAiSkillFileInput & {
+type NormalizedSkillPackageFile = SkillPackageFileInput & {
   sizeBytes: number
   sha256: string
 }
 
-type NormalizedOpenAiBundle = {
+type NormalizedSkillPackageBundle = {
   entryFile: string
-  files: NormalizedOpenAiSkillFile[]
+  files: NormalizedSkillPackageFile[]
 }
 
 type ParsedFrontmatter = {
@@ -56,6 +72,20 @@ function normalizeNonEmpty(value: unknown): string | undefined {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function selectHighestSkillVersion<T extends { version?: number | null }>(versions: readonly T[] | null | undefined): T | undefined {
+  let highest: T | undefined
+  let highestVersion = Number.NEGATIVE_INFINITY
+  for (const version of versions ?? []) {
+    const numericVersion = Number(version?.version ?? 0)
+    if (!Number.isFinite(numericVersion)) continue
+    if (!highest || numericVersion > highestVersion) {
+      highest = version
+      highestVersion = numericVersion
+    }
+  }
+  return highest
 }
 
 function inferMimeType(filePath: string): string {
@@ -134,14 +164,14 @@ function parseMarkdownFrontmatter(markdown: string): ParsedFrontmatter {
   return { attributes, body, hasFrontmatter: true }
 }
 
-function normalizeOpenAiBundle(data: ImportOpenAiSkillInput, stage: string): NormalizedOpenAiBundle {
+function normalizeSkillPackageBundle(data: ImportSkillPackageInput, stage: string): NormalizedSkillPackageBundle {
   const bundle = data.bundle
-  const entryFileRaw = normalizeNonEmpty(bundle?.entryFile) ?? OPENAI_SKILL_ENTRY_FILE
+  const entryFileRaw = normalizeNonEmpty(bundle?.entryFile) ?? SKILL_PACKAGE_ENTRY_FILE
   const entryFile = normalizeSkillFilePath(entryFileRaw, stage)
-  if (entryFile !== OPENAI_SKILL_ENTRY_FILE) {
+  if (entryFile !== SKILL_PACKAGE_ENTRY_FILE) {
     throw XfErrorFactory.createFailed({
       stage,
-      message: `openai_skill_entry_file_must_be_${OPENAI_SKILL_ENTRY_FILE}`,
+      message: `skill_package_entry_file_must_be_${SKILL_PACKAGE_ENTRY_FILE}`,
     })
   }
 
@@ -149,15 +179,15 @@ function normalizeOpenAiBundle(data: ImportOpenAiSkillInput, stage: string): Nor
   if (rawFiles.length === 0) {
     throw XfErrorFactory.inputRequired({ field: 'bundle.files', stage })
   }
-  if (rawFiles.length > OPENAI_SKILL_FILE_LIMIT) {
+  if (rawFiles.length > SKILL_PACKAGE_FILE_LIMIT) {
     throw XfErrorFactory.createFailed({
       stage,
-      message: `openai_skill_file_count_exceeded:${rawFiles.length}`,
+      message: `skill_package_file_count_exceeded:${rawFiles.length}`,
     })
   }
 
   const seen = new Set<string>()
-  const files: NormalizedOpenAiSkillFile[] = []
+  const files: NormalizedSkillPackageFile[] = []
   let totalBytes = 0
 
   for (const raw of rawFiles) {
@@ -177,16 +207,16 @@ function normalizeOpenAiBundle(data: ImportOpenAiSkillInput, stage: string): Nor
 
     const sizeBytes = Buffer.byteLength(raw.content, 'utf8')
     totalBytes += sizeBytes
-    if (sizeBytes > OPENAI_SKILL_FILE_MAX_BYTES) {
+    if (sizeBytes > SKILL_PACKAGE_FILE_MAX_BYTES) {
       throw XfErrorFactory.createFailed({
         stage,
-        message: `openai_skill_file_too_large:${normalizedPath}:${sizeBytes}`,
+        message: `skill_package_file_too_large:${normalizedPath}:${sizeBytes}`,
       })
     }
-    if (totalBytes > OPENAI_SKILL_TOTAL_MAX_BYTES) {
+    if (totalBytes > SKILL_PACKAGE_TOTAL_MAX_BYTES) {
       throw XfErrorFactory.createFailed({
         stage,
-        message: `openai_skill_bundle_too_large:${totalBytes}`,
+        message: `skill_package_bundle_too_large:${totalBytes}`,
       })
     }
 
@@ -202,15 +232,15 @@ function normalizeOpenAiBundle(data: ImportOpenAiSkillInput, stage: string): Nor
     })
   }
 
-  if (!files.some((file) => file.path === OPENAI_SKILL_ENTRY_FILE)) {
+  if (!files.some((file) => file.path === SKILL_PACKAGE_ENTRY_FILE)) {
     throw XfErrorFactory.createFailed({
       stage,
-      message: `missing_required_skill_file:${OPENAI_SKILL_ENTRY_FILE}`,
+      message: `missing_required_skill_file:${SKILL_PACKAGE_ENTRY_FILE}`,
     })
   }
 
   return {
-    entryFile: OPENAI_SKILL_ENTRY_FILE,
+    entryFile: SKILL_PACKAGE_ENTRY_FILE,
     files: files.sort((left, right) => left.path.localeCompare(right.path)),
   }
 }
@@ -221,11 +251,11 @@ function toSkillTags(baseTags?: string[]): string[] {
     const normalized = normalizeNonEmpty(tag)
     if (normalized) merged.add(normalized)
   }
-  merged.add(OPENAI_SKILL_TAG)
+  merged.add(SKILL_PACKAGE_TAG)
   return [...merged]
 }
 
-function toOpenAiMetadata(files: NormalizedOpenAiSkillFile[]): Array<Record<string, unknown>> {
+function toSkillPackageMetadata(files: NormalizedSkillPackageFile[]): Array<Record<string, unknown>> {
   return files.map((file) => ({
     path: file.path,
     kind: file.kind,
@@ -236,7 +266,7 @@ function toOpenAiMetadata(files: NormalizedOpenAiSkillFile[]): Array<Record<stri
   }))
 }
 
-function toVersionFiles(files: NormalizedOpenAiSkillFile[]): OpenAiSkillFileInput[] {
+function toVersionFiles(files: NormalizedSkillPackageFile[]): SkillPackageFileInput[] {
   return files.map((file) => ({
     path: file.path,
     content: file.content,
@@ -246,8 +276,8 @@ function toVersionFiles(files: NormalizedOpenAiSkillFile[]): OpenAiSkillFileInpu
   }))
 }
 
-function toOpenAiFilesFromVersion(version: IbmSkillVersion): OpenAiSkillFileInput[] {
-  const byPath = new Map<string, OpenAiSkillFileInput>()
+function toSkillPackageFilesFromVersion(version: IbmSkillVersion): SkillPackageFileInput[] {
+  const byPath = new Map<string, SkillPackageFileInput>()
   const rawFiles = Array.isArray(version.files) ? version.files : []
 
   for (const raw of rawFiles) {
@@ -265,7 +295,7 @@ function toOpenAiFilesFromVersion(version: IbmSkillVersion): OpenAiSkillFileInpu
     })
   }
 
-  const entryFile = normalizeNonEmpty(version.entryFile) ?? OPENAI_SKILL_ENTRY_FILE
+  const entryFile = normalizeNonEmpty(version.entryFile) ?? SKILL_PACKAGE_ENTRY_FILE
   if (!byPath.has(entryFile.toLowerCase())) {
     byPath.set(entryFile.toLowerCase(), {
       path: entryFile,
@@ -309,11 +339,10 @@ export class SkillVersionService implements ISkillVersionServicePort {
     return pipe(
       this.skillVersionRepository.find({
         matchEq: { skillId, status: 'published' },
-        options: { sort: [{ field: 'version', type: 'desc' }], limit: 1 } as any,
       } as any),
       Effect.mapError(mapDbError({ stage, operation: 'find', factory: XfErrorFactory.notFound })),
       Effect.flatMap((versions) => {
-        const nextId = versions?.[0]?.id ?? null
+        const nextId = selectHighestSkillVersion(versions)?.id ?? null
         const patch: Partial<IbmSkill> = {
           currentVersionId: nextId,
         }
@@ -530,7 +559,7 @@ export class SkillVersionService implements ISkillVersionServicePort {
     skill: IbmSkill
     skillVersion: IbmSkillVersion
     description: string
-    files: NormalizedOpenAiSkillFile[]
+    files: NormalizedSkillPackageFile[]
     createdBy?: string
     updatedBy?: string
   }): Effect.Effect<IbmResource | undefined, SkillVersionServiceError> {
@@ -551,13 +580,16 @@ export class SkillVersionService implements ISkillVersionServicePort {
     }
 
     const resourceName = `${skill.name} v${skillVersion.version}`
+    const resourceProjectId = normalizeNonEmpty(skillVersion.projectId) ?? normalizeNonEmpty(skill.projectId)
+    const resourceScopeId = normalizeNonEmpty(skill.scopeId)
     const resourceMeta = {
       skillId,
       skillVersionId,
-      skillStandard: normalizeNonEmpty(skillVersion.skillStandard) ?? OPENAI_SKILL_STANDARD,
-      entryFile: normalizeNonEmpty(skillVersion.entryFile) ?? OPENAI_SKILL_ENTRY_FILE,
+      skillStandard: normalizeNonEmpty(skillVersion.skillStandard) ?? SKILL_PACKAGE_STANDARD,
+      entryFile: normalizeNonEmpty(skillVersion.entryFile) ?? SKILL_PACKAGE_ENTRY_FILE,
+      packageFormat: SKILL_PACKAGE_FORMAT,
       fileCount: files.length,
-      files: toOpenAiMetadata(files),
+      files: toSkillPackageMetadata(files),
       updatedAt: new Date().toISOString(),
     }
 
@@ -584,9 +616,9 @@ export class SkillVersionService implements ISkillVersionServicePort {
       if (currentId) {
         return yield* _(
           resourceService.updateResource(currentId, {
-            projectId: skillVersion.projectId ?? skill.projectId,
+            projectId: resourceProjectId,
             scopeType: skill.scopeType,
-            scopeId: skill.scopeId,
+            scopeId: resourceScopeId,
             name: resourceName,
             description,
             resourceType: 'skill',
@@ -610,9 +642,9 @@ export class SkillVersionService implements ISkillVersionServicePort {
 
       const insertPayload: IbmResourceInsert = {
         workspaceId: skill.workspaceId,
-        projectId: skillVersion.projectId ?? skill.projectId,
+        projectId: resourceProjectId,
         scopeType: skill.scopeType,
-        scopeId: skill.scopeId,
+        scopeId: resourceScopeId,
         name: resourceName,
         description,
         resourceType: 'skill',
@@ -639,8 +671,8 @@ export class SkillVersionService implements ISkillVersionServicePort {
     })
   }
 
-  importOpenAiSkill(data: ImportOpenAiSkillInput): Effect.Effect<ImportOpenAiSkillResult, SkillVersionServiceError> {
-    const stage = 'SkillVersionService::importOpenAiSkill'
+  importSkillPackage(data: ImportSkillPackageInput): Effect.Effect<ImportSkillPackageResult, SkillVersionServiceError> {
+    const stage = 'SkillVersionService::importSkillPackage'
     const self = this
     return pipe(
       validateInput(data, 'data', { stage }),
@@ -660,23 +692,23 @@ export class SkillVersionService implements ISkillVersionServicePort {
 
           const normalizedBundle = yield* _(
             Effect.try({
-              try: () => normalizeOpenAiBundle(payload, stage),
+              try: () => normalizeSkillPackageBundle(payload, stage),
               catch: (cause) =>
                 XfErrorFactory.createFailed({
                   stage,
-                  operation: 'normalizeOpenAiBundle',
+                  operation: 'normalizeSkillPackageBundle',
                   cause,
                 }),
             })
           )
 
-          const entryFile = normalizedBundle.files.find((file) => file.path === OPENAI_SKILL_ENTRY_FILE)
+          const entryFile = normalizedBundle.files.find((file) => file.path === SKILL_PACKAGE_ENTRY_FILE)
           if (!entryFile) {
             return yield* _(
               Effect.fail(
                 XfErrorFactory.createFailed({
                   stage,
-                  message: `missing_required_skill_file:${OPENAI_SKILL_ENTRY_FILE}`,
+                  message: `missing_required_skill_file:${SKILL_PACKAGE_ENTRY_FILE}`,
                 })
               )
             )
@@ -700,11 +732,6 @@ export class SkillVersionService implements ISkillVersionServicePort {
             normalizeNonEmpty(payload.shortDescription) ??
             normalizeNonEmpty(frontmatter.body.split(/\r?\n/g).find((line) => line.trim().length > 0))
 
-          const openAiYamlFile = normalizedBundle.files.find(
-            (file) => file.path.toLowerCase() === 'agents/openai.yaml' || file.path.toLowerCase() === 'openai.yaml'
-          )
-
-          const openAiYaml = openAiYamlFile ? parseSimpleYamlMap(openAiYamlFile.content) : undefined
           const sourcePath = normalizeNonEmpty(payload.bundle.sourcePath)
           const bundleMetadata = isRecord(payload.bundle.metadata) ? payload.bundle.metadata : {}
           const tags = toSkillTags(payload.tags)
@@ -823,12 +850,11 @@ export class SkillVersionService implements ISkillVersionServicePort {
           const latestVersions = yield* _(
             self.skillVersionRepository.find({
               matchEq: { skillId },
-              options: { sort: [{ field: 'version', type: 'desc' }], limit: 1 } as any,
             } as any).pipe(
               Effect.mapError(mapDbError({ stage, operation: 'find', factory: XfErrorFactory.notFound }))
             )
           )
-          const nextVersion = Number(latestVersions?.[0]?.version ?? 0) + 1
+          const nextVersion = Number(selectHighestSkillVersion(latestVersions)?.version ?? 0) + 1
           const status = payload.publish === true ? 'published' : (payload.status ?? 'draft')
 
           const versionInsert: IbmSkillVersionInsert = {
@@ -838,17 +864,21 @@ export class SkillVersionService implements ISkillVersionServicePort {
             version: nextVersion,
             status,
             content: entryFile.content,
-            entryFile: OPENAI_SKILL_ENTRY_FILE,
-            skillStandard: OPENAI_SKILL_STANDARD,
+            entryFile: SKILL_PACKAGE_ENTRY_FILE,
+            skillStandard: SKILL_PACKAGE_STANDARD,
             files: toVersionFiles(normalizedBundle.files),
             meta: {
+              packageFormat: SKILL_PACKAGE_FORMAT,
               frontmatter: frontmatter.attributes,
-              openai: openAiYaml ?? null,
-              sourcePath: sourcePath ?? null,
-              metadata: bundleMetadata,
-              fileCount: normalizedBundle.files.length,
-              files: toOpenAiMetadata(normalizedBundle.files),
-              importedAt: new Date().toISOString(),
+              package: {
+                entryFile: normalizedBundle.entryFile,
+                standard: SKILL_PACKAGE_STANDARD,
+                sourcePath: sourcePath ?? null,
+                metadata: bundleMetadata,
+                fileCount: normalizedBundle.files.length,
+                files: toSkillPackageMetadata(normalizedBundle.files),
+                importedAt: new Date().toISOString(),
+              },
             },
             refType: 'skill',
             refId: skillId,
@@ -884,18 +914,18 @@ export class SkillVersionService implements ISkillVersionServicePort {
             skill,
             skillVersion,
             ...(resource ? { resource } : {}),
-          } satisfies ImportOpenAiSkillResult
+          } satisfies ImportSkillPackageResult
         })
       ),
       Effect.tapError((e) => Effect.sync(() => {
         const info = effectErrorInfo(e)
-        this.logger?.error({ error: info.unwrapped, stage }, 'Error in importOpenAiSkill')
+        this.logger?.error({ error: info.unwrapped, stage }, 'Error in importSkillPackage')
       }))
     )
   }
 
-  exportOpenAiSkillVersion(id: string): Effect.Effect<ExportOpenAiSkillResult, SkillVersionServiceError> {
-    const stage = 'SkillVersionService::exportOpenAiSkillVersion'
+  exportSkillPackage(id: string): Effect.Effect<ExportSkillPackageResult, SkillVersionServiceError> {
+    const stage = 'SkillVersionService::exportSkillPackage'
     return pipe(
       validateInput(id, 'id', { stage }),
       Effect.flatMap((skillVersionId) =>
@@ -931,30 +961,42 @@ export class SkillVersionService implements ISkillVersionServicePort {
           )
         }
         const metadata = isRecord(version.meta) ? version.meta : {}
+        const packageRecord = isRecord(metadata.package) ? metadata.package : {}
+        const packageMetadata = (isRecord(packageRecord.metadata) ? packageRecord.metadata : {}) as SkillPackageMetadata
+        const files = toSkillPackageFilesFromVersion(version)
+        const entryFile = normalizeNonEmpty(version.entryFile) ?? SKILL_PACKAGE_ENTRY_FILE
+        const skillStandard = normalizeNonEmpty(version.skillStandard) ?? SKILL_PACKAGE_STANDARD
+        const packageSourcePath = normalizeNonEmpty(packageRecord.sourcePath)
         return Effect.succeed({
           skillVersionId,
           skillId: version.skillId,
           skillName: skill?.name,
           workspaceId: version.workspaceId,
           projectId: version.projectId,
-          entryFile: normalizeNonEmpty(version.entryFile) ?? OPENAI_SKILL_ENTRY_FILE,
-          skillStandard: normalizeNonEmpty(version.skillStandard) ?? OPENAI_SKILL_STANDARD,
-          files: toOpenAiFilesFromVersion(version),
-          metadata,
-        } satisfies ExportOpenAiSkillResult)
+          files,
+          metadata: packageMetadata,
+          package: {
+            entryFile,
+            standard: skillStandard,
+            format: SKILL_PACKAGE_FORMAT,
+            fileCount: files.length,
+            ...(packageSourcePath ? { sourcePath: packageSourcePath } : {}),
+            ...(Object.keys(packageMetadata).length > 0 ? { metadata: packageMetadata } : {}),
+          },
+        } satisfies ExportSkillPackageResult)
       }),
       Effect.tapError((e) => Effect.sync(() => {
         const info = effectErrorInfo(e)
-        this.logger?.error({ error: info.unwrapped, stage }, 'Error in exportOpenAiSkillVersion')
+        this.logger?.error({ error: info.unwrapped, stage }, 'Error in exportSkillPackage')
       }))
     )
   }
 
-  materializeOpenAiSkillVersion(
+  materializeSkillPackage(
     id: string,
-    data: MaterializeOpenAiSkillInput
-  ): Effect.Effect<MaterializeOpenAiSkillResult, SkillVersionServiceError> {
-    const stage = 'SkillVersionService::materializeOpenAiSkillVersion'
+    data: MaterializeSkillPackageInput
+  ): Effect.Effect<MaterializeSkillPackageResult, SkillVersionServiceError> {
+    const stage = 'SkillVersionService::materializeSkillPackage'
     return pipe(
       validateInput(id, 'id', { stage }),
       Effect.flatMap((skillVersionId) =>
@@ -966,13 +1008,13 @@ export class SkillVersionService implements ISkillVersionServicePort {
             }
 
             return pipe(
-              this.exportOpenAiSkillVersion(skillVersionId),
+              this.exportSkillPackage(skillVersionId),
               Effect.flatMap((bundle) =>
                 Effect.tryPromise({
                   try: async () => {
                     const rootDir = path.resolve(outputDir)
                     const overwrite = payload.overwrite === true
-                    const writtenFiles: MaterializeOpenAiSkillResult['writtenFiles'] = []
+                    const writtenFiles: MaterializeSkillPackageResult['writtenFiles'] = []
 
                     for (const file of bundle.files) {
                       const relativePath = normalizeSkillFilePath(file.path, stage)
@@ -1005,7 +1047,7 @@ export class SkillVersionService implements ISkillVersionServicePort {
                       skillVersionId,
                       outputDir: rootDir,
                       writtenFiles,
-                    } satisfies MaterializeOpenAiSkillResult
+                    } satisfies MaterializeSkillPackageResult
                   },
                   catch: (cause) =>
                     XfErrorFactory.createFailed({
@@ -1021,7 +1063,7 @@ export class SkillVersionService implements ISkillVersionServicePort {
       ),
       Effect.tapError((e) => Effect.sync(() => {
         const info = effectErrorInfo(e)
-        this.logger?.error({ error: info.unwrapped, stage }, 'Error in materializeOpenAiSkillVersion')
+        this.logger?.error({ error: info.unwrapped, stage }, 'Error in materializeSkillPackage')
       }))
     )
   }

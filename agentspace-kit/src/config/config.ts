@@ -1,10 +1,17 @@
-﻿import { DEFAULT_TENANT_AS_UUID_STRING } from '@aopslab/xf-core'
+import { DEFAULT_TENANT_AS_UUID_STRING } from '@aopslab/xf-core'
 import { z } from 'zod'
+
+const repoUrlSchema = z.string().min(1).optional()
 
 export const EnvSchema = z.object({
   TENANT_ID: z.string().uuid().optional(),
   LOG_LEVEL: z.string().optional(),
-  AOPS_PG_URL: z.string().url().optional(),
+  AOPS_REPO_URL: repoUrlSchema,
+  AOPS_SQLITE_URL: repoUrlSchema,
+  AOPS_PG_URL: repoUrlSchema,
+  AGENTSPACE_PG_URL: repoUrlSchema,
+  AGENTSPACE_SQLITE_URL: repoUrlSchema,
+  AGENTSPACE_REPO_URL: repoUrlSchema,
 })
 
 export type AgentspaceKitEnvConfig = {
@@ -22,6 +29,9 @@ const AGENTSPACE_ENV_KEYS = ['envDefault'] as const
 export type AgentspaceKitEnvKey = (typeof AGENTSPACE_ENV_KEYS)[number]
 export const DEFAULT_AGENTSPACE_ENV_KEY: AgentspaceKitEnvKey = 'envDefault'
 
+type NormalizedAgentspaceEnv = Partial<Record<keyof z.infer<typeof EnvSchema>, string>>
+const AGENTSPACE_ENV_SIGNATURE_KEYS = Object.freeze(Object.keys(EnvSchema.shape) as Array<keyof z.infer<typeof EnvSchema>>)
+
 function resolveRepoUrl(params: { explicit?: string; fallback?: string; label: string }): string {
   const value = params.explicit ?? params.fallback
   if (!value) {
@@ -30,13 +40,38 @@ function resolveRepoUrl(params: { explicit?: string; fallback?: string; label: s
   return value
 }
 
-function buildEnvConfigurations(): Record<AgentspaceKitEnvKey, AgentspaceKitEnvEntry> {
-  const parsed = EnvSchema.safeParse(process.env)
-  const e = parsed.success ? parsed.data : ({} as z.infer<typeof EnvSchema>)
+function normalizeOptionalEnvString(value: unknown): string | undefined {
+  if (typeof value !== 'string') return undefined
+  const normalized = value.trim()
+  return normalized.length > 0 ? normalized : undefined
+}
 
-  const defaultTenantId = e.TENANT_ID ?? DEFAULT_TENANT_AS_UUID_STRING
+function normalizeAgentspaceProcessEnv(processEnv: NodeJS.ProcessEnv): NormalizedAgentspaceEnv {
+  const normalizedEntries = Object.entries(processEnv)
+    .map(([key, value]) => [key, normalizeOptionalEnvString(value)] as const)
+    .filter((entry): entry is readonly [string, string] => entry[1] !== undefined)
+
+  return Object.fromEntries(normalizedEntries) as NormalizedAgentspaceEnv
+}
+
+function buildNormalizedAgentspaceEnvSignature(normalizedEnv: NormalizedAgentspaceEnv): string {
+  return AGENTSPACE_ENV_SIGNATURE_KEYS
+    .map((key) => `${key}=${normalizedEnv[key] ?? ''}`)
+    .join('\n')
+}
+
+function buildEnvConfigurations(normalizedEnv: NormalizedAgentspaceEnv): Record<AgentspaceKitEnvKey, AgentspaceKitEnvEntry> {
+  const parsed = EnvSchema.safeParse(normalizedEnv)
+  const e = (parsed.success ? parsed.data : normalizedEnv) as NormalizedAgentspaceEnv
+
+  const parsedTenantId = z.string().uuid().safeParse(e.TENANT_ID)
+  const defaultTenantId = parsedTenantId.success ? parsedTenantId.data : DEFAULT_TENANT_AS_UUID_STRING
   const defaultLogLevel = process.env.NODE_ENV === 'development' ? 'debug' : e.LOG_LEVEL ?? 'info'
-  const repoUrl = resolveRepoUrl({ explicit: e.AOPS_PG_URL, label: 'AOPS_PG_URL' })
+  const repoUrl = resolveRepoUrl({
+    explicit: e.AGENTSPACE_REPO_URL,
+    fallback: e.AGENTSPACE_SQLITE_URL ?? e.AGENTSPACE_PG_URL ?? e.AOPS_REPO_URL ?? e.AOPS_SQLITE_URL ?? e.AOPS_PG_URL,
+    label: 'AGENTSPACE_REPO_URL (or AGENTSPACE_SQLITE_URL or AGENTSPACE_PG_URL or AOPS_REPO_URL or AOPS_SQLITE_URL or AOPS_PG_URL)',
+  })
 
   return {
     envDefault: {
@@ -51,10 +86,14 @@ function buildEnvConfigurations(): Record<AgentspaceKitEnvKey, AgentspaceKitEnvE
 }
 
 let cachedEnvConfigurations: Record<AgentspaceKitEnvKey, AgentspaceKitEnvEntry> | null = null
+let cachedEnvSignature: string | null = null
 
 function getEnvConfigurations(): Record<AgentspaceKitEnvKey, AgentspaceKitEnvEntry> {
-  if (!cachedEnvConfigurations) {
-    cachedEnvConfigurations = buildEnvConfigurations()
+  const normalizedEnv = normalizeAgentspaceProcessEnv(process.env)
+  const signature = buildNormalizedAgentspaceEnvSignature(normalizedEnv)
+  if (!cachedEnvConfigurations || cachedEnvSignature !== signature) {
+    cachedEnvConfigurations = buildEnvConfigurations(normalizedEnv)
+    cachedEnvSignature = signature
   }
   return cachedEnvConfigurations
 }
@@ -111,4 +150,9 @@ export const agentspaceEnvMatrix: Array<{ key: AgentspaceKitEnvKey } & Agentspac
 
 export function getAgentspaceKitEnvConfig(key: AgentspaceKitEnvKey = DEFAULT_AGENTSPACE_ENV_KEY): AgentspaceKitEnvConfig {
   return getEnvConfigurations()[key].config
+}
+
+export function clearAgentspaceKitEnvConfigCache(): void {
+  cachedEnvConfigurations = null
+  cachedEnvSignature = null
 }
