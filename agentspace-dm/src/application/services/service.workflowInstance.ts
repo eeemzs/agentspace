@@ -2,17 +2,19 @@ import { Effect } from 'effect'
 import { pipe } from 'effect/Function'
 import { validateInput, XfErrorFactory, effectErrorInfo } from '@aopslab/xf-core'
 import { XfLogger } from '@aopslab/xf-logger'
-import type { IRepositoryPortWorkflowInstance } from '../ports/repository-ports/index.js'
-import type { IWorkflowInstanceServicePort } from '../ports/inbound/index.js'
+import type { IRepositoryPortScope, IRepositoryPortWorkflowInstance } from '../ports/repository-ports/index.js'
+import type { IWorkflowInstanceServicePort, WorkflowInstanceListFilter } from '../ports/inbound/index.js'
 import { WorkflowInstanceServiceError } from '../errors/WorkflowInstanceServiceError.js'
 import { IbmWorkflowInstance, IbmWorkflowInstanceInsert, workflowInstanceZodSchemaInsert } from '../../domain/models/index.js'
 import { validateBmInputWithSchema } from './service.zod-validation.js'
 import { DbQueryOptions, mapDbError } from '@aopslab/xf-db'
+import { listRecordsByScopeResolution } from './service.scope-resolution.js'
 
 export interface WorkflowInstanceServiceDependencies {}
 
 export interface WorkflowInstanceServiceOptions {
   workflowInstanceRepository: IRepositoryPortWorkflowInstance
+  scopeRepository?: IRepositoryPortScope
   serviceDependencies?: Partial<WorkflowInstanceServiceDependencies>
   logger?: XfLogger
   locale?: string
@@ -20,10 +22,12 @@ export interface WorkflowInstanceServiceOptions {
 
 export class WorkflowInstanceService implements IWorkflowInstanceServicePort {
   private readonly workflowInstanceRepository: IRepositoryPortWorkflowInstance
+  private readonly scopeRepository?: IRepositoryPortScope
   private readonly logger?: XfLogger
 
   constructor(options: WorkflowInstanceServiceOptions) {
     this.workflowInstanceRepository = options.workflowInstanceRepository
+    this.scopeRepository = options.scopeRepository
     this.logger = options.logger?.child({ module: this.constructor.name })
   }
 
@@ -61,13 +65,16 @@ export class WorkflowInstanceService implements IWorkflowInstanceServicePort {
   }
 
   listWorkflowInstances(
-    filter: Partial<IbmWorkflowInstance> = {},
+    filter: WorkflowInstanceListFilter = {},
     options?: DbQueryOptions<IbmWorkflowInstance>
   ): Effect.Effect<IbmWorkflowInstance[], WorkflowInstanceServiceError> {
     const stage = 'WorkflowInstanceService::listWorkflowInstances'
     return pipe(
       validateInput(filter, 'filter', { stage }),
-      Effect.flatMap((filter) => this.workflowInstanceRepository.find({ matchEq: filter, options } as any).pipe(
+      Effect.flatMap((value) => listRecordsByScopeResolution(this.workflowInstanceRepository as any, this.scopeRepository, value as Record<string, unknown> & WorkflowInstanceListFilter, options, {
+        stage,
+        defaultResolution: 'explicit',
+      }).pipe(
         Effect.mapError(mapDbError({ stage, operation: 'find', factory: XfErrorFactory.notFound }))
       )),
       Effect.tapError((e) => Effect.sync(() => {

@@ -1,17 +1,12 @@
 ﻿import { index, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core'
 import { InferSelectModel } from 'drizzle-orm'
-import { projectTable } from '../../project/drizzle/drizzle.schema.project.js'
-import { workspaceTable } from '../../workspace/drizzle/drizzle.schema.workspace.js'
 
 export const agentSessionTable = pgTable(
   'agent-sessions',
   {
     id: uuid().primaryKey().defaultRandom(),
     tenantId: text().notNull(),
-    workspaceId: uuid()
-      .notNull()
-      .references(() => workspaceTable.id, { onDelete: 'cascade' }),
-    projectId: uuid().references(() => projectTable.id, { onDelete: 'set null' }),
+    scopeId: uuid().notNull(),
     sessionId: text().notNull(),
     agent: text().notNull(),
     profile: text(),
@@ -24,8 +19,8 @@ export const agentSessionTable = pgTable(
   },
   (t) => [
     index('agent_session_idx_tenant').on(t.tenantId),
-    index('agent_session_idx_workspace').on(t.tenantId, t.workspaceId),
-    index('agent_session_idx_project_started').on(t.tenantId, t.projectId, t.startedAt),
+    index('agent_session_idx_scope').on(t.tenantId, t.scopeId),
+    index('agent_session_idx_scope_started').on(t.tenantId, t.scopeId, t.startedAt),
   ]
 )
 

@@ -6,8 +6,6 @@ import { ISprintZodCtx } from './resources.js'
 export const sprintZodSchema = z
   .object({
     ...IbmZodSchema.shape,
-    workspaceId: z.string(),
-    projectId: z.string().optional(),
     ...scopeableFields,
     name: z.string(),
     goal: z.string().optional(),

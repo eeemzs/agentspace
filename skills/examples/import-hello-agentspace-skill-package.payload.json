@@ -1,6 +1,7 @@
 {
   "data": {
     "workspaceId": "<workspace-id>",
+    "scopeId": "<global-scope-id>",
     "scopeType": "global",
     "createdBy": "smoke",
     "updatedBy": "smoke",
@@ -19,7 +20,7 @@
         {
           "path": "references/checklist.md",
           "kind": "reference",
-          "content": "# Smoke Checklist\n\n1. Use a non-production Agentspace repo first.\n2. Keep `workspaceId` explicit in import payloads.\n3. Use `manifest get dcm` or `manifest show cli` before guessing command\n   shapes.\n4. Materialize into a temp directory, not into an existing skill folder.\n"
+          "content": "# Smoke Checklist\n\n1. Use a non-production Agentspace repo first.\n2. Keep hosted workspace context explicit and set `scopeId` / `scopeType`\n   consistently in import payloads.\n3. Use `manifest get dcm` or `manifest show cli` before guessing command\n   shapes.\n4. Materialize into a temp directory, not into an existing skill folder.\n"
         }
       ]
     }

@@ -2,10 +2,11 @@ import { Effect } from 'effect'
 import { WorkflowInstanceServiceError } from '../../errors/WorkflowInstanceServiceError.js'
 import { IbmWorkflowInstance, IbmWorkflowInstanceInsert } from '../../../domain/models/index.js'
 import { DbQueryOptions } from '@aopslab/xf-db'
+import type { ScopeResolution } from '../../../domain/types.js'
 
 export interface WorkflowInstanceListFilter {
-  workspaceId?: string
-  projectId?: string
+  scopeId?: string
+  scopeResolution?: ScopeResolution
   workflowInstanceId?: string
   definitionId?: string
   mode?: string

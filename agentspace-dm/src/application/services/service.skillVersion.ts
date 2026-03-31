@@ -580,7 +580,6 @@ export class SkillVersionService implements ISkillVersionServicePort {
     }
 
     const resourceName = `${skill.name} v${skillVersion.version}`
-    const resourceProjectId = normalizeNonEmpty(skillVersion.projectId) ?? normalizeNonEmpty(skill.projectId)
     const resourceScopeId = normalizeNonEmpty(skill.scopeId)
     const resourceMeta = {
       skillId,
@@ -593,8 +592,17 @@ export class SkillVersionService implements ISkillVersionServicePort {
       updatedAt: new Date().toISOString(),
     }
 
+    if (!resourceScopeId) {
+      return Effect.fail(
+        XfErrorFactory.createFailed({
+          stage,
+          message: 'missing_skill_scope_id',
+        })
+      )
+    }
+
     const resourceFilter: Partial<IbmResource> = {
-      workspaceId: skill.workspaceId,
+      scopeId: resourceScopeId,
       refType: 'skill-version',
       refId: skillVersionId,
     }
@@ -616,8 +624,6 @@ export class SkillVersionService implements ISkillVersionServicePort {
       if (currentId) {
         return yield* _(
           resourceService.updateResource(currentId, {
-            projectId: resourceProjectId,
-            scopeType: skill.scopeType,
             scopeId: resourceScopeId,
             name: resourceName,
             description,
@@ -641,9 +647,6 @@ export class SkillVersionService implements ISkillVersionServicePort {
       }
 
       const insertPayload: IbmResourceInsert = {
-        workspaceId: skill.workspaceId,
-        projectId: resourceProjectId,
-        scopeType: skill.scopeType,
         scopeId: resourceScopeId,
         name: resourceName,
         description,
@@ -686,7 +689,7 @@ export class SkillVersionService implements ISkillVersionServicePort {
           const scopeType = payload.scopeType
           const projectId = normalizeNonEmpty(payload.projectId)
           const scopeId = normalizeNonEmpty(payload.scopeId) ?? (scopeType === 'project' ? projectId : undefined)
-          if (scopeType === 'project' && !scopeId) {
+          if (!scopeId) {
             return yield* _(Effect.fail(XfErrorFactory.inputRequired({ field: 'scopeId', stage })))
           }
 
@@ -757,12 +760,9 @@ export class SkillVersionService implements ISkillVersionServicePort {
             skill = existing
           } else {
             const skillFilter: Partial<IbmSkill> = {
-              workspaceId,
-              scopeType,
+              scopeId,
               name: skillName,
             }
-            if (projectId) skillFilter.projectId = projectId
-            if (scopeId) skillFilter.scopeId = scopeId
 
             const existingSkills = yield* _(
               self.skillService.listSkills(skillFilter, { limit: 1 } as any).pipe(
@@ -781,9 +781,6 @@ export class SkillVersionService implements ISkillVersionServicePort {
             } else {
               skill = yield* _(
                 self.skillService.create({
-                  workspaceId,
-                  projectId,
-                  scopeType,
                   scopeId,
                   name: skillName,
                   description: skillDescription,

@@ -5,6 +5,7 @@ import { IWorkspaceZodCtx } from './resources.js'
 export const workspaceZodSchema = z
   .object({
     ...IbmZodSchema.shape,
+    scopeId: z.string(),
     ownerId: z.string(),
     name: z.string(),
     description: z.string().optional(),
@@ -16,6 +17,7 @@ export const workspaceZodSchema = z
 /* Insert schema */
 export const workspaceZodSchemaInsert = workspaceZodSchema.omit({
   id: true,
+  scopeId: true,
   createdAt: true,
   updatedAt: true,
   tenantId: true,

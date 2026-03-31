@@ -2,17 +2,19 @@
 import { pipe } from 'effect/Function'
 import { validateInput, XfErrorFactory, effectErrorInfo } from '@aopslab/xf-core'
 import { XfLogger } from '@aopslab/xf-logger'
-import type { IRepositoryPortTag } from '../ports/repository-ports/index.js'
-import type { ITagServicePort, TagEnsureInput } from '../ports/inbound/index.js'
+import type { IRepositoryPortScope, IRepositoryPortTag } from '../ports/repository-ports/index.js'
+import type { ITagServicePort, TagEnsureInput, TagListFilter } from '../ports/inbound/index.js'
 import { TagServiceError } from '../errors/TagServiceError.js'
 import { IbmTag, IbmTagInsert, tagZodSchemaInsert } from '../../domain/models/index.js'
 import { validateBmInputWithSchema } from './service.zod-validation.js'
 import { DbQueryOptions, mapDbError } from '@aopslab/xf-db'
+import { listRecordsByScopeResolution } from './service.scope-resolution.js'
 
 export interface TagServiceDependencies {}
 
 export interface TagServiceOptions {
   tagRepository: IRepositoryPortTag
+  scopeRepository?: IRepositoryPortScope
   serviceDependencies?: Partial<TagServiceDependencies>
   logger?: XfLogger
   locale?: string
@@ -20,10 +22,12 @@ export interface TagServiceOptions {
 
 export class TagService implements ITagServicePort {
   private readonly tagRepository: IRepositoryPortTag
+  private readonly scopeRepository?: IRepositoryPortScope
   private readonly logger?: XfLogger
 
   constructor(options: TagServiceOptions) {
     this.tagRepository = options.tagRepository
+    this.scopeRepository = options.scopeRepository
     this.logger = options.logger?.child({ module: this.constructor.name })
   }
 
@@ -69,7 +73,7 @@ export class TagService implements ITagServicePort {
     if (normalizedTags.length === 0) return Effect.succeed([])
 
     return pipe(
-      validateInput(input.workspaceId, 'workspaceId', { stage }),
+      validateInput(input.scopeId, 'scopeId', { stage }),
       Effect.flatMap(() => validateInput(input.scopeType, 'scopeType', { stage })),
       Effect.flatMap(() =>
         Effect.forEach(
@@ -77,7 +81,7 @@ export class TagService implements ITagServicePort {
           (name) =>
             this.tagRepository
               .find({
-                matchEq: { workspaceId: input.workspaceId, scopeType: input.scopeType, name },
+                matchEq: { scopeId: input.scopeId, scopeType: input.scopeType, name },
                 options: { limit: 1 },
               } as any)
               .pipe(
@@ -86,7 +90,7 @@ export class TagService implements ITagServicePort {
                   if (existing.length > 0) return Effect.succeed(existing[0])
                   return this.tagRepository
                     .create({
-                      workspaceId: input.workspaceId,
+                      scopeId: input.scopeId,
                       scopeType: input.scopeType,
                       name,
                       createdBy: input.createdBy,
@@ -108,14 +112,22 @@ export class TagService implements ITagServicePort {
   }
 
   listTags(
-    filter: Partial<IbmTag> = {},
+    filter: TagListFilter = {},
     options?: DbQueryOptions<IbmTag>
   ): Effect.Effect<IbmTag[], TagServiceError> {
     const stage = 'TagService::listTags'
     return pipe(
       validateInput(filter, 'filter', { stage }),
-      Effect.flatMap((filter) =>
-        this.tagRepository.find({ matchEq: filter, options } as any).pipe(
+      Effect.flatMap((value) =>
+        listRecordsByScopeResolution(this.tagRepository as any, this.scopeRepository, value, options, {
+          stage,
+          defaultResolution: 'cascade',
+          dedupeKey: (item) => {
+            const name = String(item?.name ?? '').trim().toLowerCase()
+            const scopeType = String(item?.scopeType ?? '').trim().toLowerCase()
+            return name && scopeType ? `${scopeType}:${name}` : undefined
+          },
+        }).pipe(
           Effect.mapError(mapDbError({ stage, operation: 'find', factory: XfErrorFactory.notFound }))
         )
       ),
@@ -128,11 +140,7 @@ export class TagService implements ITagServicePort {
     )
   }
 
-  searchTags(
-    filter: Partial<IbmTag>,
-    query: string,
-    options?: DbQueryOptions<IbmTag>
-  ): Effect.Effect<IbmTag[], TagServiceError> {
+  searchTags(filter: TagListFilter, query: string, options?: DbQueryOptions<IbmTag>): Effect.Effect<IbmTag[], TagServiceError> {
     const stage = 'TagService::searchTags'
     const normalizedQuery = query.trim().toLowerCase()
     if (!normalizedQuery) {

@@ -93,6 +93,8 @@ function toDefaultExampleFromArgs(spec: AgentspaceOperationSpec): string {
   const payload: Record<string, unknown> = {}
   for (const arg of spec.args) {
     if (arg.name === 'id') payload.id = '<id>'
+    else if (arg.name === 'scopeId') payload.scopeId = '<scopeId>'
+    else if (arg.name === 'scopeResolution') payload.scopeResolution = 'cascade'
     else if (arg.name === 'projectId') payload.projectId = '<projectId>'
     else if (arg.name === 'workspaceId') payload.workspaceId = '<workspaceId>'
     else if (arg.name === 'taskId') payload.taskId = '<taskId>'

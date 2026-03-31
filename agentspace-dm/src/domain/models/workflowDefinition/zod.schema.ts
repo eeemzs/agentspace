@@ -4,8 +4,7 @@ import { IWorkflowDefinitionZodCtx } from './resources.js'
 
 export const workflowDefinitionZodSchema = z.object({
   ...IbmZodSchema.shape,
-  workspaceId: z.string(),
-  projectId: z.string().nullable().optional(),
+    scopeId: z.string(),
   definitionId: z.string(),
   name: z.string(),
   mode: z.string(),

@@ -2,17 +2,19 @@
 import { pipe } from 'effect/Function'
 import { validateInput, XfErrorFactory, effectErrorInfo } from '@aopslab/xf-core'
 import { XfLogger } from '@aopslab/xf-logger'
-import type { IRepositoryPortSkill } from '../ports/repository-ports/index.js'
-import type { ISkillServicePort } from '../ports/inbound/index.js'
+import type { IRepositoryPortScope, IRepositoryPortSkill } from '../ports/repository-ports/index.js'
+import type { ISkillServicePort, SkillListFilter } from '../ports/inbound/index.js'
 import { SkillServiceError } from '../errors/SkillServiceError.js'
 import { IbmSkill, IbmSkillInsert, skillZodSchemaInsert } from '../../domain/models/index.js'
 import { validateBmInputWithSchema } from './service.zod-validation.js'
 import { DbQueryOptions, mapDbError } from '@aopslab/xf-db'
+import { listRecordsByScopeResolution } from './service.scope-resolution.js'
 
 export interface SkillServiceDependencies {}
 
 export interface SkillServiceOptions {
   skillRepository: IRepositoryPortSkill
+  scopeRepository?: IRepositoryPortScope
   serviceDependencies?: Partial<SkillServiceDependencies>
   logger?: XfLogger
   locale?: string
@@ -20,10 +22,12 @@ export interface SkillServiceOptions {
 
 export class SkillService implements ISkillServicePort {
   private readonly skillRepository: IRepositoryPortSkill
+  private readonly scopeRepository?: IRepositoryPortScope
   private readonly logger?: XfLogger
 
   constructor(options: SkillServiceOptions) {
     this.skillRepository = options.skillRepository
+    this.scopeRepository = options.scopeRepository
     this.logger = options.logger?.child({ module: this.constructor.name })
   }
 
@@ -65,13 +69,17 @@ export class SkillService implements ISkillServicePort {
   }
 
   listSkills(
-    filter: Partial<IbmSkill> = {},
+    filter: SkillListFilter = {},
     options?: DbQueryOptions<IbmSkill>
   ): Effect.Effect<IbmSkill[], SkillServiceError> {
     const stage = 'SkillService::listSkills'
     return pipe(
       validateInput(filter, 'filter', { stage }),
-      Effect.flatMap((filter) => this.skillRepository.find({ matchEq: filter, options } as any).pipe(
+      Effect.flatMap((value) => listRecordsByScopeResolution(this.skillRepository as any, this.scopeRepository, value, options, {
+        stage,
+        defaultResolution: 'cascade',
+        dedupeKey: (item) => String(item?.name ?? '').trim().toLowerCase() || undefined,
+      }).pipe(
         Effect.mapError(mapDbError({ stage, operation: 'find', factory: XfErrorFactory.notFound }))
       )),
       Effect.tapError((e) => Effect.sync(() => {

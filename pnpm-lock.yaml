@@ -227,6 +227,9 @@ importers:
       '@aopslab/xf-validation':
         specifier: 'catalog:'
         version: 0.1.77(zod@4.3.6)
+      ajv:
+        specifier: 'catalog:'
+        version: 8.18.0
       dotenv:
         specifier: 'catalog:'
         version: 17.3.1

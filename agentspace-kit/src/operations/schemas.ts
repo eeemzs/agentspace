@@ -116,10 +116,9 @@ const CODEX_CHAT_THREAD_CREATE_INPUT_SCHEMA: JsonSchema = {
     data: {
       type: 'object',
       additionalProperties: false,
-      required: ['workspaceId', 'externalThreadId'],
+      required: ['scopeId', 'externalThreadId'],
       properties: {
-        workspaceId: { type: 'string', minLength: 1 },
-        projectId: { type: ['string', 'null'] },
+        scopeId: { type: 'string', minLength: 1 },
         externalThreadId: { type: 'string', minLength: 1 },
         scopeLabel: { type: 'string', minLength: 1 },
         cwd: { type: 'string', minLength: 1 },

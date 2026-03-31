@@ -427,7 +427,11 @@ export const AGENTSPACE_OPERATION_CATALOG_ROWS = [
         "optional": false
       },
       {
-        "name": "projectId",
+        "name": "scopeId",
+        "optional": true
+      },
+      {
+        "name": "scopeResolution",
         "optional": true
       }
     ]
@@ -1234,7 +1238,7 @@ export const AGENTSPACE_OPERATION_CATALOG_ROWS = [
       }
     ],
     "examples": [
-      "{\"filter\":{\"projectId\":\"<projectId>\"},\"retrieval\":{\"query\":\"triage flaky workflow run\",\"subject\":{\"type\":\"projectman.issue\",\"id\":\"<issueId>\"},\"workflowId\":\"<workflowId>\",\"runtimeProfile\":\"investigation\"},\"options\":{\"limit\":8}}"
+      "{\"filter\":{\"scopeId\":\"<scopeId>\",\"scopeResolution\":\"cascade\"},\"retrieval\":{\"query\":\"triage flaky workflow run\",\"subject\":{\"type\":\"projectman.issue\",\"id\":\"<issueId>\"},\"workflowId\":\"<workflowId>\",\"runtimeProfile\":\"investigation\"},\"options\":{\"limit\":8}}"
     ]
   },
   {

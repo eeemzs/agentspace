@@ -2,7 +2,8 @@
 import { pipe } from 'effect/Function'
 import { validateInput, XfErrorFactory, effectErrorInfo } from '@aopslab/xf-core'
 import { XfLogger } from '@aopslab/xf-logger'
-import type { IRepositoryPortWorkspace } from '../ports/repository-ports/index.js'
+import { randomUUID } from 'node:crypto'
+import type { IRepositoryPortScope, IRepositoryPortWorkspace } from '../ports/repository-ports/index.js'
 import type { IWorkspaceServicePort } from '../ports/inbound/index.js'
 import { WorkspaceServiceError } from '../errors/WorkspaceServiceError.js'
 import { IbmWorkspace, IbmWorkspaceInsert, workspaceZodSchemaInsert } from '../../domain/models/index.js'
@@ -13,6 +14,7 @@ export interface WorkspaceServiceDependencies {}
 
 export interface WorkspaceServiceOptions {
   workspaceRepository: IRepositoryPortWorkspace
+  scopeRepository?: IRepositoryPortScope
   serviceDependencies?: Partial<WorkspaceServiceDependencies>
   logger?: XfLogger
   locale?: string
@@ -25,11 +27,35 @@ function normalizeWorkspaceName(value: unknown): string {
 
 export class WorkspaceService implements IWorkspaceServicePort {
   private readonly workspaceRepository: IRepositoryPortWorkspace
+  private readonly scopeRepository?: IRepositoryPortScope
   private readonly logger?: XfLogger
 
   constructor(options: WorkspaceServiceOptions) {
     this.workspaceRepository = options.workspaceRepository
+    this.scopeRepository = options.scopeRepository
     this.logger = options.logger?.child({ module: this.constructor.name })
+  }
+
+  private ensureGlobalScope(stage: string): Effect.Effect<{ id: string }, WorkspaceServiceError> {
+    const scopeRepository = this.scopeRepository
+    if (!scopeRepository) {
+      return Effect.fail(XfErrorFactory.notFound({ stage, identifier: 'scopeRepository' }))
+    }
+    return pipe(
+      scopeRepository.find({ matchEq: { type: 'global' } as any, options: { limit: 1 } as any }).pipe(
+        Effect.catchAll(() => Effect.succeed([] as any[])),
+      ),
+      Effect.flatMap((existingList) => {
+        const existing = Array.isArray(existingList) ? existingList[0] : null
+        if (existing) return Effect.succeed(existing as any)
+        return scopeRepository.create({
+          type: 'global',
+          parentScopeId: null,
+        } as any).pipe(
+          Effect.mapError(mapDbError({ stage, operation: 'scope.create(global)', factory: XfErrorFactory.createFailed })),
+        )
+      }),
+    )
   }
 
   getById(id: string, options?: DbQueryOptions<IbmWorkspace>): Effect.Effect<IbmWorkspace | null, WorkspaceServiceError> {
@@ -48,29 +74,48 @@ export class WorkspaceService implements IWorkspaceServicePort {
 
   create(data: IbmWorkspaceInsert): Effect.Effect<IbmWorkspace, WorkspaceServiceError> {
     const stage = 'WorkspaceService::create'
-    return pipe(
-      validateInput(data, 'data', { stage }),
-      Effect.flatMap((data) =>
+    return Effect.gen(this, function* (_) {
+      const raw = yield* _(validateInput(data, 'data', { stage }))
+      const parsed = yield* _(
         validateBmInputWithSchema({
-          input: data,
+          input: raw,
           schema: workspaceZodSchemaInsert,
           stage,
           operation: 'WorkspaceService::create.workspaceZodSchemaInsert',
           field: 'data',
-        })
-      ),
-      Effect.flatMap((data): Effect.Effect<IbmWorkspace, WorkspaceServiceError> => {
-        const normalizedName = normalizeWorkspaceName((data as any).name)
-        if (!normalizedName) {
-          return Effect.fail(XfErrorFactory.inputRequired({ field: 'name', stage }))
-        }
+        }),
+      )
 
-        const payload = { ...data, name: normalizedName } as IbmWorkspaceInsert
-        return this.workspaceRepository.create(payload).pipe(
-          Effect.mapError(mapDbError({ stage, operation: 'create', factory: XfErrorFactory.createFailed }))
-        )
-      })
-    )
+      const normalizedName = normalizeWorkspaceName((parsed as any).name)
+      if (!normalizedName) {
+        return yield* _(Effect.fail(XfErrorFactory.inputRequired({ field: 'name', stage })))
+      }
+
+      const id = randomUUID()
+      const globalScope = yield* _(this.ensureGlobalScope(stage))
+      const workspaceScope = this.scopeRepository
+        ? yield* _(
+            this.scopeRepository.create({
+              type: 'workspace',
+              parentScopeId: String((globalScope as any).id),
+              createdBy: (parsed as any).createdBy,
+              updatedBy: (parsed as any).updatedBy,
+            } as any).pipe(
+              Effect.mapError(mapDbError({ stage, operation: 'scope.create', factory: XfErrorFactory.createFailed })),
+            ),
+          )
+        : null
+      const scopeId = String((workspaceScope as any)?.id ?? '')
+      if (!scopeId) {
+        return yield* _(Effect.fail(XfErrorFactory.notFound({ stage, identifier: 'workspace-scope' })))
+      }
+
+      return yield* _(
+        this.workspaceRepository.create({ ...parsed, id, scopeId, name: normalizedName } as any).pipe(
+          Effect.mapError(mapDbError({ stage, operation: 'create', factory: XfErrorFactory.createFailed })),
+        ),
+      )
+    })
   }
 
   listWorkspaces(

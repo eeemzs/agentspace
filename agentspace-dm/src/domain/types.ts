@@ -1,7 +1,11 @@
 import { z } from 'zod'
 
-export const SCOPE_TYPES = ['global', 'project'] as const
+export const SCOPE_TYPES = ['global', 'workspace', 'project'] as const
 export type ScopeType = (typeof SCOPE_TYPES)[number]
+export const SCOPE_RESOLUTION_TYPES = ['explicit', 'cascade'] as const
+export type ScopeResolution = (typeof SCOPE_RESOLUTION_TYPES)[number]
+
+export const GLOBAL_SCOPE_ID = '00000000-0000-4000-8000-000000000001'
 
 export const TAG_SCOPE_TYPES = ['prompt', 'skill', 'skill-set', 'project', 'memory-item'] as const
 export type TagScopeType = (typeof TAG_SCOPE_TYPES)[number]
@@ -79,8 +83,7 @@ export function buildActorRef(type: 'manual' | 'agent' | 'user', id?: string): A
 }
 
 export const scopeableFields = {
-  scopeType: z.enum(SCOPE_TYPES),
-  scopeId: z.string().optional(),
+  scopeId: z.string(),
 } as const
 
 // -----------------------------------------------------------------------------

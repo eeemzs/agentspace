@@ -2,18 +2,20 @@
 import { pipe } from 'effect/Function'
 import { validateInput, XfErrorFactory, effectErrorInfo } from '@aopslab/xf-core'
 import { XfLogger } from '@aopslab/xf-logger'
-import type { IRepositoryPortArtifact, IRepositoryPortArtifactLink } from '../ports/repository-ports/index.js'
+import type { IRepositoryPortArtifact, IRepositoryPortArtifactLink, IRepositoryPortScope } from '../ports/repository-ports/index.js'
 import type { ArtifactLinkInput, IArtifactServicePort } from '../ports/inbound/index.js'
 import { ArtifactServiceError } from '../errors/ArtifactServiceError.js'
 import { IbmArtifact, IbmArtifactInsert, IbmArtifactLink, artifactZodSchemaInsert } from '../../domain/models/index.js'
 import { validateBmInputWithSchema } from './service.zod-validation.js'
 import { DbQueryOptions, mapDbError } from '@aopslab/xf-db'
+import { normalizeScopeResolution, resolveScopeChain } from './service.scope-resolution.js'
 
 export interface ArtifactServiceDependencies {}
 
 export interface ArtifactServiceOptions {
   artifactRepository: IRepositoryPortArtifact
   artifactLinkRepository?: IRepositoryPortArtifactLink
+  scopeRepository?: IRepositoryPortScope
   serviceDependencies?: Partial<ArtifactServiceDependencies>
   logger?: XfLogger
   locale?: string
@@ -22,11 +24,13 @@ export interface ArtifactServiceOptions {
 export class ArtifactService implements IArtifactServicePort {
   private readonly artifactRepository: IRepositoryPortArtifact
   private readonly artifactLinkRepository?: IRepositoryPortArtifactLink
+  private readonly scopeRepository?: IRepositoryPortScope
   private readonly logger?: XfLogger
 
   constructor(options: ArtifactServiceOptions) {
     this.artifactRepository = options.artifactRepository
     this.artifactLinkRepository = options.artifactLinkRepository
+    this.scopeRepository = options.scopeRepository
     this.logger = options.logger?.child({ module: this.constructor.name })
   }
 
@@ -107,7 +111,12 @@ export class ArtifactService implements IArtifactServicePort {
     )
   }
 
-  listArtifactsByRef(refType: IbmArtifactLink['refType'], refId: string, projectId?: string): Effect.Effect<IbmArtifact[], ArtifactServiceError> {
+  listArtifactsByRef(
+    refType: IbmArtifactLink['refType'],
+    refId: string,
+    scopeId?: string,
+    scopeResolution?: 'explicit' | 'cascade'
+  ): Effect.Effect<IbmArtifact[], ArtifactServiceError> {
     const stage = 'ArtifactService::listArtifactsByRef'
     if (!this.artifactLinkRepository) {
       return Effect.fail(XfErrorFactory.configurationError({ stage, message: 'artifactLinkRepository is required' }))
@@ -116,11 +125,27 @@ export class ArtifactService implements IArtifactServicePort {
       validateInput(refType, 'refType', { stage }),
       Effect.flatMap(() => validateInput(refId, 'refId', { stage })),
       Effect.flatMap(() => {
-        const filter: Partial<IbmArtifactLink> = { refType, refId }
-        if (projectId) {
-          filter.projectId = projectId
-        }
-        return this.artifactLinkRepository!.find({ matchEq: filter } as any).pipe(
+        const normalizedScopeId = typeof scopeId === 'string' ? scopeId.trim() : ''
+        const resolution = normalizeScopeResolution(scopeResolution, 'explicit')
+        const linkEffect = !normalizedScopeId
+          ? this.artifactLinkRepository!.find({ matchEq: { refType, refId } } as any).pipe(
+              Effect.map((rows) => Array.from(rows))
+            )
+          : resolveScopeChain(this.scopeRepository, normalizedScopeId, resolution, stage).pipe(
+              Effect.flatMap((scopeChain) =>
+                Effect.forEach(
+                  scopeChain,
+                  (chainScopeId) =>
+                    this.artifactLinkRepository!.find({ matchEq: { refType, refId, scopeId: chainScopeId } } as any).pipe(
+                      Effect.map((rows) => Array.from(rows))
+                    ),
+                  { concurrency: 1 }
+                )
+              ),
+              Effect.map((rowsByScope) => rowsByScope.flat())
+            )
+
+        return linkEffect.pipe(
           Effect.mapError(mapDbError({ stage, operation: 'artifactLinkRepository.find', factory: XfErrorFactory.notFound }))
         )
       }),

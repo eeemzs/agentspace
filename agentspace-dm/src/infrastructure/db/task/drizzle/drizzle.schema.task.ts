@@ -1,20 +1,13 @@
 ﻿import { foreignKey, index, integer, jsonb, pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core'
 import { InferSelectModel } from 'drizzle-orm'
-import { projectTable } from '../../project/drizzle/drizzle.schema.project.js'
 import { promptVersionTable } from '../../promptVersion/drizzle/drizzle.schema.promptVersion.js'
-import { workspaceTable } from '../../workspace/drizzle/drizzle.schema.workspace.js'
 
 export const taskTable = pgTable(
   'tasks',
   {
     id: uuid().primaryKey().defaultRandom(),
     tenantId: text().notNull(),
-    workspaceId: uuid()
-      .notNull()
-      .references(() => workspaceTable.id, { onDelete: 'cascade' }),
-    projectId: uuid()
-      .notNull()
-      .references(() => projectTable.id, { onDelete: 'cascade' }),
+    scopeId: uuid().notNull(),
     columnId: uuid().notNull(),
     sprintId: uuid(),
     promptVersionId: uuid().references(() => promptVersionTable.id, { onDelete: 'set null' }),
@@ -41,8 +34,7 @@ export const taskTable = pgTable(
       foreignColumns: [t.id],
     }).onDelete('set null'),
     index('task_idx_tenant').on(t.tenantId),
-    index('task_idx_workspace').on(t.tenantId, t.workspaceId),
-    index('task_idx_project').on(t.tenantId, t.projectId),
+    index('task_idx_scope').on(t.tenantId, t.scopeId),
     index('task_idx_column').on(t.tenantId, t.columnId),
     index('task_idx_sprint').on(t.tenantId, t.sprintId),
     index('task_idx_prompt_version').on(t.tenantId, t.promptVersionId),

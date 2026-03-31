@@ -2,17 +2,19 @@
 import { pipe } from 'effect/Function'
 import { validateInput, XfErrorFactory, effectErrorInfo } from '@aopslab/xf-core'
 import { XfLogger } from '@aopslab/xf-logger'
-import type { IRepositoryPortPrompt } from '../ports/repository-ports/index.js'
-import type { IPromptServicePort } from '../ports/inbound/index.js'
+import type { IRepositoryPortPrompt, IRepositoryPortScope } from '../ports/repository-ports/index.js'
+import type { IPromptServicePort, PromptListFilter } from '../ports/inbound/index.js'
 import { PromptServiceError } from '../errors/PromptServiceError.js'
 import { IbmPrompt, IbmPromptInsert, promptZodSchemaInsert } from '../../domain/models/index.js'
 import { validateBmInputWithSchema } from './service.zod-validation.js'
 import { DbQueryOptions, mapDbError } from '@aopslab/xf-db'
+import { listRecordsByScopeResolution } from './service.scope-resolution.js'
 
 export interface PromptServiceDependencies {}
 
 export interface PromptServiceOptions {
   promptRepository: IRepositoryPortPrompt
+  scopeRepository?: IRepositoryPortScope
   serviceDependencies?: Partial<PromptServiceDependencies>
   logger?: XfLogger
   locale?: string
@@ -20,10 +22,12 @@ export interface PromptServiceOptions {
 
 export class PromptService implements IPromptServicePort {
   private readonly promptRepository: IRepositoryPortPrompt
+  private readonly scopeRepository?: IRepositoryPortScope
   private readonly logger?: XfLogger
 
   constructor(options: PromptServiceOptions) {
     this.promptRepository = options.promptRepository
+    this.scopeRepository = options.scopeRepository
     this.logger = options.logger?.child({ module: this.constructor.name })
   }
 
@@ -65,13 +69,17 @@ export class PromptService implements IPromptServicePort {
   }
 
   listPrompts(
-    filter: Partial<IbmPrompt> = {},
+    filter: PromptListFilter = {},
     options?: DbQueryOptions<IbmPrompt>
   ): Effect.Effect<IbmPrompt[], PromptServiceError> {
     const stage = 'PromptService::listPrompts'
     return pipe(
       validateInput(filter, 'filter', { stage }),
-      Effect.flatMap((filter) => this.promptRepository.find({ matchEq: filter, options } as any).pipe(
+      Effect.flatMap((value) => listRecordsByScopeResolution(this.promptRepository as any, this.scopeRepository, value, options, {
+        stage,
+        defaultResolution: 'cascade',
+        dedupeKey: (item) => String(item?.name ?? '').trim().toLowerCase() || undefined,
+      }).pipe(
         Effect.mapError(mapDbError({ stage, operation: 'find', factory: XfErrorFactory.notFound }))
       )),
       Effect.tapError((e) => Effect.sync(() => {

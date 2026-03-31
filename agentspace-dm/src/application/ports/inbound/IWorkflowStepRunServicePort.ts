@@ -2,10 +2,11 @@ import { Effect } from 'effect'
 import { WorkflowStepRunServiceError } from '../../errors/WorkflowStepRunServiceError.js'
 import { IbmWorkflowStepRun, IbmWorkflowStepRunInsert } from '../../../domain/models/index.js'
 import { DbQueryOptions } from '@aopslab/xf-db'
+import type { ScopeResolution } from '../../../domain/types.js'
 
 export interface WorkflowStepRunListFilter {
-  workspaceId?: string
-  projectId?: string
+  scopeId?: string
+  scopeResolution?: ScopeResolution
   workflowId?: string
   workflowInstanceId?: string
   stepId?: string

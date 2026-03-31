@@ -3,11 +3,16 @@ import { SkillSetServiceError } from '../../errors/SkillSetServiceError.js'
 import { IbmSkillSet, IbmSkillSetInsert, IbmSkillSetItem } from '../../../domain/models/index.js'
 import { DbQueryOptions } from '@aopslab/xf-db'
 import type { SkillSetItemCreateInput } from './ISkillSetItemServicePort.js'
+import type { ScopeResolution } from '../../../domain/types.js'
+
+export type SkillSetListFilter = Partial<IbmSkillSet> & {
+  scopeResolution?: ScopeResolution
+}
 
 export interface ISkillSetServicePort {
   getById(id: string, options?: DbQueryOptions<IbmSkillSet>): Effect.Effect<IbmSkillSet | null, SkillSetServiceError>
   create(data: IbmSkillSetInsert): Effect.Effect<IbmSkillSet, SkillSetServiceError>
-  listSkillSets(filter?: Partial<IbmSkillSet>, options?: DbQueryOptions<IbmSkillSet>): Effect.Effect<IbmSkillSet[], SkillSetServiceError>
+  listSkillSets(filter?: SkillSetListFilter, options?: DbQueryOptions<IbmSkillSet>): Effect.Effect<IbmSkillSet[], SkillSetServiceError>
   updateSkillSet(id: string, patch: Partial<IbmSkillSet>): Effect.Effect<IbmSkillSet, SkillSetServiceError>
   addSkillVersionToSkillSet(data: SkillSetItemCreateInput): Effect.Effect<IbmSkillSetItem, SkillSetServiceError>
   removeSkillVersionFromSkillSet(

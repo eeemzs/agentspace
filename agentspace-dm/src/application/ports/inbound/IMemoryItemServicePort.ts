@@ -2,6 +2,7 @@
 import { MemoryItemServiceError } from '../../errors/MemoryItemServiceError.js'
 import { IbmMemoryItem, IbmMemoryItemInsert } from '../../../domain/models/index.js'
 import { DbQueryOptions } from '@aopslab/xf-db'
+import type { ScopeResolution } from '../../../domain/types.js'
 
 export type MemorySearchRetrievalSubject = {
   type?: string
@@ -22,15 +23,19 @@ export type MemorySearchRetrievalRequest = {
   candidateLimit?: number
 }
 
+export type MemoryItemListFilter = Partial<IbmMemoryItem> & {
+  scopeResolution?: ScopeResolution
+}
+
 export interface IMemoryItemServicePort {
   getById(id: string, options?: DbQueryOptions<IbmMemoryItem>): Effect.Effect<IbmMemoryItem | null, MemoryItemServiceError>
   create(data: IbmMemoryItemInsert): Effect.Effect<IbmMemoryItem, MemoryItemServiceError>
   addMemoryItem(data: IbmMemoryItemInsert): Effect.Effect<IbmMemoryItem, MemoryItemServiceError>
   updateMemoryItem(id: string, patch: Partial<IbmMemoryItem>): Effect.Effect<IbmMemoryItem, MemoryItemServiceError>
   setMemoryImportance(id: string, importance: number | null): Effect.Effect<IbmMemoryItem, MemoryItemServiceError>
-  listMemoryItems(filter?: Partial<IbmMemoryItem>, options?: DbQueryOptions<IbmMemoryItem>): Effect.Effect<IbmMemoryItem[], MemoryItemServiceError>
+  listMemoryItems(filter?: MemoryItemListFilter, options?: DbQueryOptions<IbmMemoryItem>): Effect.Effect<IbmMemoryItem[], MemoryItemServiceError>
   searchMemoryItems(
-    filter?: Partial<IbmMemoryItem>,
+    filter?: MemoryItemListFilter,
     retrieval?: MemorySearchRetrievalRequest,
     options?: DbQueryOptions<IbmMemoryItem>
   ): Effect.Effect<IbmMemoryItem[], MemoryItemServiceError>

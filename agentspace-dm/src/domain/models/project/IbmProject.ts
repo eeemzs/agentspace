@@ -12,6 +12,7 @@ export const ibmProjectKeys = [
   'tenantId',
   'createdAt',
   'updatedAt',
+  'scopeId',
   'workspaceId',
   'name',
   'description',

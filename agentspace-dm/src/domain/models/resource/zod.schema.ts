@@ -6,8 +6,6 @@ import { IResourceZodCtx } from './resources.js'
 export const resourceZodSchema = z
   .object({
     ...IbmZodSchema.shape,
-    workspaceId: z.string(),
-    projectId: z.string().optional(),
     ...scopeableFields,
     name: z.string(),
     description: z.string().optional(),

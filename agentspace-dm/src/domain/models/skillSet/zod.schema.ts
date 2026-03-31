@@ -6,8 +6,6 @@ import { ISkillSetZodCtx } from './resources.js'
 export const skillSetZodSchema = z
   .object({
     ...IbmZodSchema.shape,
-    workspaceId: z.string(),
-    projectId: z.string().optional(),
     ...scopeableFields,
     name: z.string(),
     description: z.string().optional(),

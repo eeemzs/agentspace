@@ -5,8 +5,7 @@ import { IAgentRunEventZodCtx } from './resources.js'
 export const agentRunEventZodSchema = z
   .object({
     ...IbmZodSchema.shape,
-    workspaceId: z.string(),
-    projectId: z.string().nullable().optional(),
+    scopeId: z.string(),
     agentRunId: z.string(),
     runId: z.string(),
     eventId: z.string(),

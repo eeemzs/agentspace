@@ -4,7 +4,11 @@ import { dirname, resolve } from 'node:path'
 import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 
-const SQLITE_TABLE_SENTINEL = 'workspaces'
+const SQLITE_TABLE_SENTINELS = [
+  { table: 'workspaces', requiredColumns: ['scopeId'] },
+  { table: 'projects', requiredColumns: ['scopeId'] },
+  { table: 'scopes', requiredColumns: ['type', 'parentScopeId'] },
+] as const
 const cliRoot = fileURLToPath(new URL('../', import.meta.url))
 const sqliteBootstrapSqlPath = resolve(cliRoot, 'resources', 'sqlite-bootstrap.sql')
 const nodeRequire = createRequire(import.meta.url)
@@ -45,10 +49,16 @@ function hasAgentspaceSchema(filename: string): boolean {
   const { DatabaseSync } = requireNodeSqlite()
   const db = new DatabaseSync(filename)
   try {
-    const found = db
-      .prepare(`SELECT name FROM sqlite_master WHERE type='table' AND name='${SQLITE_TABLE_SENTINEL}'`)
-      .get() as { name?: string } | undefined
-    return found?.name === SQLITE_TABLE_SENTINEL
+    return SQLITE_TABLE_SENTINELS.every(({ table, requiredColumns }) => {
+      const found = db
+        .prepare(`SELECT name FROM sqlite_master WHERE type='table' AND name=?`)
+        .get(table) as { name?: string } | undefined
+      if (found?.name !== table) return false
+
+      const columns = db.prepare(`PRAGMA table_info("${table}")`).all() as Array<{ name?: string }>
+      const columnNames = new Set(columns.map((column) => String(column?.name ?? '')))
+      return requiredColumns.every((column) => columnNames.has(column))
+    })
   } finally {
     db.close()
   }

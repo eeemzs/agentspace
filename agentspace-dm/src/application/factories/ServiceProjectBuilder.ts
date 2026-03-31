@@ -6,10 +6,12 @@ import { getParent, XfLogger } from '@aopslab/xf-logger'
 import { RedisConfig } from '@aopslab/xf-db-redis'
 import { RepositoryConfig } from '@aopslab/xf-db'
 import type { IProjectServicePort } from '../ports/inbound/index.js'
-import type { IRepositoryPortProject } from '../ports/repository-ports/index.js'
+import type { IRepositoryPortProject, IRepositoryPortScope, IRepositoryPortWorkspace } from '../ports/repository-ports/index.js'
 import { ProjectService, type ProjectServiceOptions } from '../services/index.js'
 import { ProjectServiceError } from '../errors/ProjectServiceError.js'
 import { RepositoryFactoryProject } from './RepositoryFactoryProject.js'
+import { RepositoryFactoryScope } from './RepositoryFactoryScope.js'
+import { RepositoryFactoryWorkspace } from './RepositoryFactoryWorkspace.js'
 
 export interface ProjectServiceFactoryConfig {
   repositoryConfig?: RepositoryConfig
@@ -24,6 +26,8 @@ export interface ProjectServiceFactoryConfig {
 
 export interface ProjectServiceFactoryOverrides {
   projectRepository?: IRepositoryPortProject
+  scopeRepository?: IRepositoryPortScope
+  workspaceRepository?: IRepositoryPortWorkspace
   //==> custom-factory-overrides
   // Add domain-specific overrides here (e.g., dependent services).
   //<==//
@@ -88,7 +92,9 @@ export class ServiceBuilderProject {
         { level: effectiveLogLevel },
       )
 
-      let projectRepository: IRepositoryPortProject;
+      let projectRepository: IRepositoryPortProject
+      let scopeRepository: IRepositoryPortScope | undefined = self.overrides.scopeRepository
+      let workspaceRepository: IRepositoryPortWorkspace | undefined = self.overrides.workspaceRepository
       if (self.overrides.projectRepository) {
         projectRepository = self.overrides.projectRepository as IRepositoryPortProject
       } else {
@@ -122,8 +128,50 @@ export class ServiceBuilderProject {
         )
       }
 
+      if (!scopeRepository && config.repositoryConfig) {
+        const repositoryParams: RepositoryCreateParams = {
+          repositoryConfig: config.repositoryConfig,
+          redisConfig: config.redisConfig,
+          logger,
+        }
+
+        scopeRepository = yield* _(
+          Effect.mapError(
+            RepositoryFactoryScope.create(repositoryParams),
+            (error) =>
+              new XfConfigurationError({
+                message: `RepositoryFactoryScope.create başarısız: ${(error as any)?.message ?? 'unknown'}`,
+                stage: 'ServiceBuilderProject::build',
+                cause: error,
+              }),
+          ),
+        )
+      }
+
+      if (!workspaceRepository && config.repositoryConfig) {
+        const repositoryParams: RepositoryCreateParams = {
+          repositoryConfig: config.repositoryConfig,
+          redisConfig: config.redisConfig,
+          logger,
+        }
+
+        workspaceRepository = yield* _(
+          Effect.mapError(
+            RepositoryFactoryWorkspace.create(repositoryParams),
+            (error) =>
+              new XfConfigurationError({
+                message: `RepositoryFactoryWorkspace.create başarısız: ${(error as any)?.message ?? 'unknown'}`,
+                stage: 'ServiceBuilderProject::build',
+                cause: error,
+              }),
+          ),
+        )
+      }
+
       const serviceOptions: ProjectServiceOptions = {
         projectRepository,
+        scopeRepository,
+        workspaceRepository,
         logger,
         //==> custom-service-options
         // Map factory config / overrides to service options here.

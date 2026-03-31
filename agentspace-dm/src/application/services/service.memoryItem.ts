@@ -2,17 +2,19 @@
 import { pipe } from 'effect/Function'
 import { validateInput, XfErrorFactory, effectErrorInfo } from '@aopslab/xf-core'
 import { XfLogger } from '@aopslab/xf-logger'
-import type { IRepositoryPortMemoryItem } from '../ports/repository-ports/index.js'
-import type { IMemoryItemServicePort, MemorySearchRetrievalRequest } from '../ports/inbound/index.js'
+import type { IRepositoryPortMemoryItem, IRepositoryPortScope } from '../ports/repository-ports/index.js'
+import type { IMemoryItemServicePort, MemoryItemListFilter, MemorySearchRetrievalRequest } from '../ports/inbound/index.js'
 import { MemoryItemServiceError } from '../errors/MemoryItemServiceError.js'
 import { IbmMemoryItem, IbmMemoryItemInsert, memoryItemZodSchemaInsert } from '../../domain/models/index.js'
 import { validateBmInputWithSchema } from './service.zod-validation.js'
 import { DbQueryOptions, mapDbError } from '@aopslab/xf-db'
+import { listRecordsByScopeResolution } from './service.scope-resolution.js'
 
 export interface MemoryItemServiceDependencies {}
 
 export interface MemoryItemServiceOptions {
   memoryItemRepository: IRepositoryPortMemoryItem
+  scopeRepository?: IRepositoryPortScope
   serviceDependencies?: Partial<MemoryItemServiceDependencies>
   logger?: XfLogger
   locale?: string
@@ -331,10 +333,12 @@ function rankMemoryItems(
 
 export class MemoryItemService implements IMemoryItemServicePort {
   private readonly memoryItemRepository: IRepositoryPortMemoryItem
+  private readonly scopeRepository?: IRepositoryPortScope
   private readonly logger?: XfLogger
 
   constructor(options: MemoryItemServiceOptions) {
     this.memoryItemRepository = options.memoryItemRepository
+    this.scopeRepository = options.scopeRepository
     this.logger = options.logger?.child({ module: this.constructor.name })
   }
 
@@ -431,13 +435,16 @@ export class MemoryItemService implements IMemoryItemServicePort {
   }
 
   listMemoryItems(
-    filter: Partial<IbmMemoryItem> = {},
+    filter: MemoryItemListFilter = {},
     options?: DbQueryOptions<IbmMemoryItem>
   ): Effect.Effect<IbmMemoryItem[], MemoryItemServiceError> {
     const stage = 'MemoryItemService::listMemoryItems'
     return pipe(
       validateInput(filter, 'filter', { stage }),
-      Effect.flatMap((filter) => this.memoryItemRepository.find({ matchEq: filter, options } as any).pipe(
+      Effect.flatMap((value) => listRecordsByScopeResolution(this.memoryItemRepository as any, this.scopeRepository, value, options, {
+        stage,
+        defaultResolution: 'cascade',
+      }).pipe(
         Effect.mapError(mapDbError({ stage, operation: 'find', factory: XfErrorFactory.notFound }))
       )),
       Effect.tapError((e) => Effect.sync(() => {
@@ -448,7 +455,7 @@ export class MemoryItemService implements IMemoryItemServicePort {
   }
 
   searchMemoryItems(
-    filter: Partial<IbmMemoryItem> = {},
+    filter: MemoryItemListFilter = {},
     retrieval?: MemorySearchRetrievalRequest,
     options?: DbQueryOptions<IbmMemoryItem>
   ): Effect.Effect<IbmMemoryItem[], MemoryItemServiceError> {
@@ -457,14 +464,14 @@ export class MemoryItemService implements IMemoryItemServicePort {
     return pipe(
       validateInput(filter, 'filter', { stage }),
       Effect.flatMap((validatedFilter) =>
-        this.memoryItemRepository.find({
-          matchEq: validatedFilter,
-          options: {
-            ...options,
-            offset: undefined,
-            limit: resolveFetchLimit(normalizedRetrieval, options),
-          },
-        } as any).pipe(
+        listRecordsByScopeResolution(this.memoryItemRepository as any, this.scopeRepository, validatedFilter, {
+          ...options,
+          offset: undefined,
+          limit: resolveFetchLimit(normalizedRetrieval, options),
+        }, {
+          stage,
+          defaultResolution: 'cascade',
+        }).pipe(
           Effect.mapError(mapDbError({ stage, operation: 'find', factory: XfErrorFactory.notFound }))
         )
       ),

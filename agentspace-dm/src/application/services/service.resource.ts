@@ -2,17 +2,19 @@
 import { pipe } from 'effect/Function'
 import { validateInput, XfErrorFactory, effectErrorInfo } from '@aopslab/xf-core'
 import { XfLogger } from '@aopslab/xf-logger'
-import type { IRepositoryPortResource } from '../ports/repository-ports/index.js'
-import type { IResourceServicePort } from '../ports/inbound/index.js'
+import type { IRepositoryPortResource, IRepositoryPortScope } from '../ports/repository-ports/index.js'
+import type { IResourceServicePort, ResourceListFilter } from '../ports/inbound/index.js'
 import { ResourceServiceError } from '../errors/ResourceServiceError.js'
 import { IbmResource, IbmResourceInsert, resourceZodSchemaInsert } from '../../domain/models/index.js'
 import { validateBmInputWithSchema } from './service.zod-validation.js'
 import { DbQueryOptions, mapDbError } from '@aopslab/xf-db'
+import { listRecordsByScopeResolution } from './service.scope-resolution.js'
 
 export interface ResourceServiceDependencies {}
 
 export interface ResourceServiceOptions {
   resourceRepository: IRepositoryPortResource
+  scopeRepository?: IRepositoryPortScope
   serviceDependencies?: Partial<ResourceServiceDependencies>
   logger?: XfLogger
   locale?: string
@@ -20,10 +22,12 @@ export interface ResourceServiceOptions {
 
 export class ResourceService implements IResourceServicePort {
   private readonly resourceRepository: IRepositoryPortResource
+  private readonly scopeRepository?: IRepositoryPortScope
   private readonly logger?: XfLogger
 
   constructor(options: ResourceServiceOptions) {
     this.resourceRepository = options.resourceRepository
+    this.scopeRepository = options.scopeRepository
     this.logger = options.logger?.child({ module: this.constructor.name })
   }
 
@@ -117,13 +121,17 @@ export class ResourceService implements IResourceServicePort {
   }
 
   listResources(
-    filter: Partial<IbmResource> = {},
+    filter: ResourceListFilter = {},
     options?: DbQueryOptions<IbmResource>
   ): Effect.Effect<IbmResource[], ResourceServiceError> {
     const stage = 'ResourceService::listResources'
     return pipe(
       validateInput(filter, 'filter', { stage }),
-      Effect.flatMap((filter) => this.resourceRepository.find({ matchEq: filter, options } as any).pipe(
+      Effect.flatMap((value) => listRecordsByScopeResolution(this.resourceRepository as any, this.scopeRepository, value, options, {
+        stage,
+        defaultResolution: 'cascade',
+        dedupeKey: (item) => String(item?.name ?? '').trim().toLowerCase() || undefined,
+      }).pipe(
         Effect.mapError(mapDbError({ stage, operation: 'find', factory: XfErrorFactory.notFound }))
       )),
       Effect.tapError((e) => Effect.sync(() => {

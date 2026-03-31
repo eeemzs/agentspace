@@ -1,21 +1,14 @@
 import { InferSelectModel } from 'drizzle-orm'
 import { randomUUID } from 'node:crypto'
 import { foreignKey, index, integer, text, sqliteTable, uniqueIndex } from 'drizzle-orm/sqlite-core'
-import { projectTableSqlite as projectTable } from '../../project/drizzle/drizzle.schema.project.sqlite.js'
 import { promptVersionTableSqlite as promptVersionTable } from '../../promptVersion/drizzle/drizzle.schema.promptVersion.sqlite.js'
-import { workspaceTableSqlite as workspaceTable } from '../../workspace/drizzle/drizzle.schema.workspace.sqlite.js'
 
 export const taskTableSqlite = sqliteTable(
   'tasks',
   {
     id: text().primaryKey().$defaultFn(() => randomUUID()),
     tenantId: text().notNull(),
-    workspaceId: text()
-      .notNull()
-      .references(() => workspaceTable.id, { onDelete: 'cascade' }),
-    projectId: text()
-      .notNull()
-      .references(() => projectTable.id, { onDelete: 'cascade' }),
+    scopeId: text().notNull(),
     columnId: text().notNull(),
     sprintId: text(),
     promptVersionId: text().references(() => promptVersionTable.id, { onDelete: 'set null' }),
@@ -42,8 +35,7 @@ export const taskTableSqlite = sqliteTable(
       foreignColumns: [t.id],
     }).onDelete('set null'),
     index('task_idx_tenant').on(t.tenantId),
-    index('task_idx_workspace').on(t.tenantId, t.workspaceId),
-    index('task_idx_project').on(t.tenantId, t.projectId),
+    index('task_idx_scope').on(t.tenantId, t.scopeId),
     index('task_idx_column').on(t.tenantId, t.columnId),
     index('task_idx_sprint').on(t.tenantId, t.sprintId),
     index('task_idx_prompt_version').on(t.tenantId, t.promptVersionId),

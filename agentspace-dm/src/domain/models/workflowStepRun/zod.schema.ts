@@ -4,8 +4,7 @@ import { IWorkflowStepRunZodCtx } from './resources.js'
 
 export const workflowStepRunZodSchema = z.object({
   ...IbmZodSchema.shape,
-  workspaceId: z.string(),
-  projectId: z.string().nullable().optional(),
+    scopeId: z.string(),
   workflowId: z.string(),
   workflowInstanceId: z.string(),
   stepId: z.string(),

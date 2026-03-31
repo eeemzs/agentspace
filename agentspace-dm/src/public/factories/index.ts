@@ -4,6 +4,7 @@ export {
   RepositoryFactoryPrompt,
   RepositoryFactoryPromptVersion,
   RepositoryFactoryResource,
+  RepositoryFactoryScope,
   RepositoryFactorySkill,
   RepositoryFactorySkillVersion,
   RepositoryFactorySkillSet,

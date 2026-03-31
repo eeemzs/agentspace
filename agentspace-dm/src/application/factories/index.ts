@@ -62,6 +62,7 @@ export * from './RepositoryFactoryProjectPath.js';
 export * from './RepositoryFactoryPrompt.js';
 export * from './RepositoryFactoryPromptVersion.js';
 export * from './RepositoryFactoryResource.js';
+export * from './RepositoryFactoryScope.js';
 export * from './RepositoryFactorySkill.js';
 export * from './RepositoryFactorySkillVersion.js';
 export * from './RepositoryFactorySkillSet.js';

@@ -2,17 +2,19 @@
 import { pipe } from 'effect/Function'
 import { validateInput, XfErrorFactory, effectErrorInfo } from '@aopslab/xf-core'
 import { XfLogger } from '@aopslab/xf-logger'
-import type { IRepositoryPortAgentSession } from '../ports/repository-ports/index.js'
-import type { AgentSessionStartInput, IAgentSessionServicePort } from '../ports/inbound/index.js'
+import type { IRepositoryPortAgentSession, IRepositoryPortScope } from '../ports/repository-ports/index.js'
+import type { AgentSessionListFilter, AgentSessionStartInput, IAgentSessionServicePort } from '../ports/inbound/index.js'
 import { AgentSessionServiceError } from '../errors/AgentSessionServiceError.js'
 import { IbmAgentSession, IbmAgentSessionInsert, agentSessionZodSchemaInsert } from '../../domain/models/index.js'
 import { validateBmInputWithSchema } from './service.zod-validation.js'
 import { DbQueryOptions, mapDbError } from '@aopslab/xf-db'
+import { listRecordsByScopeResolution } from './service.scope-resolution.js'
 
 export interface AgentSessionServiceDependencies {}
 
 export interface AgentSessionServiceOptions {
   agentSessionRepository: IRepositoryPortAgentSession
+  scopeRepository?: IRepositoryPortScope
   serviceDependencies?: Partial<AgentSessionServiceDependencies>
   logger?: XfLogger
   locale?: string
@@ -20,10 +22,12 @@ export interface AgentSessionServiceOptions {
 
 export class AgentSessionService implements IAgentSessionServicePort {
   private readonly agentSessionRepository: IRepositoryPortAgentSession
+  private readonly scopeRepository?: IRepositoryPortScope
   private readonly logger?: XfLogger
 
   constructor(options: AgentSessionServiceOptions) {
     this.agentSessionRepository = options.agentSessionRepository
+    this.scopeRepository = options.scopeRepository
     this.logger = options.logger?.child({ module: this.constructor.name })
   }
 
@@ -97,13 +101,16 @@ export class AgentSessionService implements IAgentSessionServicePort {
   }
 
   listAgentSessions(
-    filter: Partial<IbmAgentSession> = {},
+    filter: AgentSessionListFilter = {},
     options?: DbQueryOptions<IbmAgentSession>
   ): Effect.Effect<IbmAgentSession[], AgentSessionServiceError> {
     const stage = 'AgentSessionService::listAgentSessions'
     return pipe(
       validateInput(filter, 'filter', { stage }),
-      Effect.flatMap((filter) => this.agentSessionRepository.find({ matchEq: filter, options } as any).pipe(
+      Effect.flatMap((value) => listRecordsByScopeResolution(this.agentSessionRepository as any, this.scopeRepository, value, options, {
+        stage,
+        defaultResolution: 'explicit',
+      }).pipe(
         Effect.mapError(mapDbError({ stage, operation: 'find', factory: XfErrorFactory.notFound }))
       )),
       Effect.tapError((e) => Effect.sync(() => {

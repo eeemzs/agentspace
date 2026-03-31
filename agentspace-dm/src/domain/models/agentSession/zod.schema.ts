@@ -6,8 +6,7 @@ import { IAgentSessionZodCtx } from './resources.js'
 export const agentSessionZodSchema = z
   .object({
     ...IbmZodSchema.shape,
-    workspaceId: z.string(),
-    projectId: z.string().nullable().optional(),
+    scopeId: z.string(),
     sessionId: z.string(),
     agent: z.string(),
     profile: z.string().optional(),

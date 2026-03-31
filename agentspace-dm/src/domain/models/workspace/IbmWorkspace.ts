@@ -12,6 +12,7 @@ export const ibmWorkspaceKeys = [
   'tenantId',
   'createdAt',
   'updatedAt',
+  'scopeId',
   'ownerId',
   'name',
   'description',

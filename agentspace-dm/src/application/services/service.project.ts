@@ -2,7 +2,8 @@
 import { pipe } from 'effect/Function'
 import { validateInput, XfErrorFactory, effectErrorInfo } from '@aopslab/xf-core'
 import { XfLogger } from '@aopslab/xf-logger'
-import type { IRepositoryPortProject } from '../ports/repository-ports/index.js'
+import { randomUUID } from 'node:crypto'
+import type { IRepositoryPortProject, IRepositoryPortScope, IRepositoryPortWorkspace } from '../ports/repository-ports/index.js'
 import type { IProjectServicePort } from '../ports/inbound/index.js'
 import { ProjectServiceError } from '../errors/ProjectServiceError.js'
 import { IbmProject, IbmProjectInsert, projectZodSchemaInsert } from '../../domain/models/index.js'
@@ -13,6 +14,8 @@ export interface ProjectServiceDependencies {}
 
 export interface ProjectServiceOptions {
   projectRepository: IRepositoryPortProject
+  workspaceRepository?: IRepositoryPortWorkspace
+  scopeRepository?: IRepositoryPortScope
   serviceDependencies?: Partial<ProjectServiceDependencies>
   logger?: XfLogger
   locale?: string
@@ -20,10 +23,14 @@ export interface ProjectServiceOptions {
 
 export class ProjectService implements IProjectServicePort {
   private readonly projectRepository: IRepositoryPortProject
+  private readonly workspaceRepository?: IRepositoryPortWorkspace
+  private readonly scopeRepository?: IRepositoryPortScope
   private readonly logger?: XfLogger
 
   constructor(options: ProjectServiceOptions) {
     this.projectRepository = options.projectRepository
+    this.workspaceRepository = options.workspaceRepository
+    this.scopeRepository = options.scopeRepository
     this.logger = options.logger?.child({ module: this.constructor.name })
   }
 
@@ -43,21 +50,58 @@ export class ProjectService implements IProjectServicePort {
 
   create(data: IbmProjectInsert): Effect.Effect<IbmProject, ProjectServiceError> {
     const stage = 'ProjectService::create'
-    return pipe(
-      validateInput(data, 'data', { stage }),
-      Effect.flatMap((data) =>
+    return Effect.gen(this, function* (_) {
+      const raw = yield* _(validateInput(data, 'data', { stage }))
+      const parsed = yield* _(
         validateBmInputWithSchema({
-          input: data,
+          input: raw,
           schema: projectZodSchemaInsert,
           stage,
           operation: 'ProjectService::create.projectZodSchemaInsert',
           field: 'data',
-        })
-      ),
-      Effect.flatMap((data) => this.projectRepository.create(data).pipe(
-        Effect.mapError(mapDbError({ stage, operation: 'create', factory: XfErrorFactory.createFailed }))
-      ))
-    )
+        }),
+      )
+
+      const workspaceId = String((parsed as any).workspaceId ?? '').trim()
+      if (!workspaceId) {
+        return yield* _(Effect.fail(XfErrorFactory.inputRequired({ field: 'workspaceId', stage })))
+      }
+
+      const workspace = this.workspaceRepository
+        ? yield* _(
+            this.workspaceRepository.findById(workspaceId).pipe(
+              Effect.mapError(mapDbError({ stage, operation: 'workspace.findById', factory: XfErrorFactory.notFound })),
+            ),
+          )
+        : null
+      if (!workspace) {
+        return yield* _(Effect.fail(XfErrorFactory.notFound({ stage, identifier: workspaceId })))
+      }
+
+      const id = randomUUID()
+      const projectScope = this.scopeRepository
+        ? yield* _(
+            this.scopeRepository.create({
+              type: 'project',
+              parentScopeId: String((workspace as any).scopeId ?? workspaceId),
+              createdBy: (parsed as any).createdBy,
+              updatedBy: (parsed as any).updatedBy,
+            } as any).pipe(
+              Effect.mapError(mapDbError({ stage, operation: 'scope.create', factory: XfErrorFactory.createFailed })),
+            ),
+          )
+        : null
+      const scopeId = String((projectScope as any)?.id ?? '')
+      if (!scopeId) {
+        return yield* _(Effect.fail(XfErrorFactory.notFound({ stage, identifier: 'project-scope' })))
+      }
+
+      return yield* _(
+        this.projectRepository.create({ ...parsed, id, scopeId } as any).pipe(
+          Effect.mapError(mapDbError({ stage, operation: 'create', factory: XfErrorFactory.createFailed })),
+        ),
+      )
+    })
   }
 
   getProject(id: string, options?: DbQueryOptions<IbmProject>): Effect.Effect<IbmProject | null, ProjectServiceError> {

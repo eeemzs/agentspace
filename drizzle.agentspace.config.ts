@@ -19,6 +19,7 @@ const agentspaceTables = [
   'prompt-versions',
   'prompts',
   'resources',
+  'scopes',
   'skill-set-items',
   'skill-sets',
   'skill-versions',
@@ -28,6 +29,7 @@ const agentspaceTables = [
   'tags',
   'task-comments',
   'tasks',
+  'workflow-definitions',
   'workflow-instances',
   'workflow-step-runs',
   'workspace-members',
@@ -44,6 +46,7 @@ export default {
     url:
       process.env.AGENTSPACE_REPO_URL ||
       process.env.AGENTSPACE_PG_URL ||
+      process.env.AOPS_REPO_URL ||
       process.env.AOPS_PG_URL ||
       process.env.DEV_PG_URL ||
       process.env.POSTGRES_URL_LOCAL ||

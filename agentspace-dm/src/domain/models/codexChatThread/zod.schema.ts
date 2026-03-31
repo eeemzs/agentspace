@@ -4,8 +4,7 @@ import { ICodexChatThreadZodCtx } from './resources.js'
 
 export const codexChatThreadZodSchema = z.object({
   ...IbmZodSchema.shape,
-  workspaceId: z.string(),
-  projectId: z.string().nullable().optional(),
+    scopeId: z.string(),
   externalThreadId: z.string(),
   scopeLabel: z.string().optional(),
   cwd: z.string().optional(),

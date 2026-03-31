@@ -6,7 +6,7 @@ import { ITagZodCtx } from './resources.js'
 export const tagZodSchema = z
   .object({
     ...IbmZodSchema.shape,
-    workspaceId: z.string(),
+    scopeId: z.string(),
     scopeType: z.enum(TAG_SCOPE_TYPES),
     name: z.string(),
     createdBy: z.string().optional(),

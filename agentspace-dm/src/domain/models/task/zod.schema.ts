@@ -6,8 +6,7 @@ import { ITaskZodCtx } from './resources.js'
 export const taskZodSchema = z
   .object({
     ...IbmZodSchema.shape,
-    workspaceId: z.string(),
-    projectId: z.string(),
+    scopeId: z.string(),
     columnId: z.string(),
     sprintId: z.string().optional(),
     promptVersionId: z.string().optional(),

@@ -4,8 +4,7 @@ import { IdbAgentRunEventDrizzle, AgentRunEventColumnsDrizzle } from './drizzle.
 
 const conversions: FieldConversionLookup<IbmAgentRunEvent, AgentRunEventColumnsDrizzle> = {
   id: { toDomain: uuidToString, toDb: stringToUuid },
-  workspaceId: { toDomain: uuidToString, toDb: stringToUuid },
-  projectId: { toDomain: uuidToString, toDb: stringToUuid },
+  scopeId: { toDomain: uuidToString, toDb: stringToUuid },
   agentRunId: { toDomain: uuidToString, toDb: stringToUuid },
 }
 

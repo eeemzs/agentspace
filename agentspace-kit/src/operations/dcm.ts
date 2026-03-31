@@ -70,7 +70,8 @@ const OPERATION_DOCS_OVERRIDES = new Map<string, AgentspaceDomainCapabilityOpera
       notes: [
         'Use the custom input envelope: {"data":{...}}.',
         'data.bundle.files must include SKILL.md as the canonical entry file.',
-        'For project-scoped imports, provide projectId or scopeId consistently with scopeType=project.',
+        'workspaceId carries hosted context; scopeId is the canonical owner for scoped imports.',
+        'For project-scoped imports, provide scopeId consistently with scopeType=project. projectId is only a bridge field for older callers.',
       ],
     },
   ],

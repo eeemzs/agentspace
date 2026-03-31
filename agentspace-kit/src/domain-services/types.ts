@@ -2,7 +2,7 @@
 import type { RepositoryConfig } from '@aopslab/xf-db'
 import type { XfLogger } from '@aopslab/xf-logger'
 import type { IProjectServicePort, IProjectPathServicePort, IPromptServicePort, IPromptVersionServicePort, IResourceServicePort, ISkillServicePort, ISkillVersionServicePort, ISkillSetServicePort, ISkillSetItemServicePort, IKanbanBoardServicePort, IKanbanColumnServicePort, ISprintServicePort, ISprintItemServicePort, ITaskServicePort, ITaskCommentServicePort, IAgentSessionServicePort, IAgentRunServicePort, IAgentRunEventServicePort, IArtifactServicePort, IArtifactLinkServicePort, ICodexChatMessageServicePort, ICodexChatSettingServicePort, ICodexChatThreadServicePort, IProjectSummaryServicePort, IMemoryItemServicePort, ITagServicePort, IWorkflowDefinitionServicePort, IWorkflowInstanceServicePort, IWorkflowStepRunServicePort, IWorkspaceServicePort, IWorkspaceMemberServicePort, IProjectMemberServicePort } from '@aopslab/domain-dm-agentspace/ports'
-import type { IRepositoryPortProject, IRepositoryPortProjectPath, IRepositoryPortPrompt, IRepositoryPortPromptVersion, IRepositoryPortResource, IRepositoryPortSkill, IRepositoryPortSkillVersion, IRepositoryPortSkillSet, IRepositoryPortSkillSetItem, IRepositoryPortKanbanBoard, IRepositoryPortKanbanColumn, IRepositoryPortSprint, IRepositoryPortSprintItem, IRepositoryPortTask, IRepositoryPortTaskComment, IRepositoryPortAgentSession, IRepositoryPortAgentRun, IRepositoryPortAgentRunEvent, IRepositoryPortArtifact, IRepositoryPortArtifactLink, IRepositoryPortCodexChatMessage, IRepositoryPortCodexChatSetting, IRepositoryPortCodexChatThread, IRepositoryPortProjectSummary, IRepositoryPortMemoryItem, IRepositoryPortTag, IRepositoryPortWorkflowDefinition, IRepositoryPortWorkflowInstance, IRepositoryPortWorkflowStepRun, IRepositoryPortWorkspace, IRepositoryPortWorkspaceMember, IRepositoryPortProjectMember } from '@aopslab/domain-dm-agentspace/repository-ports'
+import type { IRepositoryPortProject, IRepositoryPortProjectPath, IRepositoryPortPrompt, IRepositoryPortPromptVersion, IRepositoryPortResource, IRepositoryPortScope, IRepositoryPortSkill, IRepositoryPortSkillVersion, IRepositoryPortSkillSet, IRepositoryPortSkillSetItem, IRepositoryPortKanbanBoard, IRepositoryPortKanbanColumn, IRepositoryPortSprint, IRepositoryPortSprintItem, IRepositoryPortTask, IRepositoryPortTaskComment, IRepositoryPortAgentSession, IRepositoryPortAgentRun, IRepositoryPortAgentRunEvent, IRepositoryPortArtifact, IRepositoryPortArtifactLink, IRepositoryPortCodexChatMessage, IRepositoryPortCodexChatSetting, IRepositoryPortCodexChatThread, IRepositoryPortProjectSummary, IRepositoryPortMemoryItem, IRepositoryPortTag, IRepositoryPortWorkflowDefinition, IRepositoryPortWorkflowInstance, IRepositoryPortWorkflowStepRun, IRepositoryPortWorkspace, IRepositoryPortWorkspaceMember, IRepositoryPortProjectMember } from '@aopslab/domain-dm-agentspace/repository-ports'
 
 export interface AgentspaceKitContext {
   tenantId: string
@@ -16,6 +16,7 @@ export interface AgentspaceKitStaticConfig {
   logLevel?: DefaultServiceProviderOptions['logLevel']
   projectRepository: RepositoryEndpoint
   projectPathRepository: RepositoryEndpoint
+  scopeRepository: RepositoryEndpoint
   workspaceRepository: RepositoryEndpoint
   workspaceMemberRepository: RepositoryEndpoint
   projectMemberRepository: RepositoryEndpoint
@@ -54,6 +55,7 @@ export interface AgentspaceKitServiceProviderOptions extends DefaultServiceProvi
   logLevel?: DefaultServiceProviderOptions['logLevel']
   projectRepositoryConfig: RepositoryConfig
   projectPathRepositoryConfig: RepositoryConfig
+  scopeRepositoryConfig: RepositoryConfig
   workspaceRepositoryConfig: RepositoryConfig
   workspaceMemberRepositoryConfig: RepositoryConfig
   projectMemberRepositoryConfig: RepositoryConfig
@@ -124,6 +126,7 @@ export interface AgentspaceKitServices {
 export interface AgentspaceKitRepositories {
   projectRepository: IRepositoryPortProject
   projectPathRepository: IRepositoryPortProjectPath
+  scopeRepository: IRepositoryPortScope
   workspaceRepository: IRepositoryPortWorkspace
   workspaceMemberRepository: IRepositoryPortWorkspaceMember
   projectMemberRepository: IRepositoryPortProjectMember
@@ -227,6 +230,7 @@ export interface AgentspaceKitProvider {
   createWorkflowStepRunService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['workflowStepRunService']>
   getProjectRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['projectRepository']>
   getProjectPathRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['projectPathRepository']>
+  getScopeRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['scopeRepository']>
   getWorkspaceRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['workspaceRepository']>
   getWorkspaceMemberRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['workspaceMemberRepository']>
   getProjectMemberRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['projectMemberRepository']>

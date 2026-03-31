@@ -41,10 +41,11 @@ If you need a quick map of which file answers which question, read:
 2. Treat `agentspace` as the semantic owner for those capability families.
 3. Discover hosted tools first:
    - `aops-cli agent tools --domain agentspace --workspace-name Default`
-4. Keep hosted workspace context explicit with `--workspace-name` or
-   `--workspace-uuid`.
-5. Keep payload-level `workspaceId` and `projectId` explicit when the operation
-   models those scopes directly.
+4. Keep hosted AOPS context explicit with `--workspace-name` or
+   `--workspace-uuid` when resolving project and scope bindings.
+5. Prefer payload-level `scopeId` as the canonical owner for content and
+   knowledge records. Keep `projectId` explicit only when an operation models
+   project metadata or needs project-based scope resolution.
 6. Prefer `aops-cli agent invoke` for CRUD-style hosted operations.
 7. Use direct `aops-cli api call --domain agentspace ...` only when
    intentionally bypassing the gateway.
@@ -59,7 +60,7 @@ If you need a quick map of which file answers which question, read:
 11. Hosted write tools such as `agentspace.prompt.create` require `--apply`.
 12. Reusable prompt templates are usually a two-step flow:
     `agentspace.prompt.create` then `agentspace.prompt-version.create`.
-13. Before showing prompt scope to humans, resolve project and workspace names
+13. Before showing owner labels to humans, resolve project and workspace names
     with `agentspace.project.list-projects` and `agentspace.workspace.list-workspaces`.
 14. When paired with `projectman`, durable memory writeback should usually cover
     kickoff/resume, decision/blocker, and closeout/lesson rather than every
@@ -92,10 +93,16 @@ aops-cli agent invoke --tool agentspace.project.list-projects --workspace-name D
 Use this order when persisting a reusable prompt template:
 
 ```bash
-aops-cli agent invoke --tool agentspace.prompt.create --workspace-name Default --apply --input '{"data":{"workspaceId":"<workspace-id>","projectId":"<project-id>","scopeType":"project","scopeId":"<project-id>","name":"Template name","description":"Template record","tags":["template"],"status":"draft"}}'
+aops-cli agent invoke --tool agentspace.prompt.create --workspace-name Default --apply --input '{"data":{"scopeId":"<project-scope-id>","name":"Template name","description":"Template record","tags":["template"],"status":"draft"}}'
 
 aops-cli agent invoke --tool agentspace.prompt-version.create --workspace-name Default --apply --input '{"data":{"workspaceId":"<workspace-id>","promptId":"<prompt-id>","status":"published","content":"<template text>","refType":"project","refId":"<project-id>"}}'
 ```
+
+Note:
+
+1. `prompt.create` is scope-owned and should use `scopeId`.
+2. `prompt-version.create` still carries `workspaceId` for prompt-version
+   lineage; do not invent `scopeType` or duplicate owner ids there.
 
 If the UI should show human-readable ownership, first fetch:
 

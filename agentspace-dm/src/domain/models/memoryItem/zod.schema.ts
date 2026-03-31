@@ -6,8 +6,6 @@ import { IMemoryItemZodCtx } from './resources.js'
 export const memoryItemZodSchema = z
   .object({
     ...IbmZodSchema.shape,
-    workspaceId: z.string(),
-    projectId: z.string().optional(),
     ...scopeableFields,
     kind: z.enum(MEMORY_ITEM_KINDS),
     content: z.string(),

@@ -40,7 +40,6 @@ const AGENTSPACE_CONTEXT_KEYS = new Set([
 ])
 
 const DATA_WORKSPACE_FALLBACK_OPERATIONS = new Set<AgentspaceTypedOperationId>([
-  'prompt.create',
   'project.create',
   'project-path.create',
   'project-path.upsert-project-path',

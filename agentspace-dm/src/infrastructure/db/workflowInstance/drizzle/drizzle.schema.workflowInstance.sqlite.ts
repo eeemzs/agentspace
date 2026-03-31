@@ -1,18 +1,13 @@
 import { InferSelectModel } from 'drizzle-orm'
 import { randomUUID } from 'node:crypto'
 import { index, integer, text, sqliteTable, uniqueIndex } from 'drizzle-orm/sqlite-core'
-import { projectTableSqlite as projectTable } from '../../project/drizzle/drizzle.schema.project.sqlite.js'
-import { workspaceTableSqlite as workspaceTable } from '../../workspace/drizzle/drizzle.schema.workspace.sqlite.js'
 
 export const workflowInstanceTableSqlite = sqliteTable(
   'workflow-instances',
   {
     id: text().primaryKey().$defaultFn(() => randomUUID()),
     tenantId: text().notNull(),
-    workspaceId: text()
-      .notNull()
-      .references(() => workspaceTable.id, { onDelete: 'cascade' }),
-    projectId: text().references(() => projectTable.id, { onDelete: 'set null' }),
+    scopeId: text().notNull(),
     workflowInstanceId: text().notNull(),
     definitionId: text(),
     mode: text().notNull(),
@@ -35,9 +30,8 @@ export const workflowInstanceTableSqlite = sqliteTable(
     updatedAt: integer({ mode: 'timestamp_ms' }).$defaultFn(() => new Date()),
   },
   (t) => [
-    uniqueIndex('workflow_instance_unique_instance_id').on(t.tenantId, t.workspaceId, t.workflowInstanceId),
-    index('workflow_instance_idx_workspace_status').on(t.tenantId, t.workspaceId, t.status),
-    index('workflow_instance_idx_project_status').on(t.tenantId, t.projectId, t.status),
+    uniqueIndex('workflow_instance_unique_instance_id').on(t.tenantId, t.scopeId, t.workflowInstanceId),
+    index('workflow_instance_idx_scope_status').on(t.tenantId, t.scopeId, t.status),
     index('workflow_instance_idx_subject').on(t.tenantId, t.subjectType, t.subjectId),
   ]
 )

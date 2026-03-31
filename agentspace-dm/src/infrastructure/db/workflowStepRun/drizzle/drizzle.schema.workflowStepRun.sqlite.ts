@@ -2,8 +2,6 @@ import { InferSelectModel } from 'drizzle-orm'
 import { randomUUID } from 'node:crypto'
 import { index, integer, text, sqliteTable, uniqueIndex } from 'drizzle-orm/sqlite-core'
 import { agentRunTableSqlite as agentRunTable } from '../../agentRun/drizzle/drizzle.schema.agentRun.sqlite.js'
-import { projectTableSqlite as projectTable } from '../../project/drizzle/drizzle.schema.project.sqlite.js'
-import { workspaceTableSqlite as workspaceTable } from '../../workspace/drizzle/drizzle.schema.workspace.sqlite.js'
 import { workflowInstanceTableSqlite as workflowInstanceTable } from '../../workflowInstance/drizzle/drizzle.schema.workflowInstance.sqlite.js'
 
 export const workflowStepRunTableSqlite = sqliteTable(
@@ -11,10 +9,7 @@ export const workflowStepRunTableSqlite = sqliteTable(
   {
     id: text().primaryKey().$defaultFn(() => randomUUID()),
     tenantId: text().notNull(),
-    workspaceId: text()
-      .notNull()
-      .references(() => workspaceTable.id, { onDelete: 'cascade' }),
-    projectId: text().references(() => projectTable.id, { onDelete: 'set null' }),
+    scopeId: text().notNull(),
     workflowId: text()
       .notNull()
       .references(() => workflowInstanceTable.id, { onDelete: 'cascade' }),
@@ -39,6 +34,7 @@ export const workflowStepRunTableSqlite = sqliteTable(
   },
   (t) => [
     uniqueIndex('workflow_step_run_unique_sequence').on(t.tenantId, t.workflowId, t.sequence),
+    index('workflow_step_run_idx_scope').on(t.tenantId, t.scopeId),
     index('workflow_step_run_idx_workflow_step').on(t.tenantId, t.workflowId, t.stepId),
     index('workflow_step_run_idx_instance').on(t.tenantId, t.workflowInstanceId),
     index('workflow_step_run_idx_agent_run').on(t.tenantId, t.agentRunId),

@@ -76,12 +76,20 @@ type MatchEqDeleteByIdRepository<TDomainModel> = {
   deleteByIdWithMatch(id: string, matchEq?: Partial<TDomainModel>): Effect.Effect<number, unknown, never>
 }
 
+type FindByIdRepository<TDomainModel> = {
+  findById(id: string): Effect.Effect<TDomainModel, unknown, never>
+}
+
 function asMatchEqRepository<TDomainModel>(repository: unknown): MatchEqRepository<TDomainModel> {
   return repository as MatchEqRepository<TDomainModel>
 }
 
 function asMatchEqDeleteByIdRepository<TDomainModel>(repository: unknown): MatchEqDeleteByIdRepository<TDomainModel> {
   return repository as MatchEqDeleteByIdRepository<TDomainModel>
+}
+
+function asFindByIdRepository<TDomainModel>(repository: unknown): FindByIdRepository<TDomainModel> {
+  return repository as FindByIdRepository<TDomainModel>
 }
 
 async function findByMatchEq<TDomainModel>(
@@ -173,11 +181,29 @@ export async function hardDeleteAgentspaceProjectCascade(params: {
     kit.getCodexChatMessageRepository(),
   ])
 
+  let project: IbmProject
+  try {
+    project = await Effect.runPromise(asFindByIdRepository<IbmProject>(projectRepository).findById(projectId))
+  } catch (error) {
+    throw new Error('hardDeleteAgentspaceProjectCascade.findById failed: projectRepository.findById', {
+      cause: error,
+    })
+  }
+
+  if (project.workspaceId !== workspaceId) {
+    throw new Error(`hardDeleteAgentspaceProjectCascade.workspace_mismatch:${projectId}`)
+  }
+
+  const projectScopeId = normalizeNonEmpty(project.scopeId)
+  if (!projectScopeId) {
+    throw new Error(`hardDeleteAgentspaceProjectCascade.missing_scope:${projectId}`)
+  }
+
   const [prompts, skills, skillSets, sprints] = await Promise.all([
-    findByMatchEq<IbmPrompt>('promptRepository.find', promptRepository, { workspaceId, projectId }),
-    findByMatchEq<IbmSkill>('skillRepository.find', skillRepository, { workspaceId, projectId }),
-    findByMatchEq<IbmSkillSet>('skillSetRepository.find', skillSetRepository, { workspaceId, projectId }),
-    findByMatchEq<IbmSprint>('sprintRepository.find', sprintRepository, { workspaceId, projectId }),
+    findByMatchEq<IbmPrompt>('promptRepository.find', promptRepository, { scopeId: projectScopeId }),
+    findByMatchEq<IbmSkill>('skillRepository.find', skillRepository, { scopeId: projectScopeId }),
+    findByMatchEq<IbmSkillSet>('skillSetRepository.find', skillSetRepository, { scopeId: projectScopeId }),
+    findByMatchEq<IbmSprint>('sprintRepository.find', sprintRepository, { scopeId: projectScopeId }),
   ])
 
   const promptIds = collectIds(prompts)
@@ -231,7 +257,7 @@ export async function hardDeleteAgentspaceProjectCascade(params: {
     workspaceId,
     projectId,
   })
-  deleted.tasks = await deleteManyByMatchEq('taskRepository.deleteMany', taskRepository, { workspaceId, projectId })
+  deleted.tasks = await deleteManyByMatchEq('taskRepository.deleteMany', taskRepository, { scopeId: projectScopeId })
 
   deleted.kanbanColumns = await deleteManyByMatchEq('kanbanColumnRepository.deleteMany', kanbanColumnRepository, {
     workspaceId,
@@ -248,7 +274,7 @@ export async function hardDeleteAgentspaceProjectCascade(params: {
       await deleteManyByMatchEq('sprintItemRepository.deleteMany', sprintItemRepository, { workspaceId, sprintId })
     )
   }
-  deleted.sprints = await deleteManyByMatchEq('sprintRepository.deleteMany', sprintRepository, { workspaceId, projectId })
+  deleted.sprints = await deleteManyByMatchEq('sprintRepository.deleteMany', sprintRepository, { scopeId: projectScopeId })
 
   // Prompt versions live under prompt ids (no projectId column).
   for (const promptId of promptIds) {
@@ -256,7 +282,7 @@ export async function hardDeleteAgentspaceProjectCascade(params: {
       await deleteManyByMatchEq('promptVersionRepository.deleteMany', promptVersionRepository, { workspaceId, promptId })
     )
   }
-  deleted.prompts = await deleteManyByMatchEq('promptRepository.deleteMany', promptRepository, { workspaceId, projectId })
+  deleted.prompts = await deleteManyByMatchEq('promptRepository.deleteMany', promptRepository, { scopeId: projectScopeId })
 
   // Skill set items must be removed before deleting skill versions to avoid
   // FK cascade consuming counts and hiding actual deleted row totals.
@@ -272,17 +298,18 @@ export async function hardDeleteAgentspaceProjectCascade(params: {
       await deleteManyByMatchEq('skillVersionRepository.deleteMany', skillVersionRepository, { workspaceId, skillId })
     )
   }
-  deleted.skills = await deleteManyByMatchEq('skillRepository.deleteMany', skillRepository, { workspaceId, projectId })
+  deleted.skills = await deleteManyByMatchEq('skillRepository.deleteMany', skillRepository, { scopeId: projectScopeId })
 
-  deleted.skillSets = await deleteManyByMatchEq('skillSetRepository.deleteMany', skillSetRepository, { workspaceId, projectId })
+  deleted.skillSets = await deleteManyByMatchEq('skillSetRepository.deleteMany', skillSetRepository, {
+    scopeId: projectScopeId,
+  })
 
   deleted.artifactLinks = await deleteManyByMatchEq('artifactLinkRepository.deleteMany', artifactLinkRepository, {
     workspaceId,
     projectId,
   })
   deleted.artifacts = await deleteManyByMatchEq('artifactRepository.deleteMany', artifactRepository, {
-    workspaceId,
-    projectId,
+    scopeId: projectScopeId,
   })
 
   deleted.agentRuns = await deleteManyByMatchEq('agentRunRepository.deleteMany', agentRunRepository, {
@@ -290,8 +317,7 @@ export async function hardDeleteAgentspaceProjectCascade(params: {
     projectId,
   })
   deleted.agentSessions = await deleteManyByMatchEq('agentSessionRepository.deleteMany', agentSessionRepository, {
-    workspaceId,
-    projectId,
+    scopeId: projectScopeId,
   })
 
   deleted.codexChatMessages = await deleteManyByMatchEq(
@@ -300,14 +326,14 @@ export async function hardDeleteAgentspaceProjectCascade(params: {
     { workspaceId, projectId }
   )
   deleted.codexChatThreads = await deleteManyByMatchEq('codexChatThreadRepository.deleteMany', codexChatThreadRepository, {
-    workspaceId,
-    projectId,
+    scopeId: projectScopeId,
   })
 
-  deleted.resources = await deleteManyByMatchEq('resourceRepository.deleteMany', resourceRepository, { workspaceId, projectId })
+  deleted.resources = await deleteManyByMatchEq('resourceRepository.deleteMany', resourceRepository, {
+    scopeId: projectScopeId,
+  })
   deleted.memoryItems = await deleteManyByMatchEq('memoryItemRepository.deleteMany', memoryItemRepository, {
-    workspaceId,
-    projectId,
+    scopeId: projectScopeId,
   })
 
   // Finally delete the project record itself.

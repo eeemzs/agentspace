@@ -2,18 +2,13 @@ import { InferSelectModel } from 'drizzle-orm'
 import { randomUUID } from 'node:crypto'
 import { index, integer, text, sqliteTable, uniqueIndex } from 'drizzle-orm/sqlite-core'
 import { agentRunTableSqlite as agentRunTable } from '../../agentRun/drizzle/drizzle.schema.agentRun.sqlite.js'
-import { projectTableSqlite as projectTable } from '../../project/drizzle/drizzle.schema.project.sqlite.js'
-import { workspaceTableSqlite as workspaceTable } from '../../workspace/drizzle/drizzle.schema.workspace.sqlite.js'
 
 export const agentRunEventTableSqlite = sqliteTable(
   'agent-run-events',
   {
     id: text().primaryKey().$defaultFn(() => randomUUID()),
     tenantId: text().notNull(),
-    workspaceId: text()
-      .notNull()
-      .references(() => workspaceTable.id, { onDelete: 'cascade' }),
-    projectId: text().references(() => projectTable.id, { onDelete: 'set null' }),
+    scopeId: text().notNull(),
     agentRunId: text()
       .notNull()
       .references(() => agentRunTable.id, { onDelete: 'cascade' }),
@@ -30,8 +25,8 @@ export const agentRunEventTableSqlite = sqliteTable(
   },
   (t) => [
     uniqueIndex('agent_run_event_unique_run_sequence').on(t.tenantId, t.agentRunId, t.sequence),
-    index('agent_run_event_idx_workspace_emitted').on(t.tenantId, t.workspaceId, t.emittedAt),
-    index('agent_run_event_idx_project_emitted').on(t.tenantId, t.projectId, t.emittedAt),
+    index('agent_run_event_idx_scope_emitted').on(t.tenantId, t.scopeId, t.emittedAt),
+    
     index('agent_run_event_idx_run_id').on(t.tenantId, t.runId),
     index('agent_run_event_idx_type').on(t.tenantId, t.eventType),
   ]

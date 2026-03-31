@@ -4,7 +4,7 @@ import { validateInput, XfErrorFactory, effectErrorInfo } from '@aopslab/xf-core
 import { XfLogger } from '@aopslab/xf-logger'
 import { DbQueryOptions, mapDbError } from '@aopslab/xf-db'
 
-import type { IRepositoryPortWorkflowDefinition } from '../ports/repository-ports/index.js'
+import type { IRepositoryPortScope, IRepositoryPortWorkflowDefinition } from '../ports/repository-ports/index.js'
 import type {
   IWorkflowDefinitionServicePort,
   WorkflowDefinitionListFilter,
@@ -17,11 +17,13 @@ import {
   workflowDefinitionZodSchemaInsert,
 } from '../../domain/models/index.js'
 import { validateBmInputWithSchema } from './service.zod-validation.js'
+import { listRecordsByScopeResolution } from './service.scope-resolution.js'
 
 export interface WorkflowDefinitionServiceDependencies {}
 
 export interface WorkflowDefinitionServiceOptions {
   workflowDefinitionRepository: IRepositoryPortWorkflowDefinition
+  scopeRepository?: IRepositoryPortScope
   serviceDependencies?: Partial<WorkflowDefinitionServiceDependencies>
   logger?: XfLogger
   locale?: string
@@ -29,10 +31,12 @@ export interface WorkflowDefinitionServiceOptions {
 
 export class WorkflowDefinitionService implements IWorkflowDefinitionServicePort {
   private readonly workflowDefinitionRepository: IRepositoryPortWorkflowDefinition
+  private readonly scopeRepository?: IRepositoryPortScope
   private readonly logger?: XfLogger
 
   constructor(options: WorkflowDefinitionServiceOptions) {
     this.workflowDefinitionRepository = options.workflowDefinitionRepository
+    this.scopeRepository = options.scopeRepository
     this.logger = options.logger?.child({ module: this.constructor.name })
   }
 
@@ -86,16 +90,17 @@ export class WorkflowDefinitionService implements IWorkflowDefinitionServicePort
     return pipe(
       Effect.succeed(filter),
       Effect.flatMap((value) =>
-        this.workflowDefinitionRepository.find({
-          matchEq: {
-            ...(typeof value.workspaceId === 'string' ? { workspaceId: value.workspaceId.trim() } : {}),
-            ...(typeof value.projectId === 'string' ? { projectId: value.projectId.trim() } : {}),
-            ...(typeof value.definitionId === 'string' ? { definitionId: value.definitionId.trim() } : {}),
-            ...(typeof value.mode === 'string' ? { mode: value.mode.trim() } : {}),
-            ...(typeof value.subjectType === 'string' ? { subjectType: value.subjectType.trim() } : {}),
-          },
-          options,
-        } as any).pipe(
+        listRecordsByScopeResolution(this.workflowDefinitionRepository as any, this.scopeRepository, {
+          ...(typeof value.scopeId === 'string' ? { scopeId: value.scopeId.trim() } : {}),
+          scopeResolution: value.scopeResolution,
+          ...(typeof value.definitionId === 'string' ? { definitionId: value.definitionId.trim() } : {}),
+          ...(typeof value.mode === 'string' ? { mode: value.mode.trim() } : {}),
+          ...(typeof value.subjectType === 'string' ? { subjectType: value.subjectType.trim() } : {}),
+        }, options, {
+          stage,
+          defaultResolution: 'explicit',
+          dedupeKey: (item) => String(item?.definitionId ?? '').trim().toLowerCase() || undefined,
+        }).pipe(
           Effect.mapError(mapDbError({ stage, operation: 'find', factory: XfErrorFactory.notFound }))
         )
       )
@@ -124,7 +129,7 @@ export class WorkflowDefinitionService implements IWorkflowDefinitionServicePort
       ),
       Effect.flatMap(({ validated, matchEq }) =>
         this.workflowDefinitionRepository.upsert(validated, {
-          workspaceId: validated.workspaceId,
+          scopeId: validated.scopeId,
           definitionId: validated.definitionId,
           ...(matchEq ?? {}),
         }).pipe(

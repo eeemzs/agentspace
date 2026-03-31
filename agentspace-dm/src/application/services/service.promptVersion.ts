@@ -1,6 +1,6 @@
 ﻿import { Effect } from 'effect'
 import { pipe } from 'effect/Function'
-import { validateInput, XfErrorFactory, XfMessageType, effectErrorInfo } from '@aopslab/xf-core'
+import { validateInput, XfErrorFactory, effectErrorInfo } from '@aopslab/xf-core'
 import { XfLogger } from '@aopslab/xf-logger'
 import { IRepositoryBase, IRepositoryContext, IUnitOfWork, DbQueryOptions, mapDbError, runInTransactionEffect } from '@aopslab/xf-db'
 import type { IRepositoryPortPrompt, IRepositoryPortPromptVersion } from '../ports/repository-ports/index.js'
@@ -50,29 +50,6 @@ function selectHighestPromptVersion<T extends { version?: number | null }>(
     }
   }
   return highest
-}
-
-function createValidationError(
-  messageText: string,
-  stage: string,
-  data?: unknown
-): PromptVersionServiceError {
-  return XfErrorFactory.xfValidationFailed(
-    {
-      ok: false,
-      messages: [
-        {
-          messageType: XfMessageType.ValidationErr,
-          messageText,
-          stage,
-          ts: new Date(),
-        },
-      ],
-      data,
-    },
-    { stage, message: messageText, code: 'validation_error' },
-    data
-  )
 }
 
 export interface PromptVersionServiceDependencies {}
@@ -266,18 +243,7 @@ export class PromptVersionService implements IPromptVersionServicePort {
       ),
       Effect.flatMap((prompt): Effect.Effect<IbmPromptVersionInsert, PromptVersionServiceError> => {
         const dataWorkspaceId = normalizeNonEmpty(data?.workspaceId)
-        const promptWorkspaceId = normalizeNonEmpty(prompt.workspaceId)
-        if (dataWorkspaceId && promptWorkspaceId && dataWorkspaceId !== promptWorkspaceId) {
-          return Effect.fail(
-            createValidationError('workspaceId must match the prompt workspaceId.', stage, {
-              promptId,
-              workspaceId: dataWorkspaceId,
-              promptWorkspaceId,
-            })
-          )
-        }
-
-        const workspaceId = dataWorkspaceId ?? promptWorkspaceId
+        const workspaceId = dataWorkspaceId
         if (!workspaceId) {
           return Effect.fail(XfErrorFactory.inputRequired({ field: 'workspaceId', stage })).pipe(
             Effect.mapError((cause): PromptVersionServiceError => cause)

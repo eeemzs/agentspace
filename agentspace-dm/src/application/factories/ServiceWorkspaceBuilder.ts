@@ -6,9 +6,10 @@ import { getParent, XfLogger } from '@aopslab/xf-logger'
 import { RedisConfig } from '@aopslab/xf-db-redis'
 import { RepositoryConfig } from '@aopslab/xf-db'
 import type { IWorkspaceServicePort } from '../ports/inbound/index.js'
-import type { IRepositoryPortWorkspace } from '../ports/repository-ports/index.js'
+import type { IRepositoryPortScope, IRepositoryPortWorkspace } from '../ports/repository-ports/index.js'
 import { WorkspaceService, type WorkspaceServiceOptions } from '../services/index.js'
 import { WorkspaceServiceError } from '../errors/WorkspaceServiceError.js'
+import { RepositoryFactoryScope } from './RepositoryFactoryScope.js'
 import { RepositoryFactoryWorkspace } from './RepositoryFactoryWorkspace.js'
 
 export interface WorkspaceServiceFactoryConfig {
@@ -24,6 +25,7 @@ export interface WorkspaceServiceFactoryConfig {
 
 export interface WorkspaceServiceFactoryOverrides {
   workspaceRepository?: IRepositoryPortWorkspace
+  scopeRepository?: IRepositoryPortScope
   //==> custom-factory-overrides
   // Add domain-specific overrides here (e.g., dependent services).
   //<==//
@@ -88,7 +90,8 @@ export class ServiceBuilderWorkspace {
         { level: effectiveLogLevel },
       )
 
-      let workspaceRepository: IRepositoryPortWorkspace;
+      let workspaceRepository: IRepositoryPortWorkspace
+      let scopeRepository: IRepositoryPortScope | undefined = self.overrides.scopeRepository
       if (self.overrides.workspaceRepository) {
         workspaceRepository = self.overrides.workspaceRepository as IRepositoryPortWorkspace
       } else {
@@ -122,8 +125,29 @@ export class ServiceBuilderWorkspace {
         )
       }
 
+      if (!scopeRepository && config.repositoryConfig) {
+        const repositoryParams: RepositoryCreateParams = {
+          repositoryConfig: config.repositoryConfig,
+          redisConfig: config.redisConfig,
+          logger,
+        }
+
+        scopeRepository = yield* _(
+          Effect.mapError(
+            RepositoryFactoryScope.create(repositoryParams),
+            (error) =>
+              new XfConfigurationError({
+                message: `RepositoryFactoryScope.create başarısız: ${(error as any)?.message ?? 'unknown'}`,
+                stage: 'ServiceBuilderWorkspace::build',
+                cause: error,
+              }),
+          ),
+        )
+      }
+
       const serviceOptions: WorkspaceServiceOptions = {
         workspaceRepository,
+        scopeRepository,
         logger,
         //==> custom-service-options
         // Map factory config / overrides to service options here.

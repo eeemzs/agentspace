@@ -1,11 +1,15 @@
 import { InferSelectModel, sql } from 'drizzle-orm'
 import { randomUUID } from 'node:crypto'
 import { index, integer, text, sqliteTable, uniqueIndex } from 'drizzle-orm/sqlite-core'
+import { scopeTableSqlite as scopeTable } from '../../scope/drizzle/drizzle.schema.scope.sqlite.js'
 export const workspaceTableSqlite = sqliteTable(
   'workspaces',
   {
     id: text().primaryKey().$defaultFn(() => randomUUID()),
     tenantId: text().notNull(),
+    scopeId: text()
+      .notNull()
+      .references(() => scopeTable.id, { onDelete: 'restrict' }),
     ownerId: text().notNull(),
     name: text().notNull(),
     description: text(),
@@ -17,6 +21,7 @@ export const workspaceTableSqlite = sqliteTable(
   },
   (t) => [
     index('workspace_idx_tenant').on(t.tenantId),
+    uniqueIndex('workspace_scope_unique').on(t.scopeId),
     index('workspace_idx_owner').on(t.tenantId, t.ownerId),
     uniqueIndex('workspace_owner_name_tenant_unique').on(t.tenantId, t.ownerId, sql`lower(${t.name})`),
   ]

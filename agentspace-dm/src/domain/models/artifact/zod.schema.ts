@@ -6,8 +6,7 @@ import { IArtifactZodCtx } from './resources.js'
 export const artifactZodSchema = z
   .object({
     ...IbmZodSchema.shape,
-    workspaceId: z.string(),
-    projectId: z.string(),
+    scopeId: z.string(),
     artifactType: z.enum(ARTIFACT_TYPES),
     label: z.string().optional(),
     storagePath: z.string(),

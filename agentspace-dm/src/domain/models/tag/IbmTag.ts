@@ -12,7 +12,7 @@ export const ibmTagKeys = [
   'tenantId',
   'createdAt',
   'updatedAt',
-  'workspaceId',
+  'scopeId',
   'scopeType',
   'name',
   'createdBy',

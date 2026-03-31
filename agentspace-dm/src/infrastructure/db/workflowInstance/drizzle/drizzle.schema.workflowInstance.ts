@@ -1,17 +1,12 @@
 import { index, jsonb, pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core'
 import { InferSelectModel } from 'drizzle-orm'
-import { projectTable } from '../../project/drizzle/drizzle.schema.project.js'
-import { workspaceTable } from '../../workspace/drizzle/drizzle.schema.workspace.js'
 
 export const workflowInstanceTable = pgTable(
   'workflow-instances',
   {
     id: uuid().primaryKey().defaultRandom(),
     tenantId: text().notNull(),
-    workspaceId: uuid()
-      .notNull()
-      .references(() => workspaceTable.id, { onDelete: 'cascade' }),
-    projectId: uuid().references(() => projectTable.id, { onDelete: 'set null' }),
+    scopeId: uuid().notNull(),
     workflowInstanceId: text().notNull(),
     definitionId: text(),
     mode: text().notNull(),
@@ -34,9 +29,8 @@ export const workflowInstanceTable = pgTable(
     updatedAt: timestamp({ withTimezone: true }).defaultNow(),
   },
   (t) => [
-    uniqueIndex('workflow_instance_unique_instance_id').on(t.tenantId, t.workspaceId, t.workflowInstanceId),
-    index('workflow_instance_idx_workspace_status').on(t.tenantId, t.workspaceId, t.status),
-    index('workflow_instance_idx_project_status').on(t.tenantId, t.projectId, t.status),
+    uniqueIndex('workflow_instance_unique_instance_id').on(t.tenantId, t.scopeId, t.workflowInstanceId),
+    index('workflow_instance_idx_scope_status').on(t.tenantId, t.scopeId, t.status),
     index('workflow_instance_idx_subject').on(t.tenantId, t.subjectType, t.subjectId),
   ]
 )

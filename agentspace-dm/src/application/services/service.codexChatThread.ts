@@ -2,17 +2,19 @@
 import { pipe } from 'effect/Function'
 import { validateInput, XfErrorFactory, effectErrorInfo } from '@aopslab/xf-core'
 import { XfLogger } from '@aopslab/xf-logger'
-import type { IRepositoryPortCodexChatThread } from '../ports/repository-ports/index.js'
-import type { ICodexChatThreadServicePort } from '../ports/inbound/index.js'
+import type { IRepositoryPortCodexChatThread, IRepositoryPortScope } from '../ports/repository-ports/index.js'
+import type { CodexChatThreadListFilter, ICodexChatThreadServicePort } from '../ports/inbound/index.js'
 import { CodexChatThreadServiceError } from '../errors/CodexChatThreadServiceError.js'
 import { IbmCodexChatThread, IbmCodexChatThreadInsert, codexChatThreadZodSchemaInsert } from '../../domain/models/index.js'
 import { validateBmInputWithSchema } from './service.zod-validation.js'
 import { DbQueryOptions, mapDbError } from '@aopslab/xf-db'
+import { listRecordsByScopeResolution } from './service.scope-resolution.js'
 
 export interface CodexChatThreadServiceDependencies {}
 
 export interface CodexChatThreadServiceOptions {
   codexChatThreadRepository: IRepositoryPortCodexChatThread
+  scopeRepository?: IRepositoryPortScope
   serviceDependencies?: Partial<CodexChatThreadServiceDependencies>
   logger?: XfLogger
   locale?: string
@@ -20,10 +22,12 @@ export interface CodexChatThreadServiceOptions {
 
 export class CodexChatThreadService implements ICodexChatThreadServicePort {
   private readonly codexChatThreadRepository: IRepositoryPortCodexChatThread
+  private readonly scopeRepository?: IRepositoryPortScope
   private readonly logger?: XfLogger
 
   constructor(options: CodexChatThreadServiceOptions) {
     this.codexChatThreadRepository = options.codexChatThreadRepository
+    this.scopeRepository = options.scopeRepository
     this.logger = options.logger?.child({ module: this.constructor.name })
   }
 
@@ -128,14 +132,17 @@ export class CodexChatThreadService implements ICodexChatThreadServicePort {
   }
 
   listThreads(
-    filter: Partial<IbmCodexChatThread> = {},
+    filter: CodexChatThreadListFilter = {},
     options?: DbQueryOptions<IbmCodexChatThread>
   ): Effect.Effect<IbmCodexChatThread[], CodexChatThreadServiceError> {
     const stage = 'CodexChatThreadService::listThreads'
     return pipe(
       validateInput(filter, 'filter', { stage }),
       Effect.flatMap((value) =>
-        this.codexChatThreadRepository.find({ matchEq: value, options } as any).pipe(
+        listRecordsByScopeResolution(this.codexChatThreadRepository as any, this.scopeRepository, value, options, {
+          stage,
+          defaultResolution: 'explicit',
+        }).pipe(
           Effect.mapError(mapDbError({ stage, operation: 'find', factory: XfErrorFactory.notFound }))
         )
       ),
@@ -161,4 +168,3 @@ export class CodexChatThreadService implements ICodexChatThreadServicePort {
     )
   }
 }
-

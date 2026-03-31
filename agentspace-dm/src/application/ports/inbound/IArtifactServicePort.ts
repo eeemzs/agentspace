@@ -2,6 +2,7 @@
 import { ArtifactServiceError } from '../../errors/ArtifactServiceError.js'
 import { IbmArtifact, IbmArtifactInsert, IbmArtifactLink, IbmArtifactLinkInsert } from '../../../domain/models/index.js'
 import { DbQueryOptions } from '@aopslab/xf-db'
+import type { ScopeResolution } from '../../../domain/types.js'
 
 export type ArtifactLinkInput = IbmArtifactLinkInsert
 
@@ -11,7 +12,12 @@ export interface IArtifactServicePort {
   getArtifact(id: string, options?: DbQueryOptions<IbmArtifact>): Effect.Effect<IbmArtifact | null, ArtifactServiceError>
   storeArtifact(data: IbmArtifactInsert): Effect.Effect<IbmArtifact, ArtifactServiceError>
   linkArtifact(data: ArtifactLinkInput): Effect.Effect<IbmArtifactLink, ArtifactServiceError>
-  listArtifactsByRef(refType: IbmArtifactLink['refType'], refId: string, projectId?: string): Effect.Effect<IbmArtifact[], ArtifactServiceError>
+  listArtifactsByRef(
+    refType: IbmArtifactLink['refType'],
+    refId: string,
+    scopeId?: string,
+    scopeResolution?: ScopeResolution
+  ): Effect.Effect<IbmArtifact[], ArtifactServiceError>
   removeArtifact(id: string): Effect.Effect<void, ArtifactServiceError>
 }
 

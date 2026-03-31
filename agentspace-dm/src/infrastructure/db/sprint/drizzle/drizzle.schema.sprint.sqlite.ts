@@ -6,10 +6,7 @@ export const sprintTableSqlite = sqliteTable(
   {
     id: text().primaryKey().$defaultFn(() => randomUUID()),
     tenantId: text().notNull(),
-    workspaceId: text().notNull(),
-    projectId: text(),
-    scopeType: text().notNull(),
-    scopeId: text(),
+    scopeId: text().notNull(),
     name: text().notNull(),
     goal: text(),
     status: text().notNull(),
@@ -23,9 +20,8 @@ export const sprintTableSqlite = sqliteTable(
   },
   (t) => [
     index('sprint_idx_tenant').on(t.tenantId),
-    index('sprint_idx_workspace').on(t.tenantId, t.workspaceId),
-    index('sprint_idx_project').on(t.tenantId, t.projectId),
-    index('sprint_idx_project_status_start').on(t.tenantId, t.projectId, t.status, t.startAt),
+    index('sprint_idx_scope').on(t.tenantId, t.scopeId),
+    index('sprint_idx_scope_status_start').on(t.tenantId, t.scopeId, t.status, t.startAt),
   ]
 )
 

@@ -2,10 +2,11 @@ import { Effect } from 'effect'
 import { AgentRunEventServiceError } from '../../errors/AgentRunEventServiceError.js'
 import { IbmAgentRunEvent, IbmAgentRunEventInsert } from '../../../domain/models/index.js'
 import { DbQueryOptions } from '@aopslab/xf-db'
+import type { ScopeResolution } from '../../../domain/types.js'
 
 export interface AgentRunEventListFilter {
-  workspaceId?: string
-  projectId?: string
+  scopeId?: string
+  scopeResolution?: ScopeResolution
   agentRunId?: string
   runId?: string
   eventId?: string

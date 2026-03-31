@@ -51,9 +51,6 @@ const HOST_CONTEXT_INPUT_KEYS = new Set([
 void HOST_CONTEXT_INPUT_KEYS
 
 const DATA_WORKSPACE_FALLBACK_OPERATIONS = new Set<AgentspaceTypedOperationId>([
-  'memory-item.add-memory-item',
-  'memory-item.create',
-  'prompt.create',
   'project.create',
   'project-path.create',
   'project-path.upsert-project-path',
@@ -105,7 +102,7 @@ const INVALID_REFERENCE_MESSAGE_PATTERNS = [
   /anahtarı mevcut değildir/i,
 ]
 const INVALID_REFERENCE_FAILURE_MESSAGE =
-  'Referenced workspace/project/scope record was not found for the supplied ids.'
+  'Referenced workspace, project, or owner scope record was not found for the supplied ids.'
 
 function buildRoutes(refresh: boolean): DomainRouteManifestEntry[] {
   return buildAgentspaceHostRouteProjection({ refresh }).map((route) => ({

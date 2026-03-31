@@ -178,7 +178,7 @@ describe('agentspace host-plugin lifecycle guards', () => {
         ok: false,
         errorCode: 'agentspace_operation_failed.invalid_reference',
         operation: 'memory-item.add-memory-item',
-        message: 'Referenced workspace/project/scope record was not found for the supplied ids.',
+        message: 'Referenced workspace, project, or owner scope record was not found for the supplied ids.',
       },
     })
   })
@@ -271,20 +271,19 @@ describe('agentspace host-plugin lifecycle guards', () => {
     })
   })
 
-  it('injects workspace into memory-item create data from request context when omitted', async () => {
+  it('does not inject legacy workspace fields into scope-owned create payloads', async () => {
     const runner = vi.fn(async () => ({ ok: true }))
     const plugin = createAgentspacePlugin({ runner })
-    const route = findRouteByOperation(plugin.manifest.routes, 'memory-item.create')
+    const route = findRouteByOperation(plugin.manifest.routes, 'prompt.create')
 
     const response = await plugin.execute({
       request: createDomainRequest({
         method: route.method,
         body: {
           data: {
-            projectId: 'project-1',
-            content: 'resume note',
-            scopeType: 'project',
-            state: 'published',
+            scopeId: 'project-scope-1',
+            name: 'Resume Prompt',
+            status: 'draft',
           },
         },
         context: { tenantId: 'tenant-1', workspaceId: 'workspace-context-1' },
@@ -295,14 +294,16 @@ describe('agentspace host-plugin lifecycle guards', () => {
     expect(response).toEqual({ ok: true })
     expect(runner).toHaveBeenCalledTimes(1)
     expect(runner).toHaveBeenCalledWith(
-      'memory-item.create',
+      'prompt.create',
       expect.objectContaining({
         data: expect.objectContaining({
-          workspaceId: 'workspace-context-1',
-          projectId: 'project-1',
+          scopeId: 'project-scope-1',
+          name: 'Resume Prompt',
         }),
       }),
     )
+    const payload = runner.mock.calls[0][1] as { data?: Record<string, unknown> }
+    expect(payload.data?.workspaceId).toBeUndefined()
   })
 
   it('reports runtime env readiness in health details', async () => {

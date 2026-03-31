@@ -21,6 +21,7 @@ export * from '../projectSummary/drizzle/drizzle.schema.projectSummary.sqlite.js
 export * from '../prompt/drizzle/drizzle.schema.prompt.sqlite.js'
 export * from '../promptVersion/drizzle/drizzle.schema.promptVersion.sqlite.js'
 export * from '../resource/drizzle/drizzle.schema.resource.sqlite.js'
+export * from '../scope/drizzle/drizzle.schema.scope.sqlite.js'
 export * from '../skill/drizzle/drizzle.schema.skill.sqlite.js'
 export * from '../skillSet/drizzle/drizzle.schema.skillSet.sqlite.js'
 export * from '../skillSetItem/drizzle/drizzle.schema.skillSetItem.sqlite.js'

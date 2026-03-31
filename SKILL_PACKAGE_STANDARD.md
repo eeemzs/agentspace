@@ -54,6 +54,7 @@ Canonical custom operation input:
 {
   "data": {
     "workspaceId": "<workspace-id>",
+    "scopeId": "<global-scope-id>",
     "scopeType": "global",
     "createdBy": "cli",
     "updatedBy": "cli",
@@ -83,7 +84,9 @@ Rules:
 
 - `data.bundle.files` must contain `SKILL.md`.
 - File paths are stored relative to the package root.
-- `scopeType=project` requires consistent `projectId` or `scopeId`.
+- `workspaceId` is hosted context and resolver input, not the durable content owner.
+- `scopeId` is the canonical owner when the import targets a specific global, workspace, or project scope.
+- `scopeType=project` requires a consistent `scopeId`; `projectId` is only a bridge field when an older caller still carries project metadata.
 - The canonical tag is `skill-package`.
 
 ## Export Contract

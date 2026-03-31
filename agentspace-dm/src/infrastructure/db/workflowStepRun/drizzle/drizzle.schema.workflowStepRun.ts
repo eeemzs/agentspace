@@ -1,8 +1,6 @@
 import { index, integer, jsonb, pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core'
 import { InferSelectModel } from 'drizzle-orm'
 import { agentRunTable } from '../../agentRun/drizzle/drizzle.schema.agentRun.js'
-import { projectTable } from '../../project/drizzle/drizzle.schema.project.js'
-import { workspaceTable } from '../../workspace/drizzle/drizzle.schema.workspace.js'
 import { workflowInstanceTable } from '../../workflowInstance/drizzle/drizzle.schema.workflowInstance.js'
 
 export const workflowStepRunTable = pgTable(
@@ -10,10 +8,7 @@ export const workflowStepRunTable = pgTable(
   {
     id: uuid().primaryKey().defaultRandom(),
     tenantId: text().notNull(),
-    workspaceId: uuid()
-      .notNull()
-      .references(() => workspaceTable.id, { onDelete: 'cascade' }),
-    projectId: uuid().references(() => projectTable.id, { onDelete: 'set null' }),
+    scopeId: uuid().notNull(),
     workflowId: uuid()
       .notNull()
       .references(() => workflowInstanceTable.id, { onDelete: 'cascade' }),
@@ -38,6 +33,7 @@ export const workflowStepRunTable = pgTable(
   },
   (t) => [
     uniqueIndex('workflow_step_run_unique_sequence').on(t.tenantId, t.workflowId, t.sequence),
+    index('workflow_step_run_idx_scope').on(t.tenantId, t.scopeId),
     index('workflow_step_run_idx_workflow_step').on(t.tenantId, t.workflowId, t.stepId),
     index('workflow_step_run_idx_instance').on(t.tenantId, t.workflowInstanceId),
     index('workflow_step_run_idx_agent_run').on(t.tenantId, t.agentRunId),

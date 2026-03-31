@@ -4,6 +4,8 @@ import { IdbProjectDrizzle, ProjectColumnsDrizzle } from './drizzle.schema.proje
 
 const conversions: FieldConversionLookup<IbmProject, ProjectColumnsDrizzle> = {
   id: { toDomain: uuidToString, toDb: stringToUuid },
+  scopeId: { toDomain: uuidToString, toDb: stringToUuid },
+  workspaceId: { toDomain: uuidToString, toDb: stringToUuid },
   //==> field-conversions
   // customField: { toDomain: (v) => v, toDb: (v) => v },
   //<==//

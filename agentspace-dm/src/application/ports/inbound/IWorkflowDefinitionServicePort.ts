@@ -4,15 +4,15 @@ import { WorkflowDefinitionServiceError } from '../../errors/WorkflowDefinitionS
 import { IbmWorkflowDefinition, IbmWorkflowDefinitionInsert } from '../../../domain/models/index.js'
 
 export interface WorkflowDefinitionListFilter {
-  workspaceId?: string
-  projectId?: string
+  scopeId?: string
+  scopeResolution?: 'explicit' | 'cascade'
   definitionId?: string
   mode?: string
   subjectType?: string
 }
 
 export interface WorkflowDefinitionUpsertInput extends IbmWorkflowDefinitionInsert {
-  matchEq?: Partial<Pick<IbmWorkflowDefinition, 'workspaceId' | 'projectId' | 'definitionId' | 'mode' | 'subjectType'>>
+  matchEq?: Partial<Pick<IbmWorkflowDefinition, 'scopeId' | 'definitionId' | 'mode' | 'subjectType'>>
 }
 
 export interface IWorkflowDefinitionServicePort {

@@ -4,6 +4,7 @@ export type {
   IRepositoryPortPrompt,
   IRepositoryPortPromptVersion,
   IRepositoryPortResource,
+  IRepositoryPortScope,
   IRepositoryPortSkill,
   IRepositoryPortSkillVersion,
   IRepositoryPortSkillSet,

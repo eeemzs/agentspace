@@ -1,18 +1,13 @@
 import { index, integer, jsonb, pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core'
 import { InferSelectModel } from 'drizzle-orm'
 import { agentRunTable } from '../../agentRun/drizzle/drizzle.schema.agentRun.js'
-import { projectTable } from '../../project/drizzle/drizzle.schema.project.js'
-import { workspaceTable } from '../../workspace/drizzle/drizzle.schema.workspace.js'
 
 export const agentRunEventTable = pgTable(
   'agent-run-events',
   {
     id: uuid().primaryKey().defaultRandom(),
     tenantId: text().notNull(),
-    workspaceId: uuid()
-      .notNull()
-      .references(() => workspaceTable.id, { onDelete: 'cascade' }),
-    projectId: uuid().references(() => projectTable.id, { onDelete: 'set null' }),
+    scopeId: uuid().notNull(),
     agentRunId: uuid()
       .notNull()
       .references(() => agentRunTable.id, { onDelete: 'cascade' }),
@@ -29,8 +24,7 @@ export const agentRunEventTable = pgTable(
   },
   (t) => [
     uniqueIndex('agent_run_event_unique_run_sequence').on(t.tenantId, t.agentRunId, t.sequence),
-    index('agent_run_event_idx_workspace_emitted').on(t.tenantId, t.workspaceId, t.emittedAt),
-    index('agent_run_event_idx_project_emitted').on(t.tenantId, t.projectId, t.emittedAt),
+    index('agent_run_event_idx_scope_emitted').on(t.tenantId, t.scopeId, t.emittedAt),
     index('agent_run_event_idx_run_id').on(t.tenantId, t.runId),
     index('agent_run_event_idx_type').on(t.tenantId, t.eventType),
   ]
