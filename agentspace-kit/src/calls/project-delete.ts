@@ -1,5 +1,5 @@
 import { Effect } from 'effect'
-import type { IbmPrompt, IbmProject, IbmSkill, IbmSkillSet, IbmSprint } from '@aopslab/domain-dm-agentspace/models'
+import type { IbmPrompt, IbmProject, IbmSkill, IbmSprint } from '@aopslab/domain-dm-agentspace/models'
 import type { AgentspaceKitProvider } from '../domain-services/types.js'
 
 function normalizeNonEmpty(value: unknown): string | undefined {
@@ -49,8 +49,6 @@ type HardDeleteProjectKit = Pick<
   | 'getPromptVersionRepository'
   | 'getSkillRepository'
   | 'getSkillVersionRepository'
-  | 'getSkillSetRepository'
-  | 'getSkillSetItemRepository'
   | 'getKanbanBoardRepository'
   | 'getKanbanColumnRepository'
   | 'getTaskRepository'
@@ -138,8 +136,6 @@ export async function hardDeleteAgentspaceProjectCascade(params: {
     promptVersionRepository,
     skillRepository,
     skillVersionRepository,
-    skillSetRepository,
-    skillSetItemRepository,
     kanbanBoardRepository,
     kanbanColumnRepository,
     taskRepository,
@@ -163,8 +159,6 @@ export async function hardDeleteAgentspaceProjectCascade(params: {
     kit.getPromptVersionRepository(),
     kit.getSkillRepository(),
     kit.getSkillVersionRepository(),
-    kit.getSkillSetRepository(),
-    kit.getSkillSetItemRepository(),
     kit.getKanbanBoardRepository(),
     kit.getKanbanColumnRepository(),
     kit.getTaskRepository(),
@@ -199,16 +193,14 @@ export async function hardDeleteAgentspaceProjectCascade(params: {
     throw new Error(`hardDeleteAgentspaceProjectCascade.missing_scope:${projectId}`)
   }
 
-  const [prompts, skills, skillSets, sprints] = await Promise.all([
+  const [prompts, skills, sprints] = await Promise.all([
     findByMatchEq<IbmPrompt>('promptRepository.find', promptRepository, { scopeId: projectScopeId }),
     findByMatchEq<IbmSkill>('skillRepository.find', skillRepository, { scopeId: projectScopeId }),
-    findByMatchEq<IbmSkillSet>('skillSetRepository.find', skillSetRepository, { scopeId: projectScopeId }),
     findByMatchEq<IbmSprint>('sprintRepository.find', sprintRepository, { scopeId: projectScopeId }),
   ])
 
   const promptIds = collectIds(prompts)
   const skillIds = collectIds(skills)
-  const skillSetIds = collectIds(skillSets)
   const sprintIds = collectIds(sprints)
 
   const deleted: Record<string, number> = {
@@ -226,8 +218,6 @@ export async function hardDeleteAgentspaceProjectCascade(params: {
     promptVersions: 0,
     skills: 0,
     skillVersions: 0,
-    skillSets: 0,
-    skillSetItems: 0,
     agentSessions: 0,
     agentRuns: 0,
     artifacts: 0,
@@ -284,14 +274,6 @@ export async function hardDeleteAgentspaceProjectCascade(params: {
   }
   deleted.prompts = await deleteManyByMatchEq('promptRepository.deleteMany', promptRepository, { scopeId: projectScopeId })
 
-  // Skill set items must be removed before deleting skill versions to avoid
-  // FK cascade consuming counts and hiding actual deleted row totals.
-  for (const skillSetId of skillSetIds) {
-    deleted.skillSetItems += Number(
-      await deleteManyByMatchEq('skillSetItemRepository.deleteMany', skillSetItemRepository, { workspaceId, skillSetId })
-    )
-  }
-
   // Skill versions live under skill ids (projectId is optional on versions).
   for (const skillId of skillIds) {
     deleted.skillVersions += Number(
@@ -299,10 +281,6 @@ export async function hardDeleteAgentspaceProjectCascade(params: {
     )
   }
   deleted.skills = await deleteManyByMatchEq('skillRepository.deleteMany', skillRepository, { scopeId: projectScopeId })
-
-  deleted.skillSets = await deleteManyByMatchEq('skillSetRepository.deleteMany', skillSetRepository, {
-    scopeId: projectScopeId,
-  })
 
   deleted.artifactLinks = await deleteManyByMatchEq('artifactLinkRepository.deleteMany', artifactLinkRepository, {
     workspaceId,

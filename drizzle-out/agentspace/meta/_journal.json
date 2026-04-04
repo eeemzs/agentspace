@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1773082528760,
-      "tag": "0000_deep_gambit",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1774186358679,
-      "tag": "0001_complex_jazinda",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1774963071779,
-      "tag": "0002_icy_squadron_supreme",
+      "when": 1775306801898,
+      "tag": "0000_narrow_gateway",
       "breakpoints": true
     }
   ]

@@ -96,6 +96,7 @@ describe('SkillVersionService', () => {
     const result = await Effect.runPromise(
       service.importSkillPackage({
         workspaceId: 'workspace-1',
+        scopeId: 'global-scope-1',
         scopeType: 'global',
         createdBy: 'unit-test',
         updatedBy: 'unit-test',
@@ -180,6 +181,56 @@ describe('SkillVersionService', () => {
     )
   })
 
+  it('clears currentVersionId when removing the last published version even if updatedBy is null', async () => {
+    const repo = makeSkillVersionRepo()
+    const skillService = makeSkillService()
+
+    repo.findById.mockImplementation(() =>
+      Effect.succeed({
+        id: 'version-9',
+        workspaceId: 'workspace-1',
+        projectId: null,
+        skillId: 'skill-1',
+        version: 9,
+        status: 'published',
+        content: '# v9',
+        entryFile: 'SKILL.md',
+        skillStandard: 'aops-skill-package-v1',
+        files: [],
+        updatedBy: null,
+      } as any)
+    )
+    repo.deleteById.mockImplementation(() => Effect.succeed(1))
+    repo.find.mockImplementation(() => Effect.succeed([]))
+    skillService.updateSkill.mockImplementation((id, patch) =>
+      Effect.succeed({
+        id,
+        currentVersionId: patch.currentVersionId ?? null,
+        updatedBy: patch.updatedBy,
+      } as any)
+    )
+
+    const service = new SkillVersionService({
+      skillVersionRepository: repo as any,
+      skillService: skillService as any,
+    })
+
+    await Effect.runPromise(service.removeSkillVersion('version-9'))
+
+    expect(skillService.updateSkill).toHaveBeenCalledWith(
+      'skill-1',
+      expect.objectContaining({
+        currentVersionId: null,
+      })
+    )
+    expect(skillService.updateSkill).not.toHaveBeenCalledWith(
+      'skill-1',
+      expect.objectContaining({
+        updatedBy: null,
+      })
+    )
+  })
+
   it('exports canonical package descriptor and package metadata separately', async () => {
     const repo = makeSkillVersionRepo()
     const skillService = makeSkillService()
@@ -260,10 +311,9 @@ describe('SkillVersionService', () => {
     skillService.create.mockImplementation((data) =>
       Effect.succeed({
         id: 'skill-1',
-        workspaceId: data.workspaceId,
+        scopeId: data.scopeId,
         projectId: null,
         scopeType: 'global',
-        scopeId: null,
         name: data.name,
         description: data.description,
         shortDescription: data.shortDescription,
@@ -278,7 +328,7 @@ describe('SkillVersionService', () => {
         workspaceId: 'workspace-1',
         projectId: null,
         scopeType: 'global',
-        scopeId: null,
+        scopeId: 'global-scope-1',
         name: 'my-skill',
         description: 'Example skill',
         shortDescription: '# My Skill',
@@ -327,6 +377,7 @@ describe('SkillVersionService', () => {
     const result = await Effect.runPromise(
       service.importSkillPackage({
         workspaceId: 'workspace-1',
+        scopeId: 'global-scope-1',
         scopeType: 'global',
         createdBy: 'unit-test',
         updatedBy: 'unit-test',
@@ -348,7 +399,7 @@ describe('SkillVersionService', () => {
 
     expect(resourceService.createResource).toHaveBeenCalledTimes(1)
     expect(resourceService.createResource.mock.calls[0][0].projectId).toBeUndefined()
-    expect(resourceService.createResource.mock.calls[0][0].scopeId).toBeUndefined()
+    expect(resourceService.createResource.mock.calls[0][0].scopeId).toBe('global-scope-1')
     expect(result.resource?.id).toBe('resource-1')
   })
 })

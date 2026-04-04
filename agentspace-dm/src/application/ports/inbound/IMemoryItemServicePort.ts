@@ -23,8 +23,65 @@ export type MemorySearchRetrievalRequest = {
   candidateLimit?: number
 }
 
+export type MemoryResumePackDepth = 'light' | 'deep'
+
+export type MemoryResumePackOptions = {
+  depth?: MemoryResumePackDepth
+  limit?: number
+  includeProjectSummary?: boolean
+}
+
+export type MemoryResumePackRef = {
+  kind?: string
+  uri?: string
+  resourceId?: string
+  ref?: string
+  documentVersionId?: string
+  sectionId?: string
+  pageVersionId?: string
+  pageNumber?: number
+  target?: string
+  locale?: string
+  fallbackLocale?: string
+}
+
+export type MemoryResumePackSubject = {
+  type?: string
+  id?: string
+  label?: string
+}
+
+export type MemoryResumePackItem = {
+  id?: string
+  kind?: string
+  content?: string
+  importance?: number
+  sourceType?: string
+  sourceId?: string
+  tags?: string[]
+  meta?: unknown
+}
+
+export type MemoryResumePack = {
+  subject?: MemoryResumePackSubject
+  projectSummary?: unknown
+  projectSummaryText?: string
+  bootstrapGuidance: string[]
+  resumeSummary?: string
+  currentFocus?: string
+  openDecisions: string[]
+  openBlockers: string[]
+  nextActions: string[]
+  recommendedRefs: MemoryResumePackRef[]
+  relatedMemory: MemoryResumePackItem[]
+  confidence: number
+  gaps: string[]
+  readStrategy: 'none' | 'recommended' | 'expand'
+}
+
 export type MemoryItemListFilter = Partial<IbmMemoryItem> & {
   scopeResolution?: ScopeResolution
+  projectId?: string
 }
 
 export interface IMemoryItemServicePort {
@@ -39,6 +96,11 @@ export interface IMemoryItemServicePort {
     retrieval?: MemorySearchRetrievalRequest,
     options?: DbQueryOptions<IbmMemoryItem>
   ): Effect.Effect<IbmMemoryItem[], MemoryItemServiceError>
+  buildResumePack(
+    filter: MemoryItemListFilter,
+    retrieval?: MemorySearchRetrievalRequest,
+    options?: MemoryResumePackOptions
+  ): Effect.Effect<MemoryResumePack, MemoryItemServiceError>
   removeMemoryItem(id: string): Effect.Effect<void, MemoryItemServiceError>
 }
 

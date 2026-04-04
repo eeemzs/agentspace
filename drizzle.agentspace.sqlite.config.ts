@@ -19,8 +19,6 @@ const agentspaceTables = [
   'prompt-versions',
   'prompts',
   'resources',
-  'skill-set-items',
-  'skill-sets',
   'skill-versions',
   'skills',
   'sprint-items',

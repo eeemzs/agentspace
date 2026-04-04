@@ -1,4 +1,4 @@
 interface:
   display_name: "Agentspace AOPS Agent"
   short_description: "Use hosted Agentspace through AOPS without owner drift"
-  default_prompt: "Use AOPS hosted tool discovery and invoke correctly while treating Agentspace as the owner of workspace, project, prompt, resource, skill, skill-set, and memory semantics."
+  default_prompt: "Use AOPS hosted tool discovery and invoke correctly while treating Agentspace as the owner of workspace, project, prompt, resource, skill, and memory semantics."

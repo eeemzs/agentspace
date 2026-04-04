@@ -20,8 +20,6 @@ const agentspaceTables = [
   'prompts',
   'resources',
   'scopes',
-  'skill-set-items',
-  'skill-sets',
   'skill-versions',
   'skills',
   'sprint-items',

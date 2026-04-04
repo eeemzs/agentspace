@@ -1242,6 +1242,32 @@ export const AGENTSPACE_OPERATION_CATALOG_ROWS = [
     ]
   },
   {
+    "toolId": "aops-memory-item-build-resume-pack",
+    "operationId": "memory-item.build-resume-pack",
+    "summary": "Build a curated resume pack from durable memory and project summary signals.",
+    "serviceKey": "memoryItemService",
+    "serviceEntity": "memory-item",
+    "methodName": "buildResumePack",
+    "kind": "custom",
+    "args": [
+      {
+        "name": "filter",
+        "optional": false
+      },
+      {
+        "name": "retrieval",
+        "optional": true
+      },
+      {
+        "name": "options",
+        "optional": true
+      }
+    ],
+    "examples": [
+      "{\"filter\":{\"scopeId\":\"<scopeId>\",\"scopeResolution\":\"cascade\",\"projectId\":\"<projectId>\"},\"retrieval\":{\"query\":\"resume active sprint context\",\"subject\":{\"type\":\"projectman.sprint\",\"id\":\"<sprintId>\"},\"runtimeProfile\":\"planning\",\"sourceTypes\":[\"projectman.sprint\",\"projectman.microtask\"],\"sourceIds\":[\"<sprintId>\"]},\"options\":{\"depth\":\"light\",\"limit\":8,\"includeProjectSummary\":true}}"
+    ]
+  },
+  {
     "toolId": "aops-memory-item-set-memory-importance",
     "operationId": "memory-item.set-memory-importance",
     "summary": "Set memory importance memory-item.",
@@ -2108,252 +2134,6 @@ export const AGENTSPACE_OPERATION_CATALOG_ROWS = [
     "serviceKey": "resourceService",
     "serviceEntity": "resource",
     "methodName": "updateResource",
-    "kind": "update",
-    "args": [
-      {
-        "name": "id",
-        "optional": false
-      },
-      {
-        "name": "patch",
-        "optional": false
-      }
-    ]
-  },
-  {
-    "toolId": "aops-skill-set-item-add-skill-set-item",
-    "operationId": "skill-set-item.add-skill-set-item",
-    "summary": "Add skill set item skill-set-item.",
-    "serviceKey": "skillSetItemService",
-    "serviceEntity": "skill-set-item",
-    "methodName": "addSkillSetItem",
-    "kind": "create",
-    "args": [
-      {
-        "name": "data",
-        "optional": false
-      }
-    ]
-  },
-  {
-    "toolId": "aops-skill-set-item-create",
-    "operationId": "skill-set-item.create",
-    "summary": "Create skill-set-item.",
-    "serviceKey": "skillSetItemService",
-    "serviceEntity": "skill-set-item",
-    "methodName": "create",
-    "kind": "create",
-    "args": [
-      {
-        "name": "data",
-        "optional": false
-      }
-    ]
-  },
-  {
-    "toolId": "aops-skill-set-item-get-by-id",
-    "operationId": "skill-set-item.get-by-id",
-    "summary": "Get by id skill-set-item.",
-    "serviceKey": "skillSetItemService",
-    "serviceEntity": "skill-set-item",
-    "methodName": "getById",
-    "kind": "get",
-    "args": [
-      {
-        "name": "id",
-        "optional": false
-      },
-      {
-        "name": "options",
-        "optional": true
-      }
-    ]
-  },
-  {
-    "toolId": "aops-skill-set-item-list-skill-set-items",
-    "operationId": "skill-set-item.list-skill-set-items",
-    "summary": "List skill set items skill-set-item.",
-    "serviceKey": "skillSetItemService",
-    "serviceEntity": "skill-set-item",
-    "methodName": "listSkillSetItems",
-    "kind": "list",
-    "args": [
-      {
-        "name": "filter",
-        "optional": true
-      },
-      {
-        "name": "options",
-        "optional": true
-      }
-    ]
-  },
-  {
-    "toolId": "aops-skill-set-item-remove-skill-set-item",
-    "operationId": "skill-set-item.remove-skill-set-item",
-    "summary": "Remove skill set item skill-set-item.",
-    "serviceKey": "skillSetItemService",
-    "serviceEntity": "skill-set-item",
-    "methodName": "removeSkillSetItem",
-    "kind": "delete",
-    "args": [
-      {
-        "name": "id",
-        "optional": false
-      }
-    ]
-  },
-  {
-    "toolId": "aops-skill-set-item-reorder-skill-set-items",
-    "operationId": "skill-set-item.reorder-skill-set-items",
-    "summary": "Reorder skill set items skill-set-item.",
-    "serviceKey": "skillSetItemService",
-    "serviceEntity": "skill-set-item",
-    "methodName": "reorderSkillSetItems",
-    "kind": "update",
-    "args": [
-      {
-        "name": "skillSetId",
-        "optional": false
-      },
-      {
-        "name": "orderedItemIds",
-        "optional": false
-      }
-    ]
-  },
-  {
-    "toolId": "aops-skill-set-item-update-skill-set-item",
-    "operationId": "skill-set-item.update-skill-set-item",
-    "summary": "Update skill set item skill-set-item.",
-    "serviceKey": "skillSetItemService",
-    "serviceEntity": "skill-set-item",
-    "methodName": "updateSkillSetItem",
-    "kind": "update",
-    "args": [
-      {
-        "name": "id",
-        "optional": false
-      },
-      {
-        "name": "patch",
-        "optional": false
-      }
-    ]
-  },
-  {
-    "toolId": "aops-skill-set-add-skill-version-to-skill-set",
-    "operationId": "skill-set.add-skill-version-to-skill-set",
-    "summary": "Add skill version to skill set skill-set.",
-    "serviceKey": "skillSetService",
-    "serviceEntity": "skill-set",
-    "methodName": "addSkillVersionToSkillSet",
-    "kind": "create",
-    "args": [
-      {
-        "name": "data",
-        "optional": false
-      }
-    ]
-  },
-  {
-    "toolId": "aops-skill-set-create",
-    "operationId": "skill-set.create",
-    "summary": "Create skill-set.",
-    "serviceKey": "skillSetService",
-    "serviceEntity": "skill-set",
-    "methodName": "create",
-    "kind": "create",
-    "args": [
-      {
-        "name": "data",
-        "optional": false
-      }
-    ]
-  },
-  {
-    "toolId": "aops-skill-set-get-by-id",
-    "operationId": "skill-set.get-by-id",
-    "summary": "Get by id skill-set.",
-    "serviceKey": "skillSetService",
-    "serviceEntity": "skill-set",
-    "methodName": "getById",
-    "kind": "get",
-    "args": [
-      {
-        "name": "id",
-        "optional": false
-      },
-      {
-        "name": "options",
-        "optional": true
-      }
-    ]
-  },
-  {
-    "toolId": "aops-skill-set-list-skill-sets",
-    "operationId": "skill-set.list-skill-sets",
-    "summary": "List skill sets skill-set.",
-    "serviceKey": "skillSetService",
-    "serviceEntity": "skill-set",
-    "methodName": "listSkillSets",
-    "kind": "list",
-    "args": [
-      {
-        "name": "filter",
-        "optional": true
-      },
-      {
-        "name": "options",
-        "optional": true
-      }
-    ]
-  },
-  {
-    "toolId": "aops-skill-set-remove-skill-version-from-skill-set",
-    "operationId": "skill-set.remove-skill-version-from-skill-set",
-    "summary": "Remove skill version from skill set skill-set.",
-    "serviceKey": "skillSetService",
-    "serviceEntity": "skill-set",
-    "methodName": "removeSkillVersionFromSkillSet",
-    "kind": "delete",
-    "args": [
-      {
-        "name": "skillSetId",
-        "optional": false
-      },
-      {
-        "name": "skillVersionId",
-        "optional": false
-      }
-    ]
-  },
-  {
-    "toolId": "aops-skill-set-reorder-skill-set-items",
-    "operationId": "skill-set.reorder-skill-set-items",
-    "summary": "Reorder skill set items skill-set.",
-    "serviceKey": "skillSetService",
-    "serviceEntity": "skill-set",
-    "methodName": "reorderSkillSetItems",
-    "kind": "update",
-    "args": [
-      {
-        "name": "skillSetId",
-        "optional": false
-      },
-      {
-        "name": "orderedItemIds",
-        "optional": false
-      }
-    ]
-  },
-  {
-    "toolId": "aops-skill-set-update-skill-set",
-    "operationId": "skill-set.update-skill-set",
-    "summary": "Update skill set skill-set.",
-    "serviceKey": "skillSetService",
-    "serviceEntity": "skill-set",
-    "methodName": "updateSkillSet",
     "kind": "update",
     "args": [
       {

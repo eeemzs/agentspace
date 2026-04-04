@@ -333,7 +333,7 @@ export class SkillVersionService implements ISkillVersionServicePort {
 
   private syncSkillCurrentVersion(
     skillId: string,
-    updatedBy?: string
+    updatedBy?: string | null
   ): Effect.Effect<void, SkillVersionServiceError> {
     const stage = 'SkillVersionService::syncSkillCurrentVersion'
     return pipe(
@@ -346,8 +346,9 @@ export class SkillVersionService implements ISkillVersionServicePort {
         const patch: Partial<IbmSkill> = {
           currentVersionId: nextId,
         }
-        if (updatedBy !== undefined) {
-          patch.updatedBy = updatedBy
+        const normalizedUpdatedBy = normalizeNonEmpty(updatedBy)
+        if (normalizedUpdatedBy !== undefined) {
+          patch.updatedBy = normalizedUpdatedBy
         }
         return this.skillService.updateSkill(skillId, patch).pipe(
           Effect.mapError((cause) =>

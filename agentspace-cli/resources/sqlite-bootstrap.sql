@@ -403,43 +403,6 @@ CREATE TABLE `skills` (
 CREATE UNIQUE INDEX `skill_scope_name_tenant_unique` ON `skills` (`tenantId`,`scopeId`,`name`);--> statement-breakpoint
 CREATE INDEX `skill_idx_tenant` ON `skills` (`tenantId`);--> statement-breakpoint
 CREATE INDEX `skill_idx_scope` ON `skills` (`tenantId`,`scopeId`);--> statement-breakpoint
-CREATE TABLE `skill-sets` (
-	`id` text PRIMARY KEY NOT NULL,
-	`tenantId` text NOT NULL,
-	`scopeId` text NOT NULL,
-	`name` text NOT NULL,
-	`description` text,
-	`tags` text,
-	`createdBy` text,
-	`updatedBy` text,
-	`createdAt` integer,
-	`updatedAt` integer
-);
---> statement-breakpoint
-CREATE UNIQUE INDEX `skill_set_scope_name_tenant_unique` ON `skill-sets` (`tenantId`,`scopeId`,`name`);--> statement-breakpoint
-CREATE INDEX `skill_set_idx_tenant` ON `skill-sets` (`tenantId`);--> statement-breakpoint
-CREATE INDEX `skill_set_idx_scope` ON `skill-sets` (`tenantId`,`scopeId`);--> statement-breakpoint
-CREATE TABLE `skill-set-items` (
-	`id` text PRIMARY KEY NOT NULL,
-	`tenantId` text NOT NULL,
-	`workspaceId` text NOT NULL,
-	`skillSetId` text NOT NULL,
-	`skillVersionId` text NOT NULL,
-	`position` integer NOT NULL,
-	`meta` text,
-	`createdBy` text,
-	`updatedBy` text,
-	`createdAt` integer,
-	`updatedAt` integer,
-	FOREIGN KEY (`workspaceId`) REFERENCES `workspaces`(`id`) ON UPDATE no action ON DELETE cascade,
-	FOREIGN KEY (`skillSetId`) REFERENCES `skill-sets`(`id`) ON UPDATE no action ON DELETE cascade,
-	FOREIGN KEY (`skillVersionId`) REFERENCES `skill-versions`(`id`) ON UPDATE no action ON DELETE cascade
-);
---> statement-breakpoint
-CREATE UNIQUE INDEX `skill_set_item_position_unique` ON `skill-set-items` (`tenantId`,`skillSetId`,`position`);--> statement-breakpoint
-CREATE INDEX `skill_set_item_idx_workspace` ON `skill-set-items` (`tenantId`,`workspaceId`);--> statement-breakpoint
-CREATE INDEX `skill_set_item_idx_skill_set` ON `skill-set-items` (`tenantId`,`skillSetId`);--> statement-breakpoint
-CREATE INDEX `skill_set_item_idx_skill_version` ON `skill-set-items` (`tenantId`,`skillVersionId`);--> statement-breakpoint
 CREATE TABLE `skill-versions` (
 	`id` text PRIMARY KEY NOT NULL,
 	`tenantId` text NOT NULL,

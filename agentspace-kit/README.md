@@ -40,8 +40,6 @@ Services:
 - `resourceService`
 - `skillService`
 - `skillVersionService`
-- `skillSetService`
-- `skillSetItemService`
 - `kanbanBoardService`
 - `kanbanColumnService`
 - `sprintService`
@@ -62,8 +60,6 @@ Repositories:
 - `resourceRepository`
 - `skillRepository`
 - `skillVersionRepository`
-- `skillSetRepository`
-- `skillSetItemRepository`
 - `kanbanBoardRepository`
 - `kanbanColumnRepository`
 - `sprintRepository`

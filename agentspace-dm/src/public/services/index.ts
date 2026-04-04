@@ -6,8 +6,6 @@ export {
   ResourceService, type ResourceServiceOptions,
   SkillService, type SkillServiceOptions,
   SkillVersionService, type SkillVersionServiceOptions,
-  SkillSetService, type SkillSetServiceOptions,
-  SkillSetItemService, type SkillSetItemServiceOptions,
   KanbanBoardService, type KanbanBoardServiceOptions,
   KanbanColumnService, type KanbanColumnServiceOptions,
   SprintService, type SprintServiceOptions,

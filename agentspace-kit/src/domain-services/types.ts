@@ -1,8 +1,8 @@
 ﻿import type { DefaultServiceProviderOptions, RegistryStats, ServiceCacheOptions, MetricsCollector, RetryOptions, CircuitBreaker, RepositoryEndpoint } from '@aopslab/xf-dm-kits'
 import type { RepositoryConfig } from '@aopslab/xf-db'
 import type { XfLogger } from '@aopslab/xf-logger'
-import type { IProjectServicePort, IProjectPathServicePort, IPromptServicePort, IPromptVersionServicePort, IResourceServicePort, ISkillServicePort, ISkillVersionServicePort, ISkillSetServicePort, ISkillSetItemServicePort, IKanbanBoardServicePort, IKanbanColumnServicePort, ISprintServicePort, ISprintItemServicePort, ITaskServicePort, ITaskCommentServicePort, IAgentSessionServicePort, IAgentRunServicePort, IAgentRunEventServicePort, IArtifactServicePort, IArtifactLinkServicePort, ICodexChatMessageServicePort, ICodexChatSettingServicePort, ICodexChatThreadServicePort, IProjectSummaryServicePort, IMemoryItemServicePort, ITagServicePort, IWorkflowDefinitionServicePort, IWorkflowInstanceServicePort, IWorkflowStepRunServicePort, IWorkspaceServicePort, IWorkspaceMemberServicePort, IProjectMemberServicePort } from '@aopslab/domain-dm-agentspace/ports'
-import type { IRepositoryPortProject, IRepositoryPortProjectPath, IRepositoryPortPrompt, IRepositoryPortPromptVersion, IRepositoryPortResource, IRepositoryPortScope, IRepositoryPortSkill, IRepositoryPortSkillVersion, IRepositoryPortSkillSet, IRepositoryPortSkillSetItem, IRepositoryPortKanbanBoard, IRepositoryPortKanbanColumn, IRepositoryPortSprint, IRepositoryPortSprintItem, IRepositoryPortTask, IRepositoryPortTaskComment, IRepositoryPortAgentSession, IRepositoryPortAgentRun, IRepositoryPortAgentRunEvent, IRepositoryPortArtifact, IRepositoryPortArtifactLink, IRepositoryPortCodexChatMessage, IRepositoryPortCodexChatSetting, IRepositoryPortCodexChatThread, IRepositoryPortProjectSummary, IRepositoryPortMemoryItem, IRepositoryPortTag, IRepositoryPortWorkflowDefinition, IRepositoryPortWorkflowInstance, IRepositoryPortWorkflowStepRun, IRepositoryPortWorkspace, IRepositoryPortWorkspaceMember, IRepositoryPortProjectMember } from '@aopslab/domain-dm-agentspace/repository-ports'
+import type { IProjectServicePort, IProjectPathServicePort, IPromptServicePort, IPromptVersionServicePort, IResourceServicePort, ISkillServicePort, ISkillVersionServicePort, IKanbanBoardServicePort, IKanbanColumnServicePort, ISprintServicePort, ISprintItemServicePort, ITaskServicePort, ITaskCommentServicePort, IAgentSessionServicePort, IAgentRunServicePort, IAgentRunEventServicePort, IArtifactServicePort, IArtifactLinkServicePort, ICodexChatMessageServicePort, ICodexChatSettingServicePort, ICodexChatThreadServicePort, IProjectSummaryServicePort, IMemoryItemServicePort, ITagServicePort, IWorkflowDefinitionServicePort, IWorkflowInstanceServicePort, IWorkflowStepRunServicePort, IWorkspaceServicePort, IWorkspaceMemberServicePort, IProjectMemberServicePort } from '@aopslab/domain-dm-agentspace/ports'
+import type { IRepositoryPortProject, IRepositoryPortProjectPath, IRepositoryPortPrompt, IRepositoryPortPromptVersion, IRepositoryPortResource, IRepositoryPortScope, IRepositoryPortSkill, IRepositoryPortSkillVersion, IRepositoryPortKanbanBoard, IRepositoryPortKanbanColumn, IRepositoryPortSprint, IRepositoryPortSprintItem, IRepositoryPortTask, IRepositoryPortTaskComment, IRepositoryPortAgentSession, IRepositoryPortAgentRun, IRepositoryPortAgentRunEvent, IRepositoryPortArtifact, IRepositoryPortArtifactLink, IRepositoryPortCodexChatMessage, IRepositoryPortCodexChatSetting, IRepositoryPortCodexChatThread, IRepositoryPortProjectSummary, IRepositoryPortMemoryItem, IRepositoryPortTag, IRepositoryPortWorkflowDefinition, IRepositoryPortWorkflowInstance, IRepositoryPortWorkflowStepRun, IRepositoryPortWorkspace, IRepositoryPortWorkspaceMember, IRepositoryPortProjectMember } from '@aopslab/domain-dm-agentspace/repository-ports'
 
 export interface AgentspaceKitContext {
   tenantId: string
@@ -25,8 +25,6 @@ export interface AgentspaceKitStaticConfig {
   resourceRepository: RepositoryEndpoint
   skillRepository: RepositoryEndpoint
   skillVersionRepository: RepositoryEndpoint
-  skillSetRepository: RepositoryEndpoint
-  skillSetItemRepository: RepositoryEndpoint
   kanbanBoardRepository: RepositoryEndpoint
   kanbanColumnRepository: RepositoryEndpoint
   sprintRepository: RepositoryEndpoint
@@ -64,8 +62,6 @@ export interface AgentspaceKitServiceProviderOptions extends DefaultServiceProvi
   resourceRepositoryConfig: RepositoryConfig
   skillRepositoryConfig: RepositoryConfig
   skillVersionRepositoryConfig: RepositoryConfig
-  skillSetRepositoryConfig: RepositoryConfig
-  skillSetItemRepositoryConfig: RepositoryConfig
   kanbanBoardRepositoryConfig: RepositoryConfig
   kanbanColumnRepositoryConfig: RepositoryConfig
   sprintRepositoryConfig: RepositoryConfig
@@ -99,8 +95,6 @@ export interface AgentspaceKitServices {
   resourceService: IResourceServicePort
   skillService: ISkillServicePort
   skillVersionService: ISkillVersionServicePort
-  skillSetService: ISkillSetServicePort
-  skillSetItemService: ISkillSetItemServicePort
   kanbanBoardService: IKanbanBoardServicePort
   kanbanColumnService: IKanbanColumnServicePort
   sprintService: ISprintServicePort
@@ -135,8 +129,6 @@ export interface AgentspaceKitRepositories {
   resourceRepository: IRepositoryPortResource
   skillRepository: IRepositoryPortSkill
   skillVersionRepository: IRepositoryPortSkillVersion
-  skillSetRepository: IRepositoryPortSkillSet
-  skillSetItemRepository: IRepositoryPortSkillSetItem
   kanbanBoardRepository: IRepositoryPortKanbanBoard
   kanbanColumnRepository: IRepositoryPortKanbanColumn
   sprintRepository: IRepositoryPortSprint
@@ -184,10 +176,6 @@ export interface AgentspaceKitProvider {
   createSkillService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['skillService']>
   getSkillVersionService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['skillVersionService']>
   createSkillVersionService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['skillVersionService']>
-  getSkillSetService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['skillSetService']>
-  createSkillSetService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['skillSetService']>
-  getSkillSetItemService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['skillSetItemService']>
-  createSkillSetItemService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['skillSetItemService']>
   getKanbanBoardService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['kanbanBoardService']>
   createKanbanBoardService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['kanbanBoardService']>
   getKanbanColumnService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['kanbanColumnService']>
@@ -239,8 +227,6 @@ export interface AgentspaceKitProvider {
   getResourceRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['resourceRepository']>
   getSkillRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['skillRepository']>
   getSkillVersionRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['skillVersionRepository']>
-  getSkillSetRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['skillSetRepository']>
-  getSkillSetItemRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['skillSetItemRepository']>
   getKanbanBoardRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['kanbanBoardRepository']>
   getKanbanColumnRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['kanbanColumnRepository']>
   getSprintRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['sprintRepository']>
@@ -274,8 +260,6 @@ export interface AgentspaceKitProvider {
   clearResourceServiceCache(cacheKey?: string): void
   clearSkillServiceCache(cacheKey?: string): void
   clearSkillVersionServiceCache(cacheKey?: string): void
-  clearSkillSetServiceCache(cacheKey?: string): void
-  clearSkillSetItemServiceCache(cacheKey?: string): void
   clearKanbanBoardServiceCache(cacheKey?: string): void
   clearKanbanColumnServiceCache(cacheKey?: string): void
   clearSprintServiceCache(cacheKey?: string): void

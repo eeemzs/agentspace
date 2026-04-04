@@ -2,6 +2,12 @@
 
 Agentspace domain workspace for dm, kit, host-plugin, tooling, cli, and tests.
 
+## User Guide
+
+- Domain kullanim rehberi: `./USER_GUIDE.md`
+- Hosted AOPS tarafindaki ortak domain/operator rehberi:
+  `/Volumes/d/dev-js2/apps/aops/apps/aops-cli/AOPS_DOMAIN_OPERATING_MODEL.md`
+
 ## Packages
 
 - `agentspace-dm`: workspace-scoped agent data domain model and repositories

@@ -7,7 +7,7 @@ export type ScopeResolution = (typeof SCOPE_RESOLUTION_TYPES)[number]
 
 export const GLOBAL_SCOPE_ID = '00000000-0000-4000-8000-000000000001'
 
-export const TAG_SCOPE_TYPES = ['prompt', 'skill', 'skill-set', 'project', 'memory-item'] as const
+export const TAG_SCOPE_TYPES = ['prompt', 'skill', 'project', 'memory-item'] as const
 export type TagScopeType = (typeof TAG_SCOPE_TYPES)[number]
 
 export const RESOURCE_TYPES = ['document', 'rule', 'spec', 'link', 'reference', 'template', 'dataset', 'code', 'skill'] as const

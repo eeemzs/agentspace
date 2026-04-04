@@ -7,8 +7,6 @@ export type {
   IRepositoryPortScope,
   IRepositoryPortSkill,
   IRepositoryPortSkillVersion,
-  IRepositoryPortSkillSet,
-  IRepositoryPortSkillSetItem,
   IRepositoryPortKanbanBoard,
   IRepositoryPortKanbanColumn,
   IRepositoryPortSprint,
