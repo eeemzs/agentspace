@@ -8,8 +8,8 @@ metadata:
 # Agentspace AOPS Agent
 
 Note: for normal AOPS-hosted app work, AI agents should prefer
-`/Volumes/d/dev-js2/apps/aops/.agents/skills/agentspace-aops-agent/SKILL.md`
-as the canonical bootstrap path. This file is the domain-owned source guide.
+`/Volumes/d/dev-js2/apps/aops/AGENTS.md` as the canonical AOPS bootstrap path.
+This file is the domain-owned source guide for Agentspace semantics.
 
 Use this skill when the task is about operating `agentspace` through hosted
 AOPS or explaining how an AI agent should use hosted `agentspace.*` surfaces
@@ -67,24 +67,28 @@ If you need a quick map of which file answers which question, read:
 15. If `aops-cli skill` sugar exists, prefer it for skill shell + skill-version
     inventory, authoring, publish, inspect, and current resolution instead of
     repeating raw hosted invoke envelopes.
-16. If `aops-cli artifact` sugar exists, prefer it for artifact shell create/get/delete
+16. `aops-cli prompt version create` and `aops-cli skill version create`
+    can resolve the next version automatically when `--version` is omitted.
+17. Docman document versions currently stay explicit; do not assume the same
+    auto-next ergonomics there.
+18. If `aops-cli artifact` sugar exists, prefer it for artifact shell create/get/delete
     and artifact-link / ref lookup instead of hand-writing `agentspace.artifact.*`
     envelopes.
-17. Before showing owner labels to humans, resolve project and workspace names
+19. Before showing owner labels to humans, resolve project and workspace names
     with `agentspace.project.list-projects` and `agentspace.workspace.list-workspaces`.
-18. When paired with `projectman`, durable memory writeback should usually cover
+20. When paired with `projectman`, durable memory writeback should usually cover
     kickoff/resume, decision/blocker, and closeout/lesson rather than every
     status move.
-19. If a task is resumable but not yet modeled in `projectman`, write generic
+21. If a task is resumable but not yet modeled in `projectman`, write generic
     project-scoped memory with `aops-cli memory write` rather than forcing fake
     planning artifacts. Bu durumda generic project memory writeback zorunludur,
     disposable tek-seans isler istisnadir.
-20. If the project needs durable bootstrap guidance that should surface on
+22. If the project needs durable bootstrap guidance that should surface on
     every curated resume, use sticky project memory instead of normal resume
     notes.
-21. If the project needs a living synopsis of current status, decisions, and
+23. If the project needs a living synopsis of current status, decisions, and
     open items, use `aops-cli summary write` / `summary get`.
-22. Legacy ordered-bundle entity kaldirildi; ordered capability ihtiyacini `skill`,
+24. Legacy ordered-bundle entity kaldirildi; ordered capability ihtiyacini `skill`,
     `skill-version`, runner loader plan, prompt guidance ve docs ile coz.
 
 ## Hosted discovery workflow
@@ -151,7 +155,7 @@ Skill sugar examples:
 ```bash
 aops-cli skill list --json
 aops-cli skill create --name "Projectman Delivery" --short-description "Hosted delivery skill" --apply --json
-aops-cli skill version create --skill-id <skill-id> --version 1 --content @./SKILL.md --meta @./meta.json --apply --json
+aops-cli skill version create --skill-id <skill-id> --content @./SKILL.md --meta @./meta.json --apply --json
 aops-cli skill version publish --id <skill-version-id> --apply --json
 aops-cli skill inspect --id <skill-id> --json
 aops-cli skill current --id <skill-id> --json

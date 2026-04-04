@@ -14,6 +14,7 @@ Owner oldugu baslica capability aileleri:
 3. prompt
 4. resource
 5. skill
+6. artifact
 7. memory-item
 8. project-summary
 
@@ -186,7 +187,7 @@ aops-cli skill list --json
 aops-cli skill create --name "Projectman Delivery" --short-description "Hosted delivery skill" --apply --json
 aops-cli skill update --id <skill-id> --description "Yeni aciklama" --apply --json
 aops-cli skill version list --skill-id <skill-id> --json
-aops-cli skill version create --skill-id <skill-id> --version 1 --content @./SKILL.md --meta @./meta.json --apply --json
+aops-cli skill version create --skill-id <skill-id> --content @./SKILL.md --meta @./meta.json --apply --json
 aops-cli skill version publish --id <skill-version-id> --apply --json
 aops-cli skill inspect --id <skill-id> --json
 aops-cli skill current --id <skill-id> --json
@@ -197,7 +198,15 @@ Kural:
 1. `skill` reusable capability shell kaydidir ve `scopeId` owner'lidir
 2. `skill-version` content ve lineage kaydidir; `workspaceId + skillId + version` ile ilerler
 3. `skill version publish` current version sync'ini domain tarafinda yapar
-4. bu surface inventory/authoring/versioning icindir; execution engine degildir
+4. `skill version create` icin `--version` opsiyoneldir; verilmezse CLI mevcut skill version zincirinden bir sonraki sayiyi hesaplar
+5. bu surface inventory/authoring/versioning icindir; execution engine degildir
+
+Ortak hosted sugar contract:
+
+1. write komutlari varsayilan olarak `--apply` ister
+2. destructive komutlar `--apply --confirm` ister
+3. `prompt`, `resource`, `skill` ve `artifact` aileleri ayni envelope contract'ini kullanir:
+   `command`, `toolId`, `resolvedContext`, `input`, `result`, opsiyonel `artifacts`
 
 Sticky guidance:
 
