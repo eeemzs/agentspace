@@ -6,7 +6,7 @@ Agentspace domain workspace for dm, kit, host-plugin, tooling, cli, and tests.
 
 - Domain kullanim rehberi: `./USER_GUIDE.md`
 - Hosted AOPS tarafindaki ortak domain/operator rehberi:
-  `/Volumes/d/dev-js2/apps/aops/apps/aops-cli/AOPS_DOMAIN_OPERATING_MODEL.md`
+  `/Volumes/d/dev-js2/apps/aops/apps/aops-cli/USER_GUIDE.md`
 
 ## Packages
 
@@ -71,7 +71,7 @@ pnpm run manifest:sync
 
 cd /Volumes/d/dev-js2/apps/aops
 aops-cli host diagnostics --reset --warmup
-aops-cli agent tools --domain agentspace --workspace-name Default
+aops-cli agent tools --domain agentspace
 ```
 
 This is the deterministic recovery path for manifest drift, stale route

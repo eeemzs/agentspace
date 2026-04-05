@@ -1,6 +1,7 @@
 import 'dotenv/config'
 
 const agentspaceTables = [
+  'activity-items',
   'agent-run-events',
   'agent-runs',
   'agent-sessions',

@@ -1,5 +1,6 @@
 ﻿// Public service exports
 export {
+  ActivityItemService, type ActivityItemServiceOptions,
   ProjectService, type ProjectServiceOptions,
   PromptService, type PromptServiceOptions,
   PromptVersionService, type PromptVersionServiceOptions,

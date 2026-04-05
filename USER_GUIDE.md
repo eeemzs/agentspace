@@ -17,6 +17,7 @@ Owner oldugu baslica capability aileleri:
 6. artifact
 7. memory-item
 8. project-summary
+9. activity-item
 
 Kisa kural:
 
@@ -40,6 +41,15 @@ Durable handoff, resume, decision, lesson, rule ve sticky guidance kaydi.
 ### Project Summary
 
 Projenin yasayan synopsis'i.
+
+### Activity Item
+
+Immutable operator ledger kaydidir.
+
+Ne degildir:
+
+1. `memory-item` gibi curated resume/decision notu degildir
+2. `agent-run-event` gibi run-scoped timeline degildir
 
 ### Prompt / Resource
 
@@ -78,6 +88,14 @@ Artifact modeli:
    - project-scoped relation kaydidir
    - `workspaceId + projectId + artifactId + refType + refId`
 
+Activity modeli:
+
+1. `activity-item`
+   - immutable operator ledger
+   - `scopeId` canonical filter alanidir
+   - `workspaceId`, opsiyonel `projectId`
+   - `sourceKind`, `sourceId`, `action`, `status`, `summary`, `refs`, `payload`
+
 ## 3. Memory modelleri
 
 ### Normal memory
@@ -114,6 +132,8 @@ Ornek:
 
 ```bash
 aops-cli agent tools --domain agentspace
+aops-cli workspace list --json
+aops-cli project list --json
 aops-cli memory list --subject project --json
 aops-cli memory get --id <memory-id> --json
 aops-cli memory write --mode resume --subject project --content "Yarin buradan devam et." --apply --json
@@ -125,6 +145,29 @@ aops-cli memory search --subject sprint --id <sprint-id> --json
 aops-cli summary write --summary "Current status" --apply --json
 aops-cli summary get --json
 ```
+
+Workspace / project sugar:
+
+```bash
+aops-cli workspace list --json
+aops-cli workspace get --id <workspace-id> --json
+aops-cli workspace create --name "Demo Workspace" --description "Test alani" --sharing-enabled true --apply --json
+aops-cli workspace update --id <workspace-id> --description "Yeni aciklama" --apply --json
+aops-cli workspace delete --id <workspace-id> --apply --confirm --json
+
+aops-cli project list --json
+aops-cli project get --id <project-id> --json
+aops-cli project create --workspace-name Default --name "Demo Project" --slug demo-project --status active --visibility private --project-type software --apply --json
+aops-cli project update --id <project-id> --description "Yeni aciklama" --apply --json
+aops-cli project delete --id <project-id> --apply --confirm --json
+```
+
+Kural:
+
+1. `workspace` ve `project` sugar hosted `agentspace.workspace.*` ve `agentspace.project.*` surface'lerinin operator-friendly karsiligidir
+2. `list` varsayilan olarak tablo basar; scriptable output icin `--json` kullan
+3. `project list/get` icin workspace baglami zorunlu degildir; `project create` workspace baglamini explicit ister ve `--workspace-name` en okunabilir secenektir
+4. destructive operasyonlar `--apply --confirm` ister
 
 Prompt sugar:
 
@@ -207,6 +250,8 @@ Ortak hosted sugar contract:
 2. destructive komutlar `--apply --confirm` ister
 3. `prompt`, `resource`, `skill` ve `artifact` aileleri ayni envelope contract'ini kullanir:
    `command`, `toolId`, `resolvedContext`, `input`, `result`, opsiyonel `artifacts`
+4. durable activity yalniz mutating hosted write'larda append edilir
+5. desktop'ta `Projects > Logs` ve `Workspaces > Activity` ayni truth'u farkli baglamda gosterir
 
 Sticky guidance:
 

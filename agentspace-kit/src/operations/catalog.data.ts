@@ -183,6 +183,59 @@ export const AGENTSPACE_OPERATION_CATALOG_ROWS = [
     ]
   },
   {
+    "toolId": "aops-activity-item-add-activity-item",
+    "operationId": "activity-item.add-activity-item",
+    "summary": "Add activity item activity-item.",
+    "serviceKey": "activityItemService",
+    "serviceEntity": "activity-item",
+    "methodName": "addActivityItem",
+    "kind": "custom",
+    "args": [
+      {
+        "name": "data",
+        "optional": false
+      }
+    ]
+  },
+  {
+    "toolId": "aops-activity-item-get-by-id",
+    "operationId": "activity-item.get-by-id",
+    "summary": "Get by id activity-item.",
+    "serviceKey": "activityItemService",
+    "serviceEntity": "activity-item",
+    "methodName": "getById",
+    "kind": "get",
+    "args": [
+      {
+        "name": "id",
+        "optional": false
+      },
+      {
+        "name": "options",
+        "optional": true
+      }
+    ]
+  },
+  {
+    "toolId": "aops-activity-item-list-activity-items",
+    "operationId": "activity-item.list-activity-items",
+    "summary": "List activity items activity-item.",
+    "serviceKey": "activityItemService",
+    "serviceEntity": "activity-item",
+    "methodName": "listActivityItems",
+    "kind": "list",
+    "args": [
+      {
+        "name": "filter",
+        "optional": true
+      },
+      {
+        "name": "options",
+        "optional": true
+      }
+    ]
+  },
+  {
     "toolId": "aops-agent-session-create",
     "operationId": "agent-session.create",
     "summary": "Create agent-session.",

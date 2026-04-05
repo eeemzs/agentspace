@@ -1,4 +1,6 @@
 ﻿// Application factory exports
+export * from './ServiceActivityItemFactory.js';
+export * from './ServiceActivityItemBuilder.js';
 export * from './ServiceProjectFactory.js';
 export * from './ServiceProjectBuilder.js';
 export * from './ServiceProjectPathFactory.js';
@@ -73,6 +75,7 @@ export * from './RepositoryFactoryWorkflowStepRun.js';
 export * from './RepositoryFactoryAgentSession.js';
 export * from './RepositoryFactoryAgentRun.js';
 export * from './RepositoryFactoryAgentRunEvent.js';
+export * from './RepositoryFactoryActivityItem.js';
 export * from './RepositoryFactoryArtifact.js';
 export * from './RepositoryFactoryArtifactLink.js';
 export * from './RepositoryFactoryCodexChatMessage.js';

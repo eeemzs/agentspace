@@ -238,6 +238,28 @@ CREATE TABLE `memory-items` (
 CREATE INDEX `memory_item_idx_tenant` ON `memory-items` (`tenantId`);--> statement-breakpoint
 CREATE INDEX `memory_item_idx_scope` ON `memory-items` (`tenantId`,`scopeId`);--> statement-breakpoint
 CREATE INDEX `memory_item_idx_kind` ON `memory-items` (`tenantId`,`kind`);--> statement-breakpoint
+CREATE TABLE `activity-items` (
+	`id` text PRIMARY KEY NOT NULL,
+	`tenantId` text NOT NULL,
+	`scopeId` text NOT NULL,
+	`workspaceId` text NOT NULL,
+	`projectId` text,
+	`sourceKind` text NOT NULL,
+	`sourceId` text NOT NULL,
+	`action` text NOT NULL,
+	`status` text NOT NULL,
+	`summary` text NOT NULL,
+	`refs` text NOT NULL,
+	`payload` text,
+	`meta` text,
+	`createdAt` integer,
+	`updatedAt` integer
+);
+--> statement-breakpoint
+CREATE INDEX `activity_item_idx_scope_created` ON `activity-items` (`tenantId`,`scopeId`,`createdAt`);--> statement-breakpoint
+CREATE INDEX `activity_item_idx_workspace_created` ON `activity-items` (`tenantId`,`workspaceId`,`createdAt`);--> statement-breakpoint
+CREATE INDEX `activity_item_idx_project_created` ON `activity-items` (`tenantId`,`projectId`,`createdAt`);--> statement-breakpoint
+CREATE INDEX `activity_item_idx_source_kind_created` ON `activity-items` (`tenantId`,`sourceKind`,`createdAt`);--> statement-breakpoint
 CREATE TABLE `projects` (
 	`id` text PRIMARY KEY NOT NULL,
 	`tenantId` text NOT NULL,

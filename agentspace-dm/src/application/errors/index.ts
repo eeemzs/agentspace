@@ -1,4 +1,5 @@
 ﻿// Application errors
+export * from './ActivityItemServiceError.js'
 export * from './ProjectServiceError.js'
 export * from './ProjectPathServiceError.js'
 export * from './PromptServiceError.js'

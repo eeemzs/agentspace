@@ -1,8 +1,8 @@
 ﻿import type { DefaultServiceProviderOptions, RegistryStats, ServiceCacheOptions, MetricsCollector, RetryOptions, CircuitBreaker, RepositoryEndpoint } from '@aopslab/xf-dm-kits'
 import type { RepositoryConfig } from '@aopslab/xf-db'
 import type { XfLogger } from '@aopslab/xf-logger'
-import type { IProjectServicePort, IProjectPathServicePort, IPromptServicePort, IPromptVersionServicePort, IResourceServicePort, ISkillServicePort, ISkillVersionServicePort, IKanbanBoardServicePort, IKanbanColumnServicePort, ISprintServicePort, ISprintItemServicePort, ITaskServicePort, ITaskCommentServicePort, IAgentSessionServicePort, IAgentRunServicePort, IAgentRunEventServicePort, IArtifactServicePort, IArtifactLinkServicePort, ICodexChatMessageServicePort, ICodexChatSettingServicePort, ICodexChatThreadServicePort, IProjectSummaryServicePort, IMemoryItemServicePort, ITagServicePort, IWorkflowDefinitionServicePort, IWorkflowInstanceServicePort, IWorkflowStepRunServicePort, IWorkspaceServicePort, IWorkspaceMemberServicePort, IProjectMemberServicePort } from '@aopslab/domain-dm-agentspace/ports'
-import type { IRepositoryPortProject, IRepositoryPortProjectPath, IRepositoryPortPrompt, IRepositoryPortPromptVersion, IRepositoryPortResource, IRepositoryPortScope, IRepositoryPortSkill, IRepositoryPortSkillVersion, IRepositoryPortKanbanBoard, IRepositoryPortKanbanColumn, IRepositoryPortSprint, IRepositoryPortSprintItem, IRepositoryPortTask, IRepositoryPortTaskComment, IRepositoryPortAgentSession, IRepositoryPortAgentRun, IRepositoryPortAgentRunEvent, IRepositoryPortArtifact, IRepositoryPortArtifactLink, IRepositoryPortCodexChatMessage, IRepositoryPortCodexChatSetting, IRepositoryPortCodexChatThread, IRepositoryPortProjectSummary, IRepositoryPortMemoryItem, IRepositoryPortTag, IRepositoryPortWorkflowDefinition, IRepositoryPortWorkflowInstance, IRepositoryPortWorkflowStepRun, IRepositoryPortWorkspace, IRepositoryPortWorkspaceMember, IRepositoryPortProjectMember } from '@aopslab/domain-dm-agentspace/repository-ports'
+import type { IProjectServicePort, IProjectPathServicePort, IPromptServicePort, IPromptVersionServicePort, IResourceServicePort, ISkillServicePort, ISkillVersionServicePort, IKanbanBoardServicePort, IKanbanColumnServicePort, ISprintServicePort, ISprintItemServicePort, ITaskServicePort, ITaskCommentServicePort, IAgentSessionServicePort, IAgentRunServicePort, IAgentRunEventServicePort, IActivityItemServicePort, IArtifactServicePort, IArtifactLinkServicePort, ICodexChatMessageServicePort, ICodexChatSettingServicePort, ICodexChatThreadServicePort, IProjectSummaryServicePort, IMemoryItemServicePort, ITagServicePort, IWorkflowDefinitionServicePort, IWorkflowInstanceServicePort, IWorkflowStepRunServicePort, IWorkspaceServicePort, IWorkspaceMemberServicePort, IProjectMemberServicePort } from '@aopslab/domain-dm-agentspace/ports'
+import type { IRepositoryPortProject, IRepositoryPortProjectPath, IRepositoryPortPrompt, IRepositoryPortPromptVersion, IRepositoryPortResource, IRepositoryPortScope, IRepositoryPortSkill, IRepositoryPortSkillVersion, IRepositoryPortKanbanBoard, IRepositoryPortKanbanColumn, IRepositoryPortSprint, IRepositoryPortSprintItem, IRepositoryPortTask, IRepositoryPortTaskComment, IRepositoryPortAgentSession, IRepositoryPortAgentRun, IRepositoryPortAgentRunEvent, IRepositoryPortActivityItem, IRepositoryPortArtifact, IRepositoryPortArtifactLink, IRepositoryPortCodexChatMessage, IRepositoryPortCodexChatSetting, IRepositoryPortCodexChatThread, IRepositoryPortProjectSummary, IRepositoryPortMemoryItem, IRepositoryPortTag, IRepositoryPortWorkflowDefinition, IRepositoryPortWorkflowInstance, IRepositoryPortWorkflowStepRun, IRepositoryPortWorkspace, IRepositoryPortWorkspaceMember, IRepositoryPortProjectMember } from '@aopslab/domain-dm-agentspace/repository-ports'
 
 export interface AgentspaceKitContext {
   tenantId: string
@@ -34,6 +34,7 @@ export interface AgentspaceKitStaticConfig {
   agentSessionRepository: RepositoryEndpoint
   agentRunRepository: RepositoryEndpoint
   agentRunEventRepository: RepositoryEndpoint
+  activityItemRepository: RepositoryEndpoint
   artifactRepository: RepositoryEndpoint
   artifactLinkRepository: RepositoryEndpoint
   codexChatThreadRepository: RepositoryEndpoint
@@ -71,6 +72,7 @@ export interface AgentspaceKitServiceProviderOptions extends DefaultServiceProvi
   agentSessionRepositoryConfig: RepositoryConfig
   agentRunRepositoryConfig: RepositoryConfig
   agentRunEventRepositoryConfig: RepositoryConfig
+  activityItemRepositoryConfig: RepositoryConfig
   artifactRepositoryConfig: RepositoryConfig
   artifactLinkRepositoryConfig: RepositoryConfig
   codexChatThreadRepositoryConfig: RepositoryConfig
@@ -104,6 +106,7 @@ export interface AgentspaceKitServices {
   agentSessionService: IAgentSessionServicePort
   agentRunService: IAgentRunServicePort
   agentRunEventService: IAgentRunEventServicePort
+  activityItemService: IActivityItemServicePort
   artifactService: IArtifactServicePort
   artifactLinkService: IArtifactLinkServicePort
   codexChatThreadService: ICodexChatThreadServicePort
@@ -138,6 +141,7 @@ export interface AgentspaceKitRepositories {
   agentSessionRepository: IRepositoryPortAgentSession
   agentRunRepository: IRepositoryPortAgentRun
   agentRunEventRepository: IRepositoryPortAgentRunEvent
+  activityItemRepository: IRepositoryPortActivityItem
   artifactRepository: IRepositoryPortArtifact
   artifactLinkRepository: IRepositoryPortArtifactLink
   codexChatThreadRepository: IRepositoryPortCodexChatThread
@@ -194,6 +198,8 @@ export interface AgentspaceKitProvider {
   createAgentRunService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['agentRunService']>
   getAgentRunEventService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['agentRunEventService']>
   createAgentRunEventService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['agentRunEventService']>
+  getActivityItemService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['activityItemService']>
+  createActivityItemService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['activityItemService']>
   getArtifactService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['artifactService']>
   createArtifactService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['artifactService']>
   getArtifactLinkService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['artifactLinkService']>
@@ -236,6 +242,7 @@ export interface AgentspaceKitProvider {
   getAgentSessionRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['agentSessionRepository']>
   getAgentRunRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['agentRunRepository']>
   getAgentRunEventRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['agentRunEventRepository']>
+  getActivityItemRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['activityItemRepository']>
   getArtifactRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['artifactRepository']>
   getArtifactLinkRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['artifactLinkRepository']>
   getCodexChatThreadRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['codexChatThreadRepository']>
@@ -269,6 +276,7 @@ export interface AgentspaceKitProvider {
   clearAgentSessionServiceCache(cacheKey?: string): void
   clearAgentRunServiceCache(cacheKey?: string): void
   clearAgentRunEventServiceCache(cacheKey?: string): void
+  clearActivityItemServiceCache(cacheKey?: string): void
   clearArtifactServiceCache(cacheKey?: string): void
   clearArtifactLinkServiceCache(cacheKey?: string): void
   clearCodexChatThreadServiceCache(cacheKey?: string): void

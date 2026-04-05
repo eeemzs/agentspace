@@ -5,6 +5,7 @@
 
 export * from '../agentRun/drizzle/drizzle.schema.agentRun.sqlite.js'
 export * from '../agentRunEvent/drizzle/drizzle.schema.agentRunEvent.sqlite.js'
+export * from '../activityItem/drizzle/drizzle.schema.activityItem.sqlite.js'
 export * from '../agentSession/drizzle/drizzle.schema.agentSession.sqlite.js'
 export * from '../artifact/drizzle/drizzle.schema.artifact.sqlite.js'
 export * from '../artifactLink/drizzle/drizzle.schema.artifactLink.sqlite.js'
