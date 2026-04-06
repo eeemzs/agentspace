@@ -14,16 +14,6 @@ export type AgentspaceOperationCatalogRow = {
 
 export const AGENTSPACE_OPERATION_CATALOG_ROWS = [
   {
-    "toolId": "aops-backup-capability-list",
-    "operationId": "backup-capability.list",
-    "summary": "List domain-owned backup capability catalog metadata.",
-    "serviceKey": "__calls__",
-    "serviceEntity": "backup-capability",
-    "methodName": "listBackupCapabilityCatalog",
-    "kind": "list",
-    "args": []
-  },
-  {
     "toolId": "aops-agent-run-attach-run-to-task",
     "operationId": "agent-run.attach-run-to-task",
     "summary": "Attach run to task agent-run.",

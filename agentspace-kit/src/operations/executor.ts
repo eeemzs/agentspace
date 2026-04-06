@@ -8,7 +8,6 @@ import { createAgentspaceKitWithEnv } from '../domain-services/unified.js'
 import type { AgentspaceKitServices } from '../domain-services/types.js'
 import { clearAgentspaceKitEnvConfigCache, getAgentspaceKitEnvConfig } from '../config/config.js'
 import { hardDeleteAgentspaceProjectCascade } from '../calls/project-delete.js'
-import { listAgentspaceBackupCapabilityCatalog } from './backup-capability.js'
 import {
   normalizeNonEmpty,
   resolveWorkspaceAliasValue,
@@ -229,10 +228,6 @@ function resolveOperationById(operationId: string): AgentspaceOperationContract 
 }
 
 async function runSpecialOperation(operation: AgentspaceOperationContract, payload: ToolInput): Promise<unknown> {
-  if (operation.methodName === 'listBackupCapabilityCatalog') {
-    void payload
-    return listAgentspaceBackupCapabilityCatalog()
-  }
   if (operation.methodName !== 'hardDeleteAgentspaceProjectCascade') {
     throw new Error(`unknown_agentspace_special_operation:${operation.operationId}`)
   }
