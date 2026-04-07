@@ -5,7 +5,6 @@ import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 
 const SQLITE_TABLE_SENTINELS = [
-  { table: 'workspaces', requiredColumns: ['scopeId'] },
   { table: 'projects', requiredColumns: ['scopeId'] },
   { table: 'scopes', requiredColumns: ['type', 'parentScopeId'] },
 ] as const

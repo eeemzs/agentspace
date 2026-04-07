@@ -29,8 +29,6 @@ const agentspaceTables = [
   'tasks',
   'workflow-instances',
   'workflow-step-runs',
-  'workspace-members',
-  'workspaces',
 ]
 
 export default {

@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "d54e012f-d38b-432d-8a94-2efcb6236918",
+  "id": "a02ba7d8-4e3d-4d3c-9661-a32d500503c5",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "agent-runs": {
@@ -21,8 +21,8 @@
           "notNull": true,
           "autoincrement": false
         },
-        "workspaceId": {
-          "name": "workspaceId",
+        "scopeId": {
+          "name": "scopeId",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -184,11 +184,11 @@
           ],
           "isUnique": false
         },
-        "agent_run_idx_workspace": {
-          "name": "agent_run_idx_workspace",
+        "agent_run_idx_scope": {
+          "name": "agent_run_idx_scope",
           "columns": [
             "tenantId",
-            "workspaceId"
+            "scopeId"
           ],
           "isUnique": false
         },
@@ -220,19 +220,6 @@
         }
       },
       "foreignKeys": {
-        "agent-runs_workspaceId_workspaces_id_fk": {
-          "name": "agent-runs_workspaceId_workspaces_id_fk",
-          "tableFrom": "agent-runs",
-          "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspaceId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
         "agent-runs_projectId_projects_id_fk": {
           "name": "agent-runs_projectId_projects_id_fk",
           "tableFrom": "agent-runs",
@@ -430,6 +417,142 @@
           "onUpdate": "no action"
         }
       },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "activity-items": {
+      "name": "activity-items",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "tenantId": {
+          "name": "tenantId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "scopeId": {
+          "name": "scopeId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "projectId": {
+          "name": "projectId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "sourceKind": {
+          "name": "sourceKind",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "sourceId": {
+          "name": "sourceId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "action": {
+          "name": "action",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "summary": {
+          "name": "summary",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "refs": {
+          "name": "refs",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "payload": {
+          "name": "payload",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "meta": {
+          "name": "meta",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "activity_item_idx_scope_created": {
+          "name": "activity_item_idx_scope_created",
+          "columns": [
+            "tenantId",
+            "scopeId",
+            "createdAt"
+          ],
+          "isUnique": false
+        },
+        "activity_item_idx_project_created": {
+          "name": "activity_item_idx_project_created",
+          "columns": [
+            "tenantId",
+            "projectId",
+            "createdAt"
+          ],
+          "isUnique": false
+        },
+        "activity_item_idx_source_kind_created": {
+          "name": "activity_item_idx_source_kind_created",
+          "columns": [
+            "tenantId",
+            "sourceKind",
+            "createdAt"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}
@@ -681,13 +804,6 @@
           "notNull": true,
           "autoincrement": false
         },
-        "workspaceId": {
-          "name": "workspaceId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
         "projectId": {
           "name": "projectId",
           "type": "text",
@@ -746,14 +862,6 @@
           ],
           "isUnique": false
         },
-        "artifact_link_idx_workspace": {
-          "name": "artifact_link_idx_workspace",
-          "columns": [
-            "tenantId",
-            "workspaceId"
-          ],
-          "isUnique": false
-        },
         "artifact_link_idx_artifact": {
           "name": "artifact_link_idx_artifact",
           "columns": [
@@ -775,19 +883,6 @@
         }
       },
       "foreignKeys": {
-        "artifact-links_workspaceId_workspaces_id_fk": {
-          "name": "artifact-links_workspaceId_workspaces_id_fk",
-          "tableFrom": "artifact-links",
-          "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspaceId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
         "artifact-links_projectId_projects_id_fk": {
           "name": "artifact-links_projectId_projects_id_fk",
           "tableFrom": "artifact-links",
@@ -836,18 +931,11 @@
           "notNull": true,
           "autoincrement": false
         },
-        "workspaceId": {
-          "name": "workspaceId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
         "projectId": {
           "name": "projectId",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         },
         "threadId": {
@@ -961,30 +1049,17 @@
           ],
           "isUnique": false
         },
-        "codex_chat_message_idx_workspace_messageat": {
-          "name": "codex_chat_message_idx_workspace_messageat",
+        "codex_chat_message_idx_project_messageat": {
+          "name": "codex_chat_message_idx_project_messageat",
           "columns": [
             "tenantId",
-            "workspaceId",
+            "projectId",
             "messageAt"
           ],
           "isUnique": false
         }
       },
       "foreignKeys": {
-        "codex-chat-messages_workspaceId_workspaces_id_fk": {
-          "name": "codex-chat-messages_workspaceId_workspaces_id_fk",
-          "tableFrom": "codex-chat-messages",
-          "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspaceId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
         "codex-chat-messages_projectId_projects_id_fk": {
           "name": "codex-chat-messages_projectId_projects_id_fk",
           "tableFrom": "codex-chat-messages",
@@ -995,7 +1070,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "set null",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         },
         "codex-chat-messages_threadId_codex-chat-threads_id_fk": {
@@ -1033,8 +1108,8 @@
           "notNull": true,
           "autoincrement": false
         },
-        "workspaceId": {
-          "name": "workspaceId",
+        "projectId": {
+          "name": "projectId",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -1182,11 +1257,11 @@
         }
       },
       "indexes": {
-        "codex_chat_setting_tenant_workspace_user_unique": {
-          "name": "codex_chat_setting_tenant_workspace_user_unique",
+        "codex_chat_setting_tenant_project_user_unique": {
+          "name": "codex_chat_setting_tenant_project_user_unique",
           "columns": [
             "tenantId",
-            "workspaceId",
+            "projectId",
             "userId"
           ],
           "isUnique": true
@@ -1198,31 +1273,17 @@
           ],
           "isUnique": false
         },
-        "codex_chat_setting_idx_workspace_user": {
-          "name": "codex_chat_setting_idx_workspace_user",
+        "codex_chat_setting_idx_project_user": {
+          "name": "codex_chat_setting_idx_project_user",
           "columns": [
             "tenantId",
-            "workspaceId",
+            "projectId",
             "userId"
           ],
           "isUnique": false
         }
       },
-      "foreignKeys": {
-        "codex-chat-settings_workspaceId_workspaces_id_fk": {
-          "name": "codex-chat-settings_workspaceId_workspaces_id_fk",
-          "tableFrom": "codex-chat-settings",
-          "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspaceId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}
@@ -1406,13 +1467,6 @@
           "notNull": true,
           "autoincrement": false
         },
-        "workspaceId": {
-          "name": "workspaceId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
         "projectId": {
           "name": "projectId",
           "type": "text",
@@ -1457,14 +1511,6 @@
           ],
           "isUnique": false
         },
-        "kanban_board_idx_workspace": {
-          "name": "kanban_board_idx_workspace",
-          "columns": [
-            "tenantId",
-            "workspaceId"
-          ],
-          "isUnique": false
-        },
         "kanban_board_idx_project": {
           "name": "kanban_board_idx_project",
           "columns": [
@@ -1491,13 +1537,6 @@
         },
         "tenantId": {
           "name": "tenantId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "workspaceId": {
-          "name": "workspaceId",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -1577,14 +1616,6 @@
           ],
           "isUnique": false
         },
-        "aops_kanban_column_idx_workspace": {
-          "name": "aops_kanban_column_idx_workspace",
-          "columns": [
-            "tenantId",
-            "workspaceId"
-          ],
-          "isUnique": false
-        },
         "kanban_column_idx_board": {
           "name": "kanban_column_idx_board",
           "columns": [
@@ -1603,19 +1634,6 @@
         }
       },
       "foreignKeys": {
-        "aops-kanban-columns_workspaceId_workspaces_id_fk": {
-          "name": "aops-kanban-columns_workspaceId_workspaces_id_fk",
-          "tableFrom": "aops-kanban-columns",
-          "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspaceId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
         "aops-kanban-columns_projectId_projects_id_fk": {
           "name": "aops-kanban-columns_projectId_projects_id_fk",
           "tableFrom": "aops-kanban-columns",
@@ -1789,13 +1807,6 @@
           "notNull": true,
           "autoincrement": false
         },
-        "workspaceId": {
-          "name": "workspaceId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
         "name": {
           "name": "name",
           "type": "text",
@@ -1893,7 +1904,6 @@
           "name": "project_slug_tenant_unique",
           "columns": [
             "tenantId",
-            "workspaceId",
             "slug"
           ],
           "isUnique": true
@@ -1902,14 +1912,6 @@
           "name": "project_idx_tenant",
           "columns": [
             "tenantId"
-          ],
-          "isUnique": false
-        },
-        "project_idx_workspace": {
-          "name": "project_idx_workspace",
-          "columns": [
-            "tenantId",
-            "workspaceId"
           ],
           "isUnique": false
         }
@@ -1926,19 +1928,6 @@
             "id"
           ],
           "onDelete": "restrict",
-          "onUpdate": "no action"
-        },
-        "projects_workspaceId_workspaces_id_fk": {
-          "name": "projects_workspaceId_workspaces_id_fk",
-          "tableFrom": "projects",
-          "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspaceId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -1958,13 +1947,6 @@
         },
         "tenantId": {
           "name": "tenantId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "workspaceId": {
-          "name": "workspaceId",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -2044,14 +2026,6 @@
           ],
           "isUnique": false
         },
-        "project_path_idx_workspace": {
-          "name": "project_path_idx_workspace",
-          "columns": [
-            "tenantId",
-            "workspaceId"
-          ],
-          "isUnique": false
-        },
         "project_path_idx_project": {
           "name": "project_path_idx_project",
           "columns": [
@@ -2062,19 +2036,6 @@
         }
       },
       "foreignKeys": {
-        "project-paths_workspaceId_workspaces_id_fk": {
-          "name": "project-paths_workspaceId_workspaces_id_fk",
-          "tableFrom": "project-paths",
-          "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspaceId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
         "project-paths_projectId_projects_id_fk": {
           "name": "project-paths_projectId_projects_id_fk",
           "tableFrom": "project-paths",
@@ -2105,13 +2066,6 @@
         },
         "tenantId": {
           "name": "tenantId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "workspaceId": {
-          "name": "workspaceId",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -2184,14 +2138,6 @@
           ],
           "isUnique": false
         },
-        "project_member_idx_workspace": {
-          "name": "project_member_idx_workspace",
-          "columns": [
-            "tenantId",
-            "workspaceId"
-          ],
-          "isUnique": false
-        },
         "project_member_idx_project": {
           "name": "project_member_idx_project",
           "columns": [
@@ -2210,19 +2156,6 @@
         }
       },
       "foreignKeys": {
-        "project-members_workspaceId_workspaces_id_fk": {
-          "name": "project-members_workspaceId_workspaces_id_fk",
-          "tableFrom": "project-members",
-          "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspaceId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
         "project-members_projectId_projects_id_fk": {
           "name": "project-members_projectId_projects_id_fk",
           "tableFrom": "project-members",
@@ -2253,13 +2186,6 @@
         },
         "tenantId": {
           "name": "tenantId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "workspaceId": {
-          "name": "workspaceId",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -2337,30 +2263,9 @@
             "tenantId"
           ],
           "isUnique": false
-        },
-        "project_summary_idx_workspace": {
-          "name": "project_summary_idx_workspace",
-          "columns": [
-            "tenantId",
-            "workspaceId"
-          ],
-          "isUnique": false
         }
       },
       "foreignKeys": {
-        "project-summaries_workspaceId_workspaces_id_fk": {
-          "name": "project-summaries_workspaceId_workspaces_id_fk",
-          "tableFrom": "project-summaries",
-          "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspaceId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
         "project-summaries_projectId_projects_id_fk": {
           "name": "project-summaries_projectId_projects_id_fk",
           "tableFrom": "project-summaries",
@@ -2516,8 +2421,8 @@
           "notNull": true,
           "autoincrement": false
         },
-        "workspaceId": {
-          "name": "workspaceId",
+        "projectId": {
+          "name": "projectId",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -2632,11 +2537,11 @@
           ],
           "isUnique": false
         },
-        "prompt_version_idx_workspace": {
-          "name": "prompt_version_idx_workspace",
+        "prompt_version_idx_project": {
+          "name": "prompt_version_idx_project",
           "columns": [
             "tenantId",
-            "workspaceId"
+            "projectId"
           ],
           "isUnique": false
         },
@@ -2650,12 +2555,12 @@
         }
       },
       "foreignKeys": {
-        "prompt-versions_workspaceId_workspaces_id_fk": {
-          "name": "prompt-versions_workspaceId_workspaces_id_fk",
+        "prompt-versions_projectId_projects_id_fk": {
+          "name": "prompt-versions_projectId_projects_id_fk",
           "tableFrom": "prompt-versions",
-          "tableTo": "workspaces",
+          "tableTo": "projects",
           "columnsFrom": [
-            "workspaceId"
+            "projectId"
           ],
           "columnsTo": [
             "id"
@@ -3040,18 +2945,11 @@
           "notNull": true,
           "autoincrement": false
         },
-        "workspaceId": {
-          "name": "workspaceId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
         "projectId": {
           "name": "projectId",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         },
         "skillId": {
@@ -3178,11 +3076,11 @@
           ],
           "isUnique": false
         },
-        "skill_version_idx_workspace": {
-          "name": "skill_version_idx_workspace",
+        "skill_version_idx_project": {
+          "name": "skill_version_idx_project",
           "columns": [
             "tenantId",
-            "workspaceId"
+            "projectId"
           ],
           "isUnique": false
         },
@@ -3196,19 +3094,6 @@
         }
       },
       "foreignKeys": {
-        "skill-versions_workspaceId_workspaces_id_fk": {
-          "name": "skill-versions_workspaceId_workspaces_id_fk",
-          "tableFrom": "skill-versions",
-          "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspaceId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
         "skill-versions_projectId_projects_id_fk": {
           "name": "skill-versions_projectId_projects_id_fk",
           "tableFrom": "skill-versions",
@@ -3219,7 +3104,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "set null",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         },
         "skill-versions_skillId_skills_id_fk": {
@@ -3384,8 +3269,8 @@
           "notNull": true,
           "autoincrement": false
         },
-        "workspaceId": {
-          "name": "workspaceId",
+        "projectId": {
+          "name": "projectId",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -3507,11 +3392,11 @@
           ],
           "isUnique": false
         },
-        "sprint_item_idx_workspace": {
-          "name": "sprint_item_idx_workspace",
+        "sprint_item_idx_project": {
+          "name": "sprint_item_idx_project",
           "columns": [
             "tenantId",
-            "workspaceId"
+            "projectId"
           ],
           "isUnique": false
         },
@@ -3887,13 +3772,6 @@
           "notNull": true,
           "autoincrement": false
         },
-        "workspaceId": {
-          "name": "workspaceId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
         "projectId": {
           "name": "projectId",
           "type": "text",
@@ -3952,14 +3830,6 @@
           ],
           "isUnique": false
         },
-        "task_comment_idx_workspace": {
-          "name": "task_comment_idx_workspace",
-          "columns": [
-            "tenantId",
-            "workspaceId"
-          ],
-          "isUnique": false
-        },
         "task_comment_idx_project": {
           "name": "task_comment_idx_project",
           "columns": [
@@ -3978,19 +3848,6 @@
         }
       },
       "foreignKeys": {
-        "task-comments_workspaceId_workspaces_id_fk": {
-          "name": "task-comments_workspaceId_workspaces_id_fk",
-          "tableFrom": "task-comments",
-          "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspaceId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
         "task-comments_projectId_projects_id_fk": {
           "name": "task-comments_projectId_projects_id_fk",
           "tableFrom": "task-comments",
@@ -4475,260 +4332,6 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}
-    },
-    "workspaces": {
-      "name": "workspaces",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "tenantId": {
-          "name": "tenantId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "scopeId": {
-          "name": "scopeId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "ownerId": {
-          "name": "ownerId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "description": {
-          "name": "description",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "sharingEnabled": {
-          "name": "sharingEnabled",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": true
-        },
-        "createdBy": {
-          "name": "createdBy",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "updatedBy": {
-          "name": "updatedBy",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "createdAt": {
-          "name": "createdAt",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "updatedAt": {
-          "name": "updatedAt",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        }
-      },
-      "indexes": {
-        "workspace_idx_tenant": {
-          "name": "workspace_idx_tenant",
-          "columns": [
-            "tenantId"
-          ],
-          "isUnique": false
-        },
-        "workspace_scope_unique": {
-          "name": "workspace_scope_unique",
-          "columns": [
-            "scopeId"
-          ],
-          "isUnique": true
-        },
-        "workspace_idx_owner": {
-          "name": "workspace_idx_owner",
-          "columns": [
-            "tenantId",
-            "ownerId"
-          ],
-          "isUnique": false
-        },
-        "workspace_owner_name_tenant_unique": {
-          "name": "workspace_owner_name_tenant_unique",
-          "columns": [
-            "tenantId",
-            "ownerId",
-            "lower(\"name\")"
-          ],
-          "isUnique": true
-        }
-      },
-      "foreignKeys": {
-        "workspaces_scopeId_scopes_id_fk": {
-          "name": "workspaces_scopeId_scopes_id_fk",
-          "tableFrom": "workspaces",
-          "tableTo": "scopes",
-          "columnsFrom": [
-            "scopeId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "restrict",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "workspace-members": {
-      "name": "workspace-members",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "tenantId": {
-          "name": "tenantId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "workspaceId": {
-          "name": "workspaceId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "userId": {
-          "name": "userId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "role": {
-          "name": "role",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "createdBy": {
-          "name": "createdBy",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "updatedBy": {
-          "name": "updatedBy",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "createdAt": {
-          "name": "createdAt",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "updatedAt": {
-          "name": "updatedAt",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        }
-      },
-      "indexes": {
-        "workspace_member_unique_user": {
-          "name": "workspace_member_unique_user",
-          "columns": [
-            "tenantId",
-            "workspaceId",
-            "userId"
-          ],
-          "isUnique": true
-        },
-        "workspace_member_idx_tenant": {
-          "name": "workspace_member_idx_tenant",
-          "columns": [
-            "tenantId"
-          ],
-          "isUnique": false
-        },
-        "workspace_member_idx_workspace": {
-          "name": "workspace_member_idx_workspace",
-          "columns": [
-            "tenantId",
-            "workspaceId"
-          ],
-          "isUnique": false
-        },
-        "workspace_member_idx_user": {
-          "name": "workspace_member_idx_user",
-          "columns": [
-            "tenantId",
-            "userId"
-          ],
-          "isUnique": false
-        }
-      },
-      "foreignKeys": {
-        "workspace-members_workspaceId_workspaces_id_fk": {
-          "name": "workspace-members_workspaceId_workspaces_id_fk",
-          "tableFrom": "workspace-members",
-          "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspaceId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
     }
   },
   "views": {},
@@ -4739,14 +4342,6 @@
     "columns": {}
   },
   "internal": {
-    "indexes": {
-      "workspace_owner_name_tenant_unique": {
-        "columns": {
-          "lower(\"name\")": {
-            "isExpression": true
-          }
-        }
-      }
-    }
+    "indexes": {}
   }
 }

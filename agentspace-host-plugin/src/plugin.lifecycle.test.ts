@@ -269,7 +269,7 @@ describe('agentspace host-plugin lifecycle guards', () => {
     })
   })
 
-  it('does not inject legacy workspace fields into scope-owned create payloads', async () => {
+  it('does not inject removed legacy scope aliases into scope-owned create payloads', async () => {
     const runner = vi.fn(async () => ({ ok: true }))
     const plugin = createAgentspacePlugin({ runner })
     const route = findRouteByOperation(plugin.manifest.routes, 'prompt.create')
@@ -303,7 +303,6 @@ describe('agentspace host-plugin lifecycle guards', () => {
     const payload = runner.mock.calls[0][1] as { data?: Record<string, unknown> }
     expect(payload.data?.scopeId).toBe('project-scope-1')
     expect(payload.data?.projectId).toBeUndefined()
-    expect(payload.data?.workspaceId).toBeUndefined()
   })
 
   it('reports runtime env readiness in health details', async () => {

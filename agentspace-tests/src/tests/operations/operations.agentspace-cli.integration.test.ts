@@ -1,7 +1,6 @@
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
-import { randomUUID } from 'node:crypto'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { ensureCliRuntimeReady, ensureVariantReady, repoVariants } from '../../config/config.js'
 import {
@@ -17,19 +16,19 @@ for (const variant of repoVariants) {
       await ensureVariantReady(variant)
     })
 
-    it('supports workspace CRUD across repo variants', async () => {
-      const workspaceName = `Agentspace Test Workspace ${Date.now()}-${Math.floor(Math.random() * 1_000_000)}`
-      const ownerId = randomUUID()
+    it('supports project CRUD across repo variants', async () => {
+      const projectName = `Agentspace Test Project ${Date.now()}-${Math.floor(Math.random() * 1_000_000)}`
+      const projectSlug = `agentspace-test-project-${Date.now()}-${Math.floor(Math.random() * 1_000_000)}`
       const created = (await runAgentspaceCli(
         [
           'tool',
           '--id',
-          'agentspace.workspace.create',
+          'agentspace.project.create',
           '--input',
           JSON.stringify({
             data: {
-              ownerId,
-              name: workspaceName,
+              name: projectName,
+              slug: projectSlug,
               description: 'Created from agentspace CLI integration tests',
               createdBy: 'agentspace-tests',
               updatedBy: 'agentspace-tests',
@@ -39,30 +38,30 @@ for (const variant of repoVariants) {
         variant.url,
       )) as { id?: string; name?: string }
 
-      const workspaceId = String(created.id ?? '')
-      expect(workspaceId).not.toBe('')
-      expect(String(created.name ?? '')).toBe(workspaceName)
+      const projectId = String(created.id ?? '')
+      expect(projectId).not.toBe('')
+      expect(String(created.name ?? '')).toBe(projectName)
 
       try {
         const loadedViaOp = (await runAgentspaceCli(
-          ['op', 'agentspace.workspace.get-by-id', '--id', workspaceId],
+          ['op', 'agentspace.project.get-by-id', '--id', projectId],
           variant.url,
         )) as { id?: string; name?: string; description?: string }
-        expect(String(loadedViaOp.id ?? '')).toBe(workspaceId)
-        expect(String(loadedViaOp.name ?? '')).toBe(workspaceName)
+        expect(String(loadedViaOp.id ?? '')).toBe(projectId)
+        expect(String(loadedViaOp.name ?? '')).toBe(projectName)
 
         const listed = await runAgentspaceCli(
-          ['workspace', 'list-workspaces', '--filter', JSON.stringify({ id: workspaceId })],
+          ['project', 'list-projects', '--filter', JSON.stringify({ id: projectId })],
           variant.url,
         )
-        expect(toItems(listed).some((item) => String(item.id ?? '') === workspaceId)).toBe(true)
+        expect(toItems(listed).some((item) => String(item.id ?? '') === projectId)).toBe(true)
 
         const updated = (await runAgentspaceCli(
           [
             'op',
-            'agentspace.workspace.update-workspace',
+            'agentspace.project.update-project',
             '--id',
-            workspaceId,
+            projectId,
             '--patch',
             JSON.stringify({
               description: 'Updated from agentspace CLI integration tests',
@@ -71,20 +70,20 @@ for (const variant of repoVariants) {
           ],
           variant.url,
         )) as { id?: string; description?: string; updatedBy?: string }
-        expect(String(updated.id ?? '')).toBe(workspaceId)
+        expect(String(updated.id ?? '')).toBe(projectId)
         expect(String(updated.description ?? '')).toBe('Updated from agentspace CLI integration tests')
         expect(String(updated.updatedBy ?? '')).toBe('agentspace-tests-updated')
       } finally {
         await runAgentspaceCli(
-          ['op', 'agentspace.workspace.remove-workspace', '--id', workspaceId],
+          ['op', 'agentspace.project.remove-project', '--id', projectId],
           variant.url,
         )
       }
     }, 180_000)
 
     it('supports skill package import/export/materialize across repo variants', async () => {
-      const workspaceName = `Agentspace Skill Package ${Date.now()}-${Math.floor(Math.random() * 1_000_000)}`
-      const ownerId = randomUUID()
+      const projectName = `Agentspace Skill Package ${Date.now()}-${Math.floor(Math.random() * 1_000_000)}`
+      const projectSlug = `agentspace-skill-package-${Date.now()}-${Math.floor(Math.random() * 1_000_000)}`
       const skillName = `skill-package-${Date.now()}`
       const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'agentspace-skill-package-'))
       const outputDir = path.join(tempRoot, 'materialized')
@@ -101,22 +100,22 @@ for (const variant of repoVariants) {
         '- Verify canonical skill package import/export/materialize flow.',
       ].join('\n')
 
-      let workspaceId = ''
+      let projectId = ''
       let skillId = ''
       let skillVersionId = ''
 
       try {
-        const createdWorkspace = (await runAgentspaceCli(
+        const createdProject = (await runAgentspaceCli(
           [
             'tool',
             '--id',
-            'agentspace.workspace.create',
+            'agentspace.project.create',
             '--input',
             JSON.stringify({
               data: {
-                ownerId,
-                name: workspaceName,
-                description: 'Workspace for skill package integration tests',
+                name: projectName,
+                slug: projectSlug,
+                description: 'Project for skill package integration tests',
                 createdBy: 'agentspace-tests',
                 updatedBy: 'agentspace-tests',
               },
@@ -125,8 +124,8 @@ for (const variant of repoVariants) {
           variant.url,
         )) as { id?: string }
 
-        workspaceId = String(createdWorkspace.id ?? '')
-        expect(workspaceId).not.toBe('')
+        projectId = String(createdProject.id ?? '')
+        expect(projectId).not.toBe('')
 
         const imported = (await runAgentspaceCli(
           [
@@ -136,8 +135,9 @@ for (const variant of repoVariants) {
             '--input',
             JSON.stringify({
               data: {
-                workspaceId,
-                scopeType: 'global',
+                projectId,
+                scopeType: 'project',
+                scopeId: projectId,
                 createdBy: 'agentspace-tests',
                 updatedBy: 'agentspace-tests',
                 bundle: {
@@ -259,15 +259,15 @@ for (const variant of repoVariants) {
             )
           } catch {}
         }
-        if (workspaceId) {
+        if (projectId) {
           try {
             await runAgentspaceCli(
               [
                 'tool',
                 '--id',
-                'agentspace.workspace.remove-workspace',
+                'agentspace.project.remove-project',
                 '--input',
-                JSON.stringify({ id: workspaceId }),
+                JSON.stringify({ id: projectId }),
               ],
               variant.url,
             )
@@ -292,10 +292,9 @@ describe('agentspace-cli default sqlite fallback', () => {
       HOME: tempHome,
       USERPROFILE: tempHome,
     }
-    const ownerId = randomUUID()
-    const workspaceName = `Agentspace Default SQLite ${Date.now()}`
+    const projectName = `Agentspace Default SQLite ${Date.now()}`
 
-    let workspaceId = ''
+    let projectId = ''
 
     try {
       expect(fs.existsSync(localDbPath)).toBe(false)
@@ -304,13 +303,12 @@ describe('agentspace-cli default sqlite fallback', () => {
         [
           'tool',
           '--id',
-          'agentspace.workspace.create',
+          'agentspace.project.create',
           '--input',
           JSON.stringify({
             data: {
-              ownerId,
-              name: workspaceName,
-              description: 'Default sqlite fallback workspace',
+              name: projectName,
+              description: 'Default sqlite fallback project',
               createdBy: 'agentspace-tests',
               updatedBy: 'agentspace-tests',
             },
@@ -319,19 +317,19 @@ describe('agentspace-cli default sqlite fallback', () => {
         isolatedEnv,
       )) as { id?: string }
 
-      workspaceId = String(created.id ?? '')
-      expect(workspaceId).not.toBe('')
+      projectId = String(created.id ?? '')
+      expect(projectId).not.toBe('')
       expect(fs.existsSync(localDbPath)).toBe(true)
 
       const listed = await runAgentspaceCliWithoutRepo(
-        ['workspace', 'list-workspaces', '--filter', JSON.stringify({ id: workspaceId })],
+        ['project', 'list-projects', '--filter', JSON.stringify({ id: projectId })],
         isolatedEnv,
       )
-      expect(toItems(listed).some((item) => String(item.id ?? '') === workspaceId)).toBe(true)
+      expect(toItems(listed).some((item) => String(item.id ?? '') === projectId)).toBe(true)
     } finally {
-      if (workspaceId) {
+      if (projectId) {
         await runAgentspaceCliWithoutRepo(
-          ['op', 'agentspace.workspace.remove-workspace', '--id', workspaceId],
+          ['op', 'agentspace.project.remove-project', '--id', projectId],
           isolatedEnv,
         )
       }

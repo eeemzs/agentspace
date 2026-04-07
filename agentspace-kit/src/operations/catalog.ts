@@ -34,7 +34,6 @@ function buildOperationsInternal(): AgentspaceOperationSpec[] {
   const operations: AgentspaceOperationSpec[] = []
 
   for (const row of AGENTSPACE_OPERATION_CATALOG_ROWS) {
-    if (row.operationId.startsWith('workspace.')) continue
     const action = row.operationId.split('.').slice(1).join('.') || 'custom'
     const operation = defineAgentspaceKitOperation({
       operationId: row.operationId,

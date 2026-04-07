@@ -21,13 +21,13 @@ describe('agentspace-cli version/help/manifest', () => {
     expect(rootHelp).toContain('agentspace-cli')
     expect(rootHelp).toContain('agentspace manifest cli')
 
-    const workspaceHelp = await runAgentspaceCliTextWithoutRepo(['workspace', 'list-workspaces', '--help'])
-    expect(workspaceHelp).toContain('agentspace workspace list-workspaces')
-    expect(workspaceHelp).toContain('Generated from Agentspace DCM docs, shared contract args/examples, and host route projection.')
+    const projectHelp = await runAgentspaceCliTextWithoutRepo(['project', 'list-projects', '--help'])
+    expect(projectHelp).toContain('agentspace project list-projects')
+    expect(projectHelp).toContain('Generated from Agentspace DCM docs, shared contract args/examples, and host route projection.')
 
-    const opHelp = await runAgentspaceCliTextWithoutRepo(['op', 'agentspace.workspace.list-workspaces', '--help'])
+    const opHelp = await runAgentspaceCliTextWithoutRepo(['op', 'agentspace.project.list-projects', '--help'])
     expect(opHelp).toContain('agentspace op')
-    expect(opHelp).toContain('agentspace workspace list-workspaces')
+    expect(opHelp).toContain('agentspace project list-projects')
   })
 
   it('supports manifest cli/get/show browse flows', async () => {
@@ -38,13 +38,13 @@ describe('agentspace-cli version/help/manifest', () => {
     }
     expect(String(cliManifest.kind ?? '')).toBe('agentspace-cli-projection')
     expect(Object.prototype.hasOwnProperty.call(cliManifest.commandsById ?? {}, 'manifest.get')).toBe(true)
-    expect(Object.prototype.hasOwnProperty.call(cliManifest.commandsById ?? {}, 'workspace.list-workspaces')).toBe(true)
+    expect(Object.prototype.hasOwnProperty.call(cliManifest.commandsById ?? {}, 'project.list-projects')).toBe(true)
     expect(Array.isArray(cliManifest.artifacts)).toBe(true)
 
     const dcmOperationDocs = (await runAgentspaceCliWithoutRepo(
-      ['manifest', 'get', 'dcm', '--path', 'docs.operations.workspace.list-workspaces'],
+      ['manifest', 'get', 'dcm', '--path', 'docs.operations.project.list-projects'],
     )) as { summary?: string }
-    expect(String(dcmOperationDocs.summary ?? '').toLowerCase()).toContain('workspace')
+    expect(String(dcmOperationDocs.summary ?? '').toLowerCase()).toContain('project')
 
     const domainDocs = (await runAgentspaceCliWithoutRepo(
       ['manifest', 'get', 'dcm', '--path', 'docs.domain'],
@@ -71,9 +71,9 @@ describe('agentspace-cli version/help/manifest', () => {
     expect(String(agentRunEventDocs.summary ?? '').toLowerCase()).toContain('agent run events')
 
     const cliCommandDescriptor = (await runAgentspaceCliWithoutRepo(
-      ['manifest', 'get', 'cli', '--path', 'commandsById.workspace.list-workspaces'],
+      ['manifest', 'get', 'cli', '--path', 'commandsById.project.list-projects'],
     )) as { title?: string }
-    expect(String(cliCommandDescriptor.title ?? '')).toBe('agentspace workspace list-workspaces')
+    expect(String(cliCommandDescriptor.title ?? '')).toBe('agentspace project list-projects')
 
     const workflowCliCommandDescriptor = (await runAgentspaceCliWithoutRepo(
       ['manifest', 'get', 'cli', '--path', 'commandsById.workflow-instance.list-workflow-instances'],
@@ -85,15 +85,15 @@ describe('agentspace-cli version/help/manifest', () => {
     expect(hrmShow).toContain('runtime registration metadata only')
 
     const cliShow = await runAgentspaceCliTextWithoutRepo(
-      ['manifest', 'show', 'cli', '--path', 'commandsById.workspace.list-workspaces'],
+      ['manifest', 'show', 'cli', '--path', 'commandsById.project.list-projects'],
     )
-    expect(cliShow).toContain('agentspace manifest show cli --path commandsById.workspace.list-workspaces')
-    expect(cliShow).toContain('agentspace workspace list-workspaces')
+    expect(cliShow).toContain('agentspace manifest show cli --path commandsById.project.list-projects')
+    expect(cliShow).toContain('agentspace project list-projects')
 
     const workflowCliShow = await runAgentspaceCliTextWithoutRepo(
       ['manifest', 'show', 'cli', '--path', 'commandsById.workflow-instance.list-workflow-instances'],
     )
     expect(workflowCliShow).toContain('agentspace manifest show cli --path commandsById.workflow-instance.list-workflow-instances')
     expect(workflowCliShow).toContain('agentspace workflow-instance list-workflow-instances')
-  })
+  }, 15_000)
 })

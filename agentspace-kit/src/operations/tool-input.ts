@@ -52,9 +52,33 @@ const inputSchemaValidatorAjv = new Ajv({
 })
 
 const inputValidatorByOperationId = new Map<AgentspaceTypedOperationId, ValidateFunction>()
+const projectContextRequirementByOperationId = new Map<
+  AgentspaceTypedOperationId,
+  { projectId: boolean; scopeId: boolean }
+>()
 
 function resolveProjectValue(input: Record<string, unknown>): string | undefined {
   return resolveProjectContextValue(input) ?? resolveProjectContextValue(toRecord(input.__hostContext))
+}
+
+function resolveRequiredProjectContextFieldsInDataArg(
+  operationId: AgentspaceTypedOperationId,
+): { projectId: boolean; scopeId: boolean } {
+  const existing = projectContextRequirementByOperationId.get(operationId)
+  if (existing) return existing
+
+  const refs = getAgentspaceOperationIoSchemaRefs(operationId)
+  const schema = getAgentspaceContractSchema(refs.inputRef)
+  const root = toRecord(schema)
+  const properties = toRecord(root.properties)
+  const dataSchema = toRecord(properties.data)
+  const required = Array.isArray(dataSchema.required) ? dataSchema.required : []
+  const requirement = {
+    projectId: required.some((field: unknown) => String(field ?? '').trim() === 'projectId'),
+    scopeId: required.some((field: unknown) => String(field ?? '').trim() === 'scopeId'),
+  }
+  projectContextRequirementByOperationId.set(operationId, requirement)
+  return requirement
 }
 
 function resolveEnvelopeArgName(args: AgentspaceRequiredArg): 'data' | 'patch' | 'input' | null {
@@ -129,6 +153,40 @@ function validateInputBySchema(
   throw new Error(`tool_input_schema_invalid:agentspace.${operationId}:${detail}`)
 }
 
+function injectProjectContextIntoDataArg(
+  operationId: AgentspaceTypedOperationId,
+  input: Record<string, unknown>,
+  argName: string,
+  rawValue: unknown,
+): unknown {
+  if (argName !== 'data') return rawValue
+
+  const requirement = resolveRequiredProjectContextFieldsInDataArg(operationId)
+  if (!requirement.projectId && !requirement.scopeId) return rawValue
+
+  if (!rawValue || typeof rawValue !== 'object' || Array.isArray(rawValue)) {
+    const missingField = requirement.projectId ? 'data.projectId' : 'data.scopeId'
+    throw new Error(toMissingRequiredArgToken(missingField))
+  }
+
+  const data = rawValue as Record<string, unknown>
+  const missingProjectId = requirement.projectId && !hasNonEmptyValue(data.projectId)
+  const missingScopeId = requirement.scopeId && !hasNonEmptyValue(data.scopeId)
+  if (!missingProjectId && !missingScopeId) return rawValue
+
+  const projectContextValue = resolveProjectValue(input)
+  if (!projectContextValue) {
+    const missingField = missingProjectId ? 'data.projectId' : 'data.scopeId'
+    throw new Error(toMissingRequiredArgToken(missingField))
+  }
+
+  return {
+    ...data,
+    ...(missingProjectId ? { projectId: projectContextValue } : {}),
+    ...(missingScopeId ? { scopeId: projectContextValue } : {}),
+  }
+}
+
 function hasRequiredOperationArg(input: Record<string, unknown>, argName: string): boolean {
   if (argName === 'projectId' || argName === 'scopeId') {
     return hasNonEmptyValue(resolveProjectValue(input))
@@ -178,11 +236,17 @@ export function parseAgentspaceToolInput<TId extends AgentspaceTypedOperationId>
       arg.name === 'projectId' || arg.name === 'scopeId'
         ? resolveProjectValue(normalizedInput)
         : normalizedInput[arg.name]
+    const normalizedRawValue = injectProjectContextIntoDataArg(
+      operationId,
+      normalizedInput,
+      arg.name,
+      rawValue,
+    )
     if (!arg.optional && !hasRequiredOperationArg(normalizedInput, arg.name)) {
       throw new Error(toMissingRequiredArgToken(arg.name))
     }
-    if (rawValue !== undefined) {
-      assignTypedValue<AgentspaceOperationInput<TId>>(typed, arg.name, rawValue)
+    if (normalizedRawValue !== undefined) {
+      assignTypedValue<AgentspaceOperationInput<TId>>(typed, arg.name, normalizedRawValue)
     }
   }
 
