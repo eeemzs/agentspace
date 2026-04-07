@@ -13,7 +13,6 @@ export const ibmProjectKeys = [
   'createdAt',
   'updatedAt',
   'scopeId',
-  'workspaceId',
   'name',
   'description',
   'tags',

@@ -1,11 +1,9 @@
 import { z } from 'zod'
 
-export const SCOPE_TYPES = ['global', 'workspace', 'project'] as const
+export const SCOPE_TYPES = ['project'] as const
 export type ScopeType = (typeof SCOPE_TYPES)[number]
 export const SCOPE_RESOLUTION_TYPES = ['explicit', 'cascade'] as const
 export type ScopeResolution = (typeof SCOPE_RESOLUTION_TYPES)[number]
-
-export const GLOBAL_SCOPE_ID = '00000000-0000-4000-8000-000000000001'
 
 export const TAG_SCOPE_TYPES = ['prompt', 'skill', 'project', 'memory-item'] as const
 export type TagScopeType = (typeof TAG_SCOPE_TYPES)[number]
@@ -15,9 +13,6 @@ export type ResourceType = (typeof RESOURCE_TYPES)[number]
 
 export const PROJECT_MEMBER_ROLES = ['owner', 'editor', 'viewer'] as const
 export type ProjectMemberRole = (typeof PROJECT_MEMBER_ROLES)[number]
-
-export const WORKSPACE_MEMBER_ROLES = ['owner', 'editor', 'viewer'] as const
-export type WorkspaceMemberRole = (typeof WORKSPACE_MEMBER_ROLES)[number]
 
 export const KANBAN_STATUS_KEYS = ['backlog', 'ready', 'in_progress', 'review', 'qa', 'done', 'blocked'] as const
 export type KanbanStatusKey = (typeof KANBAN_STATUS_KEYS)[number]

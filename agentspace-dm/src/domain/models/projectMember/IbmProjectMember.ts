@@ -12,7 +12,6 @@ export const ibmProjectMemberKeys = [
   'tenantId',
   'createdAt',
   'updatedAt',
-  'workspaceId',
   'projectId',
   'userId',
   'role',

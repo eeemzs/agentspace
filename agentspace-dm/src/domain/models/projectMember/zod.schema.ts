@@ -6,7 +6,6 @@ import { IProjectMemberZodCtx } from './resources.js'
 export const projectMemberZodSchema = z
   .object({
     ...IbmZodSchema.shape,
-    workspaceId: z.string(),
     projectId: z.string(),
     userId: z.string(),
     role: z.enum(PROJECT_MEMBER_ROLES),

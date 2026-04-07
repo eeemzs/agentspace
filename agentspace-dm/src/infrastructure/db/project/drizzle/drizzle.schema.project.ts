@@ -1,7 +1,6 @@
 ﻿import { index, jsonb, pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core'
 import { InferSelectModel } from 'drizzle-orm'
 import { scopeTable } from '../../scope/drizzle/drizzle.schema.scope.js'
-import { workspaceTable } from '../../workspace/drizzle/drizzle.schema.workspace.js'
 
 export const projectTable = pgTable(
   'projects',
@@ -11,9 +10,6 @@ export const projectTable = pgTable(
     scopeId: uuid()
       .notNull()
       .references(() => scopeTable.id, { onDelete: 'restrict' }),
-    workspaceId: uuid()
-      .notNull()
-      .references(() => workspaceTable.id, { onDelete: 'cascade' }),
     name: text().notNull(),
     description: text(),
     tags: jsonb().$type<string[]>(),
@@ -29,9 +25,8 @@ export const projectTable = pgTable(
   },
   (t) => [
     uniqueIndex('project_scope_unique').on(t.scopeId),
-    uniqueIndex('project_slug_tenant_unique').on(t.tenantId, t.workspaceId, t.slug),
+    uniqueIndex('project_slug_tenant_unique').on(t.tenantId, t.slug),
     index('project_idx_tenant').on(t.tenantId),
-    index('project_idx_workspace').on(t.tenantId, t.workspaceId),
   ]
 )
 

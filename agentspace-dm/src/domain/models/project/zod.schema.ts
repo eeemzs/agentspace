@@ -6,7 +6,6 @@ export const projectZodSchema = z
   .object({
     ...IbmZodSchema.shape,
     scopeId: z.string(),
-    workspaceId: z.string(),
     name: z.string(),
     description: z.string().optional(),
     tags: z.array(z.string()).optional(),

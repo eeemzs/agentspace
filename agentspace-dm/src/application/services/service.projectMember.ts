@@ -54,9 +54,11 @@ export class ProjectMemberService implements IProjectMemberServicePort {
           field: 'data',
         })
       ),
-      Effect.flatMap((data) => this.projectMemberRepository.create(data).pipe(
-        Effect.mapError(mapDbError({ stage, operation: 'create', factory: XfErrorFactory.createFailed }))
-      ))
+      Effect.flatMap((data) =>
+        this.projectMemberRepository.create(data).pipe(
+          Effect.mapError(mapDbError({ stage, operation: 'create', factory: XfErrorFactory.createFailed }))
+        )
+      )
     )
   }
 

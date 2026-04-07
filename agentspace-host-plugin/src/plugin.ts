@@ -13,11 +13,10 @@ import {
 } from '@aopslab/domain-kit-agentspace'
 import {
   hasNonEmptyValue,
-  isWorkspaceArgName,
   normalizeAgentspaceOperationInputForCompatibility,
   normalizeNonEmpty,
-  resolveWorkspaceAliasValue,
-  toMissingRequiredArgToken,
+  resolveProjectContextValue,
+  isProjectContextArgName,
   toRecord,
 } from '@aopslab/domain-kit-agentspace/shared'
 import {
@@ -41,20 +40,12 @@ export type {
 
 const HOST_CONTEXT_INPUT_KEYS = new Set([
   'tenantId',
-  'workspaceId',
-  'workspaceUuid',
-  'workspaceUid',
-  'workspaceName',
+  'projectId',
+  'scopeId',
   'locale',
   'fallbackLocale',
 ])
 void HOST_CONTEXT_INPUT_KEYS
-
-const DATA_WORKSPACE_FALLBACK_OPERATIONS = new Set<AgentspaceTypedOperationId>([
-  'project.create',
-  'project-path.create',
-  'project-path.upsert-project-path',
-])
 
 const inputSchemaValidatorAjv = new Ajv({
   allErrors: true,
@@ -71,7 +62,6 @@ type AgentspacePluginState = {
   routes: DomainRouteManifestEntry[]
   requiredArgsByOperationId: Map<AgentspaceTypedOperationId, AgentspaceRequiredArg>
   inputValidatorByOperationId: Map<AgentspaceTypedOperationId, ValidateFunction>
-  workspaceInDataRequirementByOperationId: Map<AgentspaceTypedOperationId, boolean>
   projectionRefreshedAt: string
   runtimeEnvVerifiedAt: string | null
   setup: {
@@ -102,7 +92,7 @@ const INVALID_REFERENCE_MESSAGE_PATTERNS = [
   /anahtarı mevcut değildir/i,
 ]
 const INVALID_REFERENCE_FAILURE_MESSAGE =
-  'Referenced workspace, project, or owner scope record was not found for the supplied ids.'
+  'Referenced project or owner scope record was not found for the supplied ids.'
 
 function buildRoutes(refresh: boolean): DomainRouteManifestEntry[] {
   return buildAgentspaceHostRouteProjection({ refresh }).map((route) => ({
@@ -130,7 +120,6 @@ function createPluginState(options: AgentspaceResolvedPluginOptions): Agentspace
     routes: buildRoutes(refresh),
     requiredArgsByOperationId: buildRequiredArgsByOperationId(refresh),
     inputValidatorByOperationId: new Map<AgentspaceTypedOperationId, ValidateFunction>(),
-    workspaceInDataRequirementByOperationId: new Map<AgentspaceTypedOperationId, boolean>(),
     projectionRefreshedAt: new Date().toISOString(),
     runtimeEnvVerifiedAt: null,
     setup: {
@@ -220,8 +209,12 @@ function validateInputBySchema(
   throw new Error(`tool_input_schema_invalid:agentspace.${operationId}:${detail}`)
 }
 
+function resolveProjectValue(input: Record<string, unknown>): string | undefined {
+  return resolveProjectContextValue(input)
+}
+
 function hasRequiredOperationArg(input: Record<string, unknown>, argName: string): boolean {
-  if (isWorkspaceArgName(argName)) return hasNonEmptyValue(resolveWorkspaceAliasValue(input))
+  if (isProjectContextArgName(argName)) return hasNonEmptyValue(resolveProjectValue(input))
   return hasNonEmptyValue(input[argName])
 }
 
@@ -233,61 +226,8 @@ function assignTypedValue<TInput>(
   ;(target as Record<string, unknown>)[key] = value
 }
 
-function requiresWorkspaceIdInDataArg(state: AgentspacePluginState, operationId: AgentspaceTypedOperationId): boolean {
-  const existing = state.workspaceInDataRequirementByOperationId.get(operationId)
-  if (existing !== undefined) return existing
-
-  const refs = getAgentspaceOperationIoSchemaRefs(operationId)
-  const schema = getAgentspaceContractSchema(refs.inputRef)
-  const root = toRecord(schema)
-  const properties = toRecord(root.properties)
-  const dataSchema = toRecord(properties.data)
-  const required = Array.isArray(dataSchema.required) ? dataSchema.required : []
-  const requiresWorkspace = required.some((field: unknown) => normalizeNonEmpty(field) === 'workspaceId')
-  state.workspaceInDataRequirementByOperationId.set(operationId, requiresWorkspace)
-  return requiresWorkspace
-}
-
-function injectWorkspaceIdIntoDataArg(
-  state: AgentspacePluginState,
-  operationId: AgentspaceTypedOperationId,
-  input: Record<string, unknown>,
-  argName: string,
-  rawValue: unknown,
-): unknown {
-  if (argName !== 'data') return rawValue
-  const needsWorkspaceInData =
-    DATA_WORKSPACE_FALLBACK_OPERATIONS.has(operationId) || requiresWorkspaceIdInDataArg(state, operationId)
-  if (!needsWorkspaceInData) return rawValue
-  if (!rawValue || typeof rawValue !== 'object' || Array.isArray(rawValue)) {
-    throw new Error(toMissingRequiredArgToken('data.workspaceId'))
-  }
-
-  const data = rawValue as Record<string, unknown>
-  if (normalizeNonEmpty(data.workspaceId)) return rawValue
-
-  const workspaceId = resolveWorkspaceAliasValue(input)
-  if (!workspaceId) {
-    throw new Error(toMissingRequiredArgToken('data.workspaceId'))
-  }
-
-  return { ...data, workspaceId }
-}
-
-function injectWorkspaceFallbacksIntoInput(
-  state: AgentspacePluginState,
-  operationId: AgentspaceTypedOperationId,
-  input: Record<string, unknown>,
-): Record<string, unknown> {
-  if (!('data' in input)) return input
-  const nextData = injectWorkspaceIdIntoDataArg(state, operationId, input, 'data', input.data)
-  if (nextData === input.data) return input
-  return { ...input, data: nextData }
-}
 void hasRequiredOperationArg
 void assignTypedValue
-void injectWorkspaceIdIntoDataArg
-void injectWorkspaceFallbacksIntoInput
 
 function isUnsafeRuntimeMessage(message: string): boolean {
   return UNSAFE_RUNTIME_MESSAGE_PATTERNS.some((pattern) => pattern.test(message))
@@ -331,7 +271,7 @@ function toExecutionReason(error: unknown, friendlyCode?: string, friendlyMessag
     }
 
     const knownCode = lower.match(
-      /\b(runtime_env_missing|plugin_contract_invalid|workspace_context_required|workspace_scope_required|missing_required_[a-z0-9_]+|invalid_[a-z0-9_]+|tool_input_schema_invalid|unknown_input_[a-z0-9_]+|not_found|unauthorized|forbidden)\b/
+      /\b(runtime_env_missing|plugin_contract_invalid|project_context_required|missing_required_[a-z0-9_]+|invalid_[a-z0-9_]+|tool_input_schema_invalid|unknown_input_[a-z0-9_]+|not_found|unauthorized|forbidden)\b/
     )
     if (knownCode) return knownCode[1]
     if (lower.includes('record not found') || lower.includes('not found')) return 'not_found'
@@ -348,7 +288,7 @@ function toErrorStatus(reason: string, message: string): number {
   if (reason === 'forbidden' || message.toLowerCase() === 'forbidden') return 403
   if (reason === 'not_found' || reason === 'invalid_reference' || /record not found/i.test(message)) return 404
   if (reason === 'conflict') return 409
-  if (reason === 'workspace_context_required' || reason === 'workspace_scope_required') return 409
+  if (reason === 'project_context_required') return 409
   if (reason === 'rate_limit') return 429
   if (reason === 'runtime_env_missing') return 503
   if (reason === 'service_unavailable') return 503
@@ -470,7 +410,7 @@ export function createAgentspacePlugin(options: AgentspacePluginOptions = {}): D
     contract: 'v1',
     domain: 'agentspace',
     version: 'v1',
-    capabilities: ['workspace', 'project', 'task', 'prompt', 'skill', 'agent'],
+    capabilities: ['project', 'task', 'prompt', 'skill', 'agent'],
     manifest: {
       domain: 'agentspace',
       version: 'v1',
@@ -530,8 +470,7 @@ export function createAgentspacePlugin(options: AgentspacePluginOptions = {}): D
         ensureRuntimeEnvReady(state, resolvedOptions.requiredRuntimeEnv, enforceRuntimeEnv)
         const scopedInput = buildContextScopedInput(inputBase, request.context, resolvedOptions.defaultTenantId)
         const normalizedInput = normalizeAgentspaceOperationInputForCompatibility(operationId, scopedInput)
-        const input = injectWorkspaceFallbacksIntoInput(state, operationId, normalizedInput)
-        const typedInput = toTypedOperationInput(state, operationId, input)
+        const typedInput = toTypedOperationInput(state, operationId, normalizedInput)
         validateInputBySchema(state, operationId, typedInput as Record<string, unknown>)
         const output = await runWithOperationTimeout(operationId, operationTimeoutMs, () =>
           runner(operationId, typedInput)

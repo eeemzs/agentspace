@@ -53,9 +53,9 @@ Canonical custom operation input:
 ```json
 {
   "data": {
-    "workspaceId": "<workspace-id>",
-    "scopeId": "<global-scope-id>",
-    "scopeType": "global",
+    "projectId": "<project-id>",
+    "scopeId": "<project-id>",
+    "scopeType": "project",
     "createdBy": "cli",
     "updatedBy": "cli",
     "bundle": {
@@ -84,9 +84,9 @@ Rules:
 
 - `data.bundle.files` must contain `SKILL.md`.
 - File paths are stored relative to the package root.
-- `workspaceId` is hosted context and resolver input, not the durable content owner.
-- `scopeId` is the canonical owner when the import targets a specific global, workspace, or project scope.
-- `scopeType=project` requires a consistent `scopeId`; `projectId` is only a bridge field when an older caller still carries project metadata.
+- `projectId` is the hosted context and resolver input.
+- `scopeId` is the canonical owner and bu projede her zaman `projectId` ile ayni degeri tasir.
+- `scopeType=project` canonical moddur.
 - The canonical tag is `skill-package`.
 
 ## Export Contract
@@ -147,7 +147,7 @@ pnpm run manifest:sync
 
 cd /Volumes/d/dev-js2/apps/aops
 aops-cli host diagnostics --reset --warmup
-aops-cli agent tools --domain agentspace --workspace-name Default
+aops-cli agent tools --domain agentspace --project-id <project-id>
 ```
 
 This is the canonical operator recipe for stale catalog, route, or tool drift.

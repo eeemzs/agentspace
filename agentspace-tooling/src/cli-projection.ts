@@ -218,7 +218,7 @@ function buildOperationArgRows(spec: AgentspaceOperationSpec): string[] {
 function buildCommonRuntimeHelpRows(): string[] {
   return [
     '--repo-url <postgres-url>  Override repository URL for this invocation',
-    '--workspace-id <id>  Provide workspace context for this invocation',
+    '--project-id <id>  Provide project context for this invocation',
     '--tenant-id <uuid>  Override tenant id for this invocation',
     '--execution-mode <host|tooling>  Force host or tooling execution mode',
     '--log-level <level>  Override log level for this invocation',
@@ -281,7 +281,7 @@ function buildGeneratedCommandForms(operationId: string): { command: string[]; a
 function buildRootCommandDescriptor(): AgentspaceCliCommandDescriptor {
   const sections: AgentspaceCliHelpSection[] = []
   appendSection(sections, 'Purpose', [
-    'agentspace-cli is a standalone runtime for workspace-scoped agent data such as projects, prompts, tasks, skills, memory, chat, and runtime records.',
+    'agentspace-cli is a standalone runtime for project-scoped agent data such as projects, prompts, tasks, skills, memory, chat, and runtime records.',
     'DCM is canonical. CLI/help/agent/routes are derived projections. HRM is registration-only metadata.',
   ])
   appendSection(sections, 'Usage', [
@@ -301,17 +301,17 @@ function buildRootCommandDescriptor(): AgentspaceCliCommandDescriptor {
     'agentspace version',
   ])
   appendSection(sections, 'Generated sugar commands', [
-    'agentspace workspace list-workspaces --workspace-id <id>',
-    'agentspace project create --data <json> --workspace-id <id>',
-    'agentspace task list-tasks --filter <json> --workspace-id <id>',
+    'agentspace project list-projects',
+    'agentspace project create --data <json>',
+    'agentspace task list-tasks --filter <json> --project-id <id>',
   ])
   appendSection(sections, 'Runtime options', buildCommonRuntimeHelpRows())
   appendSection(sections, 'Examples', [
     'agentspace manifest cli',
-    'agentspace manifest get dcm --path docs.operations.workspace.list-workspaces',
+    'agentspace manifest get dcm --path docs.operations.project.list-projects',
     'agentspace manifest show hrm',
-    'agentspace workspace list-workspaces --help',
-    'agentspace op agentspace.workspace.list-workspaces --workspace-id <id>',
+    'agentspace project list-projects --help',
+    'agentspace op agentspace.project.list-projects --project-id <id>',
   ])
 
   return createCommandDescriptor({
@@ -437,8 +437,8 @@ function buildManifestCommandDescriptors(): AgentspaceCliCommandDescriptor[] {
       [
         'agentspace manifest get <artifact>',
         'agentspace manifest get <artifact> --path <dot.path>',
-        'agentspace manifest get dcm --path docs.operations.workspace.list-workspaces',
-        'agentspace manifest get cli --path commandsById.workspace.list-workspaces',
+        'agentspace manifest get dcm --path docs.operations.project.list-projects',
+        'agentspace manifest get cli --path commandsById.project.list-projects',
       ],
       ['Print raw JSON from a selected manifest artifact or sub-path.'],
     ),
@@ -452,7 +452,7 @@ function buildManifestCommandDescriptors(): AgentspaceCliCommandDescriptor[] {
         'agentspace manifest show <artifact>',
         'agentspace manifest show <artifact> --path <dot.path>',
         'agentspace manifest show hrm',
-        'agentspace manifest show dcm --path docs.operations.workspace.list-workspaces',
+        'agentspace manifest show dcm --path docs.operations.project.list-projects',
       ],
       ['Render a selected manifest artifact or sub-path as human-readable text.'],
     ),
@@ -498,7 +498,7 @@ function buildToolCommandDescriptor(): AgentspaceCliCommandDescriptor {
   const sections: AgentspaceCliHelpSection[] = []
   appendSection(sections, 'Usage', [
     'agentspace tool --id <tool-or-operation-id> --input <json|@file>',
-    'agentspace tool --id agentspace.workspace.list-workspaces --help',
+    'agentspace tool --id agentspace.project.list-projects --help',
     'agentspace tool --help',
   ])
   appendSection(sections, 'Purpose', [
@@ -524,16 +524,16 @@ function buildOpCommandDescriptor(): AgentspaceCliCommandDescriptor {
   const sections: AgentspaceCliHelpSection[] = []
   appendSection(sections, 'Usage', [
     'agentspace op <operation-or-tool-id> [--input <json|@file>] [--arg value]',
-    'agentspace op agentspace.workspace.list-workspaces --help',
+    'agentspace op agentspace.project.list-projects --help',
     'agentspace op --help',
   ])
   appendSection(sections, 'Purpose', [
     'Invoke canonical operations directly by operation id or tool id.',
-    'Workspace-scoped operations should receive either explicit workspace input or --workspace-id context.',
+    'Project-scoped operations should receive either explicit project input or --project-id context.',
   ])
   appendSection(sections, 'Options', [
     '--input <json|@file>  Exact operation input payload',
-    'Or provide generated flags that match operation args such as --workspace-id or --filter',
+    'Or provide generated flags that match operation args such as --project-id or --filter',
     ...buildCommonRuntimeHelpRows(),
   ])
   return createCommandDescriptor({
