@@ -23,7 +23,7 @@ function printUsage() {
       '',
       'Examples:',
       '  pnpm --filter @aopslab/domain-tests-agentspace run test:matrix -- --repos=sqlite --runner=node',
-      '  pnpm --filter @aopslab/domain-tests-agentspace run test:matrix -- --repos=pg,sqlite --runner=tsx -- -t "supports workspace CRUD across repo variants"',
+      '  pnpm --filter @aopslab/domain-tests-agentspace run test:matrix -- --repos=pg,sqlite --runner=tsx -- -t "supports project CRUD across repo variants"',
       '',
     ].join('\n'),
   )

@@ -79,7 +79,6 @@ function toPreferredResourceIdArg(resourceTag: string | undefined): string | nul
 }
 
 const CONTEXT_ID_ARG_NAMES = new Set([
-  'workspaceid',
   'tenantid',
   'userid',
   'ownerid',

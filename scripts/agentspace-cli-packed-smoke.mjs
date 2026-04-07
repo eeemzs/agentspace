@@ -304,7 +304,6 @@ function main() {
 
   let runRoot = ''
   let runStatus = 'failed'
-  let createdWorkspaceId = ''
   let createdProjectId = ''
   let cleanupRunner = null
 
@@ -472,12 +471,6 @@ function main() {
     if (cleanupRunner && createdProjectId) {
       try {
         cleanupRunner.runRuntime('cleanup-project-delete', ['project', 'remove-project', '--id', createdProjectId])
-      } catch {}
-    }
-
-    if (cleanupRunner && createdWorkspaceId) {
-      try {
-        cleanupRunner.runRuntime('cleanup-workspace-delete', ['workspace', 'remove-workspace', '--id', createdWorkspaceId])
       } catch {}
     }
 

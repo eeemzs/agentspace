@@ -267,7 +267,7 @@ describe('MemoryItemService', () => {
     expect(result.bootstrapGuidance).toEqual(['Always read /docs/pagination.md before touching cursor pagination.'])
     expect(result.relatedMemory.map((entry) => entry.id)).toEqual(['mem-exact', 'mem-decision'])
     expect(result.relatedMemory.map((entry) => entry.id)).not.toContain('mem-exact-older')
-    expect(result.relatedMemory.map((entry) => entry.id)).not.toContain('mem-workspace-noise')
+    expect(result.relatedMemory.map((entry) => entry.id)).not.toContain('mem-scope-noise')
     expect(result.relatedMemory.map((entry) => entry.id)).not.toContain('mem-sticky-new')
     expect(result.nextActions).toEqual(['Open pagination adapter tests first.'])
     expect(result.recommendedRefs).toEqual([{ kind: 'doc', uri: '/docs/pagination.md', documentVersionId: 'docver-1', sectionId: 'section-1' }])
@@ -305,12 +305,12 @@ describe('MemoryItemService', () => {
         updatedAt: '2026-03-01T00:00:00.000Z',
       },
       {
-        id: 'mem-workspace-noise',
+        id: 'mem-scope-noise',
         scopeId: 'scope-project-1',
         kind: 'resume',
-        content: 'Workspace-wide note.',
+        content: 'Cross-scope note.',
         sourceType: 'aops.smoke',
-        sourceId: 'workspace-1',
+        sourceId: 'scope-project-1',
         updatedAt: '2026-04-01T07:00:00.000Z',
       },
     ]))
@@ -333,7 +333,7 @@ describe('MemoryItemService', () => {
     expect(result.relatedMemory.map((entry) => entry.id)).toEqual(['mem-project-rule', 'mem-project-resume'])
     expect(result.nextActions).toEqual(['Rerun project smoke before PR.'])
     expect(result.resumeSummary).toContain('Project carry-forward')
-    expect(result.relatedMemory.map((entry) => entry.id)).not.toContain('mem-workspace-noise')
+    expect(result.relatedMemory.map((entry) => entry.id)).not.toContain('mem-scope-noise')
   })
 
   it('prefers newer sticky guidance and keeps bootstrap guidance outside relatedMemory', async () => {
