@@ -12,7 +12,7 @@ export const ibmAgentRunKeys = [
   'tenantId',
   'createdAt',
   'updatedAt',
-  'workspaceId',
+  'scopeId',
   'projectId',
   'agentSessionId',
   'taskId',

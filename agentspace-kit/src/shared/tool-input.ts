@@ -1,6 +1,6 @@
 type ToolInputRecord = Record<string, unknown>
 
-export const WORKSPACE_ALIAS_KEYS = ['workspaceId', 'workspaceUuid', 'workspaceUid', 'workspaceName'] as const
+export const PROJECT_CONTEXT_KEYS = ['projectId', 'scopeId'] as const
 
 export function toRecord(input: unknown): ToolInputRecord {
   if (!input || typeof input !== 'object' || Array.isArray(input)) return {}
@@ -21,21 +21,20 @@ export function hasNonEmptyValue(value: unknown): boolean {
   return true
 }
 
-export function resolveWorkspaceAliasValue(input: ToolInputRecord): string | undefined {
+export function resolveProjectContextValue(input: ToolInputRecord): string | undefined {
+  return normalizeNonEmpty(input.projectId) ?? normalizeNonEmpty(input.scopeId)
+}
+
+export function isProjectContextArgName(argName: string): boolean {
   return (
-    normalizeNonEmpty(input.workspaceId) ??
-    normalizeNonEmpty(input.workspaceUuid) ??
-    normalizeNonEmpty(input.workspaceUid) ??
-    normalizeNonEmpty(input.workspaceName)
+    argName === 'projectId' ||
+    argName === 'scopeId' ||
+    argName === 'data.projectId' ||
+    argName === 'data.scopeId'
   )
 }
 
-export function isWorkspaceArgName(argName: string): boolean {
-  return argName === 'workspaceId' || argName === 'data.workspaceId'
-}
-
 export function toMissingRequiredArgToken(argName: string): string {
-  if (isWorkspaceArgName(argName)) return 'workspace_context_required'
+  if (isProjectContextArgName(argName)) return 'project_context_required'
   return `missing_required_arg:${argName}`
 }
-

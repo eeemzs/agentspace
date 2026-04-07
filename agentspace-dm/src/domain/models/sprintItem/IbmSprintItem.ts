@@ -12,7 +12,7 @@ export const ibmSprintItemKeys = [
   'tenantId',
   'createdAt',
   'updatedAt',
-  'workspaceId',
+  'projectId',
   'sprintId',
   'title',
   'status',

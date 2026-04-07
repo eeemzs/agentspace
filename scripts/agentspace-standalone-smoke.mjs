@@ -373,54 +373,22 @@ async function main() {
     const cliManifest = parseJsonOutput(
       run(
         process.execPath,
-        [cliMainPath, 'manifest', 'get', 'cli', '--path', 'commandsById.workspace.list-workspaces'],
+        [cliMainPath, 'manifest', 'get', 'cli', '--path', 'commandsById.project.list-projects'],
         { env, capture: true, redactions },
       ).stdout,
-      'manifest_get_cli_workspace_list',
+      'manifest_get_cli_project_list',
     )
-    assert(String(cliManifest.title ?? '') === 'agentspace workspace list-workspaces', 'cli_manifest_workspace_list_title_mismatch')
+    assert(String(cliManifest.title ?? '') === 'agentspace project list-projects', 'cli_manifest_project_list_title_mismatch')
 
     const listedDefault = parseJsonOutput(
       run(
         process.execPath,
-        [cliMainPath, 'workspace', 'list-workspaces', '--workspace-id', 'default'],
+        [cliMainPath, 'project', 'list-projects'],
         { env, capture: true, redactions },
       ).stdout,
-      'workspace_list_default',
+      'project_list_default',
     )
-    assert(Array.isArray(listedDefault) || toItems(listedDefault).length >= 0, 'workspace_list_default_should_return_collection')
-
-    const workspaceName = `Agentspace Standalone Smoke Workspace ${Date.now()}`
-    const createdWorkspace = parseJsonOutput(
-      run(
-        process.execPath,
-        [
-          cliMainPath,
-          'workspace',
-          'create',
-          '--data',
-          JSON.stringify({
-            ownerId: defaultWorkspaceOwnerId,
-            name: workspaceName,
-          }),
-        ],
-        { env, capture: true, redactions },
-      ).stdout,
-      'workspace_create',
-    )
-    const workspaceId = extractEntityId(createdWorkspace)
-    assert(workspaceId.length > 0, 'workspace_create_missing_id')
-
-    const listedWorkspace = parseJsonOutput(
-      run(
-        process.execPath,
-        [cliMainPath, 'workspace', 'list-workspaces', '--filter', JSON.stringify({ id: workspaceId })],
-        { env, capture: true, redactions },
-      ).stdout,
-      'workspace_list_created',
-    )
-    const listedItems = toItems(listedWorkspace)
-    assert(listedItems.some((item) => String(item?.id ?? '') === workspaceId), 'workspace_list_missing_created_record')
+    assert(Array.isArray(listedDefault) || toItems(listedDefault).length >= 0, 'project_list_default_should_return_collection')
 
     const projectName = `Agentspace Standalone Smoke Project ${Date.now()}`
     const createdProject = parseJsonOutput(
@@ -430,8 +398,6 @@ async function main() {
           cliMainPath,
           'project',
           'create',
-          '--workspace-id',
-          workspaceId,
           '--data',
           JSON.stringify({ name: projectName }),
         ],
@@ -445,7 +411,6 @@ async function main() {
     const report = {
       tempRoot: runRoot,
       repoDialect,
-      workspaceId,
       projectId,
       cliManifestTitle: cliManifest.title,
     }

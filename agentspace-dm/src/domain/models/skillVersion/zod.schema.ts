@@ -16,8 +16,7 @@ export const skillVersionFileZodSchema = z.object({
 export const skillVersionZodSchema = z
   .object({
     ...IbmZodSchema.shape,
-    workspaceId: z.string(),
-    projectId: z.string().optional(),
+    projectId: z.string(),
     skillId: z.string(),
     version: z.number().int().min(1),
     status: z.enum(SKILL_VERSION_STATUSES),

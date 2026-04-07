@@ -12,7 +12,6 @@ export const ibmActivityItemKeys = [
   'createdAt',
   'updatedAt',
   'scopeId',
-  'workspaceId',
   'projectId',
   'sourceKind',
   'sourceId',

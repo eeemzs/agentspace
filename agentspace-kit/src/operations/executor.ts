@@ -9,8 +9,7 @@ import type { AgentspaceKitServices } from '../domain-services/types.js'
 import { clearAgentspaceKitEnvConfigCache, getAgentspaceKitEnvConfig } from '../config/config.js'
 import { hardDeleteAgentspaceProjectCascade } from '../calls/project-delete.js'
 import {
-  normalizeNonEmpty,
-  resolveWorkspaceAliasValue,
+  resolveProjectContextValue,
   toMissingRequiredArgToken,
   toRecord,
 } from '../shared/tool-input.js'
@@ -28,13 +27,13 @@ let cachedKit: Promise<AgentspaceKitInstance> | null = null
 let cachedKitSignature: string | null = null
 let cachedServicesSignature: string | null = null
 
-function resolveWorkspaceIdFromHostContext(payload: ToolInput): string | undefined {
+function resolveProjectIdFromHostContext(payload: ToolInput): string | undefined {
   const hostContext = toRecord(payload.__hostContext)
-  return resolveWorkspaceAliasValue(hostContext)
+  return resolveProjectContextValue(hostContext)
 }
 
-function resolveWorkspaceIdValue(payload: ToolInput): string | undefined {
-  return resolveWorkspaceAliasValue(payload) ?? resolveWorkspaceIdFromHostContext(payload)
+function resolveProjectIdValue(payload: ToolInput): string | undefined {
+  return resolveProjectContextValue(payload) ?? resolveProjectIdFromHostContext(payload)
 }
 
 function parseJsonValue(value: unknown): unknown {
@@ -232,13 +231,11 @@ async function runSpecialOperation(operation: AgentspaceOperationContract, paylo
     throw new Error(`unknown_agentspace_special_operation:${operation.operationId}`)
   }
 
-  const workspaceId = resolveWorkspaceIdValue(payload)
-  const projectId = normalizeNonEmpty(payload.projectId)
-  if (!workspaceId) throw new Error(toMissingRequiredArgToken('workspaceId'))
+  const projectId = resolveProjectIdValue(payload)
   if (!projectId) throw new Error(toMissingRequiredArgToken('projectId'))
 
   const kit = await getKit()
-  return hardDeleteAgentspaceProjectCascade({ kit, workspaceId, projectId })
+  return hardDeleteAgentspaceProjectCascade({ kit, projectId })
 }
 
 async function runResolvedOperation(operation: AgentspaceOperationContract, input: unknown): Promise<unknown> {
@@ -265,8 +262,8 @@ async function runResolvedOperation(operation: AgentspaceOperationContract, inpu
   const args: unknown[] = []
   for (const arg of operation.args) {
     const rawValue =
-      arg.name === 'workspaceId'
-        ? resolveWorkspaceIdValue(payload)
+      arg.name === 'projectId' || arg.name === 'scopeId'
+        ? resolveProjectIdValue(payload)
         : payload[arg.name]
     const normalized = normalizeArgValue(arg.name, rawValue)
     if (normalized === undefined && arg.optional !== true) {

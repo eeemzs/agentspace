@@ -37,7 +37,7 @@ type ParsedArgv = {
 
 type RuntimeContext = {
   tenantId: string
-  workspaceId?: string
+  projectId?: string
 }
 
 type AgentspaceOperationSpec = ReturnType<typeof listAgentspaceToolingOperations>[number]
@@ -325,8 +325,8 @@ function buildGeneratedOperationInput(
   for (const arg of operation.args) {
     const rawValue = getOptionValueByAnyKey(parsed, toOptionKeyCandidatesFromArgName(arg.name))
     if (rawValue === undefined) {
-      if (arg.name === 'workspaceId' && runtime.workspaceId) {
-        input.workspaceId = runtime.workspaceId
+      if ((arg.name === 'projectId' || arg.name === 'scopeId') && runtime.projectId) {
+        input[arg.name] = runtime.projectId
         continue
       }
       if (!arg.optional) {
@@ -646,8 +646,8 @@ function buildManifestShowLines(
     appendTextSection(lines, 'Source of Truth', projection.sourceOfTruth.notes)
     appendTextSection(lines, 'Browse', [
       'agentspace manifest get cli --path commandsById.tool',
-      'agentspace manifest get cli --path commandsById.workspace.list-workspaces',
-      'agentspace manifest show cli --path commandsById.workspace.list-workspaces',
+      'agentspace manifest get cli --path commandsById.project.list-projects',
+      'agentspace manifest show cli --path commandsById.project.list-projects',
     ])
     appendTextSection(lines, 'Commands', commands.map((command: AgentspaceCliCommandDescriptor) => {
       const summary = normalizeNonEmptyString(command.summary)
@@ -692,10 +692,10 @@ function resolveExecutionMode(): AgentspaceExecutionMode {
 }
 
 function buildHostRequestContext(): DomainRequest['context'] {
-  const workspaceId = normalizeNonEmptyString(process.env.AGENTSPACE_WORKSPACE_ID)
+  const projectId = normalizeNonEmptyString(process.env.AGENTSPACE_PROJECT_ID)
   return {
     tenantId: normalizeNonEmptyString(process.env.TENANT_ID) ?? DEFAULT_TENANT_AS_UUID_STRING,
-    ...(workspaceId ? { workspaceId } : {}),
+    ...(projectId ? { projectId } : {}),
     locale: normalizeNonEmptyString(process.env.AGENTSPACE_LOCALE) ?? 'tr',
     fallbackLocale: normalizeNonEmptyString(process.env.AGENTSPACE_FALLBACK_LOCALE) ?? 'en',
     principal: null,
@@ -871,14 +871,14 @@ function buildRuntimeContext(parsed: ParsedArgv): RuntimeContext {
   }
 
   const tenantId = getStringOption(parsed, 'tenant-id') ?? process.env.TENANT_ID ?? DEFAULT_TENANT_AS_UUID_STRING
-  const workspaceId = getStringOption(parsed, 'workspace-id') ?? process.env.AGENTSPACE_WORKSPACE_ID
+  const projectId = getStringOption(parsed, 'project-id') ?? process.env.AGENTSPACE_PROJECT_ID
   const logLevel = getStringOption(parsed, 'log-level')
 
   process.env.TENANT_ID = tenantId
-  if (workspaceId) process.env.AGENTSPACE_WORKSPACE_ID = workspaceId
+  if (projectId) process.env.AGENTSPACE_PROJECT_ID = projectId
   if (logLevel) process.env.LOG_LEVEL = logLevel
 
-  return { tenantId, ...(workspaceId ? { workspaceId } : {}) }
+  return { tenantId, ...(projectId ? { projectId } : {}) }
 }
 
 async function handleManifest(parsed: ParsedArgv): Promise<void> {

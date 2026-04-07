@@ -6,7 +6,7 @@ export const sprintItemTable = pgTable(
   {
     id: uuid().primaryKey().defaultRandom(),
     tenantId: text().notNull(),
-    workspaceId: uuid().notNull(),
+    projectId: uuid().notNull(),
     sprintId: uuid().notNull(),
     title: text().notNull(),
     status: text().notNull(),
@@ -25,7 +25,7 @@ export const sprintItemTable = pgTable(
   (t) => [
     uniqueIndex('sprint_item_position_unique').on(t.tenantId, t.sprintId, t.position),
     index('sprint_item_idx_tenant').on(t.tenantId),
-    index('sprint_item_idx_workspace').on(t.tenantId, t.workspaceId),
+    index('sprint_item_idx_project').on(t.tenantId, t.projectId),
     index('sprint_item_idx_sprint').on(t.tenantId, t.sprintId),
   ]
 )

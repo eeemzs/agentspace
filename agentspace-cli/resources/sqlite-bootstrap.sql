@@ -1,7 +1,7 @@
 CREATE TABLE `agent-runs` (
 	`id` text PRIMARY KEY NOT NULL,
 	`tenantId` text NOT NULL,
-	`workspaceId` text NOT NULL,
+	`scopeId` text NOT NULL,
 	`projectId` text,
 	`agentSessionId` text NOT NULL,
 	`taskId` text,
@@ -23,14 +23,13 @@ CREATE TABLE `agent-runs` (
 	`meta` text,
 	`createdAt` integer,
 	`updatedAt` integer,
-	FOREIGN KEY (`workspaceId`) REFERENCES `workspaces`(`id`) ON UPDATE no action ON DELETE cascade,
 	FOREIGN KEY (`projectId`) REFERENCES `projects`(`id`) ON UPDATE no action ON DELETE set null,
 	FOREIGN KEY (`agentSessionId`) REFERENCES `agent-sessions`(`id`) ON UPDATE no action ON DELETE cascade,
 	FOREIGN KEY (`taskId`) REFERENCES `tasks`(`id`) ON UPDATE no action ON DELETE set null
 );
 --> statement-breakpoint
 CREATE INDEX `agent_run_idx_tenant` ON `agent-runs` (`tenantId`);--> statement-breakpoint
-CREATE INDEX `agent_run_idx_workspace` ON `agent-runs` (`tenantId`,`workspaceId`);--> statement-breakpoint
+CREATE INDEX `agent_run_idx_scope` ON `agent-runs` (`tenantId`,`scopeId`);--> statement-breakpoint
 CREATE INDEX `agent_run_idx_session_started` ON `agent-runs` (`tenantId`,`agentSessionId`,`startedAt`);--> statement-breakpoint
 CREATE INDEX `agent_run_idx_task_started` ON `agent-runs` (`tenantId`,`taskId`,`startedAt`);--> statement-breakpoint
 CREATE INDEX `agent_run_idx_project` ON `agent-runs` (`tenantId`,`projectId`);--> statement-breakpoint
@@ -94,7 +93,7 @@ CREATE INDEX `artifact_idx_scope_created` ON `artifacts` (`tenantId`,`scopeId`,`
 CREATE TABLE `artifact-links` (
 	`id` text PRIMARY KEY NOT NULL,
 	`tenantId` text NOT NULL,
-	`workspaceId` text NOT NULL,
+	`scopeId` text NOT NULL,
 	`projectId` text NOT NULL,
 	`artifactId` text NOT NULL,
 	`refType` text NOT NULL,
@@ -102,19 +101,18 @@ CREATE TABLE `artifact-links` (
 	`createdBy` text,
 	`createdAt` integer,
 	`updatedAt` integer,
-	FOREIGN KEY (`workspaceId`) REFERENCES `workspaces`(`id`) ON UPDATE no action ON DELETE cascade,
 	FOREIGN KEY (`projectId`) REFERENCES `projects`(`id`) ON UPDATE no action ON DELETE cascade,
 	FOREIGN KEY (`artifactId`) REFERENCES `artifacts`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
 CREATE INDEX `artifact_link_idx_tenant` ON `artifact-links` (`tenantId`);--> statement-breakpoint
-CREATE INDEX `artifact_link_idx_workspace` ON `artifact-links` (`tenantId`,`workspaceId`);--> statement-breakpoint
+CREATE INDEX `artifact_link_idx_scope` ON `artifact-links` (`tenantId`,`scopeId`);--> statement-breakpoint
 CREATE INDEX `artifact_link_idx_artifact` ON `artifact-links` (`tenantId`,`artifactId`);--> statement-breakpoint
 CREATE INDEX `artifact_link_idx_project_ref_created` ON `artifact-links` (`tenantId`,`projectId`,`refType`,`refId`,`createdAt`);--> statement-breakpoint
 CREATE TABLE `codex-chat-messages` (
 	`id` text PRIMARY KEY NOT NULL,
 	`tenantId` text NOT NULL,
-	`workspaceId` text NOT NULL,
+	`scopeId` text NOT NULL,
 	`projectId` text,
 	`threadId` text NOT NULL,
 	`externalThreadId` text,
@@ -128,7 +126,6 @@ CREATE TABLE `codex-chat-messages` (
 	`updatedBy` text,
 	`createdAt` integer,
 	`updatedAt` integer,
-	FOREIGN KEY (`workspaceId`) REFERENCES `workspaces`(`id`) ON UPDATE no action ON DELETE cascade,
 	FOREIGN KEY (`projectId`) REFERENCES `projects`(`id`) ON UPDATE no action ON DELETE set null,
 	FOREIGN KEY (`threadId`) REFERENCES `codex-chat-threads`(`id`) ON UPDATE no action ON DELETE cascade
 );
@@ -136,11 +133,11 @@ CREATE TABLE `codex-chat-messages` (
 CREATE UNIQUE INDEX `codex_chat_message_tenant_thread_seq_unique` ON `codex-chat-messages` (`tenantId`,`threadId`,`seq`);--> statement-breakpoint
 CREATE INDEX `codex_chat_message_idx_tenant` ON `codex-chat-messages` (`tenantId`);--> statement-breakpoint
 CREATE INDEX `codex_chat_message_idx_thread_messageat` ON `codex-chat-messages` (`tenantId`,`threadId`,`messageAt`);--> statement-breakpoint
-CREATE INDEX `codex_chat_message_idx_workspace_messageat` ON `codex-chat-messages` (`tenantId`,`workspaceId`,`messageAt`);--> statement-breakpoint
+CREATE INDEX `codex_chat_message_idx_scope_messageat` ON `codex-chat-messages` (`tenantId`,`scopeId`,`messageAt`);--> statement-breakpoint
 CREATE TABLE `codex-chat-settings` (
 	`id` text PRIMARY KEY NOT NULL,
 	`tenantId` text NOT NULL,
-	`workspaceId` text NOT NULL,
+	`scopeId` text NOT NULL,
 	`userId` text NOT NULL,
 	`binaryPath` text,
 	`model` text,
@@ -153,13 +150,12 @@ CREATE TABLE `codex-chat-settings` (
 	`createdBy` text,
 	`updatedBy` text,
 	`createdAt` integer,
-	`updatedAt` integer,
-	FOREIGN KEY (`workspaceId`) REFERENCES `workspaces`(`id`) ON UPDATE no action ON DELETE cascade
+	`updatedAt` integer
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX `codex_chat_setting_tenant_workspace_user_unique` ON `codex-chat-settings` (`tenantId`,`workspaceId`,`userId`);--> statement-breakpoint
+CREATE UNIQUE INDEX `codex_chat_setting_tenant_scope_user_unique` ON `codex-chat-settings` (`tenantId`,`scopeId`,`userId`);--> statement-breakpoint
 CREATE INDEX `codex_chat_setting_idx_tenant` ON `codex-chat-settings` (`tenantId`);--> statement-breakpoint
-CREATE INDEX `codex_chat_setting_idx_workspace_user` ON `codex-chat-settings` (`tenantId`,`workspaceId`,`userId`);--> statement-breakpoint
+CREATE INDEX `codex_chat_setting_idx_scope_user` ON `codex-chat-settings` (`tenantId`,`scopeId`,`userId`);--> statement-breakpoint
 CREATE TABLE `codex-chat-threads` (
 	`id` text PRIMARY KEY NOT NULL,
 	`tenantId` text NOT NULL,
@@ -187,7 +183,7 @@ CREATE INDEX `codex_chat_thread_idx_scope_updated` ON `codex-chat-threads` (`ten
 CREATE TABLE `kanban-boards` (
 	`id` text PRIMARY KEY NOT NULL,
 	`tenantId` text NOT NULL,
-	`workspaceId` text NOT NULL,
+	`scopeId` text NOT NULL,
 	`projectId` text NOT NULL,
 	`name` text NOT NULL,
 	`description` text,
@@ -196,12 +192,12 @@ CREATE TABLE `kanban-boards` (
 );
 --> statement-breakpoint
 CREATE INDEX `kanban_board_idx_tenant` ON `kanban-boards` (`tenantId`);--> statement-breakpoint
-CREATE INDEX `kanban_board_idx_workspace` ON `kanban-boards` (`tenantId`,`workspaceId`);--> statement-breakpoint
+CREATE INDEX `kanban_board_idx_scope` ON `kanban-boards` (`tenantId`,`scopeId`);--> statement-breakpoint
 CREATE INDEX `kanban_board_idx_project` ON `kanban-boards` (`tenantId`,`projectId`);--> statement-breakpoint
 CREATE TABLE `aops-kanban-columns` (
 	`id` text PRIMARY KEY NOT NULL,
 	`tenantId` text NOT NULL,
-	`workspaceId` text NOT NULL,
+	`scopeId` text NOT NULL,
 	`projectId` text NOT NULL,
 	`boardId` text NOT NULL,
 	`name` text NOT NULL,
@@ -210,14 +206,13 @@ CREATE TABLE `aops-kanban-columns` (
 	`wipLimit` integer,
 	`createdAt` integer,
 	`updatedAt` integer,
-	FOREIGN KEY (`workspaceId`) REFERENCES `workspaces`(`id`) ON UPDATE no action ON DELETE cascade,
 	FOREIGN KEY (`projectId`) REFERENCES `projects`(`id`) ON UPDATE no action ON DELETE cascade,
 	FOREIGN KEY (`boardId`) REFERENCES `kanban-boards`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `kanban_column_position_unique` ON `aops-kanban-columns` (`tenantId`,`boardId`,`position`);--> statement-breakpoint
 CREATE INDEX `aops_kanban_column_idx_tenant` ON `aops-kanban-columns` (`tenantId`);--> statement-breakpoint
-CREATE INDEX `aops_kanban_column_idx_workspace` ON `aops-kanban-columns` (`tenantId`,`workspaceId`);--> statement-breakpoint
+CREATE INDEX `aops_kanban_column_idx_scope` ON `aops-kanban-columns` (`tenantId`,`scopeId`);--> statement-breakpoint
 CREATE INDEX `kanban_column_idx_board` ON `aops-kanban-columns` (`tenantId`,`boardId`);--> statement-breakpoint
 CREATE INDEX `kanban_column_idx_project` ON `aops-kanban-columns` (`tenantId`,`projectId`);--> statement-breakpoint
 CREATE TABLE `memory-items` (
@@ -242,7 +237,6 @@ CREATE TABLE `activity-items` (
 	`id` text PRIMARY KEY NOT NULL,
 	`tenantId` text NOT NULL,
 	`scopeId` text NOT NULL,
-	`workspaceId` text NOT NULL,
 	`projectId` text,
 	`sourceKind` text NOT NULL,
 	`sourceId` text NOT NULL,
@@ -257,14 +251,12 @@ CREATE TABLE `activity-items` (
 );
 --> statement-breakpoint
 CREATE INDEX `activity_item_idx_scope_created` ON `activity-items` (`tenantId`,`scopeId`,`createdAt`);--> statement-breakpoint
-CREATE INDEX `activity_item_idx_workspace_created` ON `activity-items` (`tenantId`,`workspaceId`,`createdAt`);--> statement-breakpoint
 CREATE INDEX `activity_item_idx_project_created` ON `activity-items` (`tenantId`,`projectId`,`createdAt`);--> statement-breakpoint
 CREATE INDEX `activity_item_idx_source_kind_created` ON `activity-items` (`tenantId`,`sourceKind`,`createdAt`);--> statement-breakpoint
 CREATE TABLE `projects` (
 	`id` text PRIMARY KEY NOT NULL,
 	`tenantId` text NOT NULL,
 	`scopeId` text NOT NULL REFERENCES `scopes`(`id`) ON UPDATE no action ON DELETE restrict,
-	`workspaceId` text NOT NULL,
 	`name` text NOT NULL,
 	`description` text,
 	`tags` text,
@@ -276,18 +268,17 @@ CREATE TABLE `projects` (
 	`createdBy` text,
 	`updatedBy` text,
 	`createdAt` integer,
-	`updatedAt` integer,
-	FOREIGN KEY (`workspaceId`) REFERENCES `workspaces`(`id`) ON UPDATE no action ON DELETE cascade
+	`updatedAt` integer
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `project_scope_unique` ON `projects` (`scopeId`);--> statement-breakpoint
-CREATE UNIQUE INDEX `project_slug_tenant_unique` ON `projects` (`tenantId`,`workspaceId`,`slug`);--> statement-breakpoint
+CREATE UNIQUE INDEX `project_slug_tenant_unique` ON `projects` (`tenantId`,`slug`);--> statement-breakpoint
 CREATE INDEX `project_idx_tenant` ON `projects` (`tenantId`);--> statement-breakpoint
-CREATE INDEX `project_idx_workspace` ON `projects` (`tenantId`,`workspaceId`);--> statement-breakpoint
+CREATE INDEX `project_idx_scope` ON `projects` (`tenantId`,`scopeId`);--> statement-breakpoint
 CREATE TABLE `project-paths` (
 	`id` text PRIMARY KEY NOT NULL,
 	`tenantId` text NOT NULL,
-	`workspaceId` text NOT NULL,
+	`scopeId` text NOT NULL,
 	`projectId` text NOT NULL,
 	`pathKey` text NOT NULL,
 	`path` text NOT NULL,
@@ -296,18 +287,17 @@ CREATE TABLE `project-paths` (
 	`updatedBy` text,
 	`createdAt` integer,
 	`updatedAt` integer,
-	FOREIGN KEY (`workspaceId`) REFERENCES `workspaces`(`id`) ON UPDATE no action ON DELETE cascade,
 	FOREIGN KEY (`projectId`) REFERENCES `projects`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `project_path_unique_key` ON `project-paths` (`tenantId`,`projectId`,`pathKey`);--> statement-breakpoint
 CREATE INDEX `project_path_idx_tenant` ON `project-paths` (`tenantId`);--> statement-breakpoint
-CREATE INDEX `project_path_idx_workspace` ON `project-paths` (`tenantId`,`workspaceId`);--> statement-breakpoint
+CREATE INDEX `project_path_idx_scope` ON `project-paths` (`tenantId`,`scopeId`);--> statement-breakpoint
 CREATE INDEX `project_path_idx_project` ON `project-paths` (`tenantId`,`projectId`);--> statement-breakpoint
 CREATE TABLE `project-members` (
 	`id` text PRIMARY KEY NOT NULL,
 	`tenantId` text NOT NULL,
-	`workspaceId` text NOT NULL,
+	`scopeId` text NOT NULL,
 	`projectId` text NOT NULL,
 	`userId` text NOT NULL,
 	`role` text NOT NULL,
@@ -315,19 +305,18 @@ CREATE TABLE `project-members` (
 	`updatedBy` text,
 	`createdAt` integer,
 	`updatedAt` integer,
-	FOREIGN KEY (`workspaceId`) REFERENCES `workspaces`(`id`) ON UPDATE no action ON DELETE cascade,
 	FOREIGN KEY (`projectId`) REFERENCES `projects`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `project_member_unique_user` ON `project-members` (`tenantId`,`projectId`,`userId`);--> statement-breakpoint
 CREATE INDEX `project_member_idx_tenant` ON `project-members` (`tenantId`);--> statement-breakpoint
-CREATE INDEX `project_member_idx_workspace` ON `project-members` (`tenantId`,`workspaceId`);--> statement-breakpoint
+CREATE INDEX `project_member_idx_scope` ON `project-members` (`tenantId`,`scopeId`);--> statement-breakpoint
 CREATE INDEX `project_member_idx_project` ON `project-members` (`tenantId`,`projectId`);--> statement-breakpoint
 CREATE INDEX `project_member_idx_user` ON `project-members` (`tenantId`,`userId`);--> statement-breakpoint
 CREATE TABLE `project-summaries` (
 	`id` text PRIMARY KEY NOT NULL,
 	`tenantId` text NOT NULL,
-	`workspaceId` text NOT NULL,
+	`scopeId` text NOT NULL,
 	`projectId` text NOT NULL,
 	`summary` text,
 	`decisions` text,
@@ -336,13 +325,12 @@ CREATE TABLE `project-summaries` (
 	`lastSessionId` text,
 	`createdAt` integer,
 	`updatedAt` integer,
-	FOREIGN KEY (`workspaceId`) REFERENCES `workspaces`(`id`) ON UPDATE no action ON DELETE cascade,
 	FOREIGN KEY (`projectId`) REFERENCES `projects`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `project_summary_project_unique` ON `project-summaries` (`tenantId`,`projectId`);--> statement-breakpoint
 CREATE INDEX `project_summary_idx_tenant` ON `project-summaries` (`tenantId`);--> statement-breakpoint
-CREATE INDEX `project_summary_idx_workspace` ON `project-summaries` (`tenantId`,`workspaceId`);--> statement-breakpoint
+CREATE INDEX `project_summary_idx_scope` ON `project-summaries` (`tenantId`,`scopeId`);--> statement-breakpoint
 CREATE TABLE `prompts` (
 	`id` text PRIMARY KEY NOT NULL,
 	`tenantId` text NOT NULL,
@@ -364,7 +352,7 @@ CREATE INDEX `prompt_idx_scope` ON `prompts` (`tenantId`,`scopeId`);--> statemen
 CREATE TABLE `prompt-versions` (
 	`id` text PRIMARY KEY NOT NULL,
 	`tenantId` text NOT NULL,
-	`workspaceId` text NOT NULL,
+	`scopeId` text NOT NULL,
 	`promptId` text NOT NULL,
 	`version` integer NOT NULL,
 	`status` text NOT NULL,
@@ -378,13 +366,12 @@ CREATE TABLE `prompt-versions` (
 	`publishedAt` integer,
 	`createdAt` integer,
 	`updatedAt` integer,
-	FOREIGN KEY (`workspaceId`) REFERENCES `workspaces`(`id`) ON UPDATE no action ON DELETE cascade,
 	FOREIGN KEY (`promptId`) REFERENCES `prompts`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `prompt_version_unique` ON `prompt-versions` (`tenantId`,`promptId`,`version`);--> statement-breakpoint
 CREATE INDEX `prompt_version_idx_tenant` ON `prompt-versions` (`tenantId`);--> statement-breakpoint
-CREATE INDEX `prompt_version_idx_workspace` ON `prompt-versions` (`tenantId`,`workspaceId`);--> statement-breakpoint
+CREATE INDEX `prompt_version_idx_scope` ON `prompt-versions` (`tenantId`,`scopeId`);--> statement-breakpoint
 CREATE INDEX `prompt_version_idx_prompt` ON `prompt-versions` (`tenantId`,`promptId`);--> statement-breakpoint
 CREATE TABLE `resources` (
 	`id` text PRIMARY KEY NOT NULL,
@@ -428,7 +415,7 @@ CREATE INDEX `skill_idx_scope` ON `skills` (`tenantId`,`scopeId`);--> statement-
 CREATE TABLE `skill-versions` (
 	`id` text PRIMARY KEY NOT NULL,
 	`tenantId` text NOT NULL,
-	`workspaceId` text NOT NULL,
+	`scopeId` text NOT NULL,
 	`projectId` text,
 	`skillId` text NOT NULL,
 	`version` integer NOT NULL,
@@ -445,14 +432,13 @@ CREATE TABLE `skill-versions` (
 	`publishedAt` integer,
 	`createdAt` integer,
 	`updatedAt` integer,
-	FOREIGN KEY (`workspaceId`) REFERENCES `workspaces`(`id`) ON UPDATE no action ON DELETE cascade,
 	FOREIGN KEY (`projectId`) REFERENCES `projects`(`id`) ON UPDATE no action ON DELETE set null,
 	FOREIGN KEY (`skillId`) REFERENCES `skills`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `skill_version_unique` ON `skill-versions` (`tenantId`,`skillId`,`version`);--> statement-breakpoint
 CREATE INDEX `skill_version_idx_tenant` ON `skill-versions` (`tenantId`);--> statement-breakpoint
-CREATE INDEX `skill_version_idx_workspace` ON `skill-versions` (`tenantId`,`workspaceId`);--> statement-breakpoint
+CREATE INDEX `skill_version_idx_scope` ON `skill-versions` (`tenantId`,`scopeId`);--> statement-breakpoint
 CREATE INDEX `skill_version_idx_skill` ON `skill-versions` (`tenantId`,`skillId`);--> statement-breakpoint
 CREATE TABLE `sprints` (
 	`id` text PRIMARY KEY NOT NULL,
@@ -476,7 +462,7 @@ CREATE INDEX `sprint_idx_scope_status_start` ON `sprints` (`tenantId`,`scopeId`,
 CREATE TABLE `sprint-items` (
 	`id` text PRIMARY KEY NOT NULL,
 	`tenantId` text NOT NULL,
-	`workspaceId` text NOT NULL,
+	`scopeId` text NOT NULL,
 	`sprintId` text NOT NULL,
 	`title` text NOT NULL,
 	`status` text NOT NULL,
@@ -495,24 +481,23 @@ CREATE TABLE `sprint-items` (
 --> statement-breakpoint
 CREATE UNIQUE INDEX `sprint_item_position_unique` ON `sprint-items` (`tenantId`,`sprintId`,`position`);--> statement-breakpoint
 CREATE INDEX `sprint_item_idx_tenant` ON `sprint-items` (`tenantId`);--> statement-breakpoint
-CREATE INDEX `sprint_item_idx_workspace` ON `sprint-items` (`tenantId`,`workspaceId`);--> statement-breakpoint
+CREATE INDEX `sprint_item_idx_scope` ON `sprint-items` (`tenantId`,`scopeId`);--> statement-breakpoint
 CREATE INDEX `sprint_item_idx_sprint` ON `sprint-items` (`tenantId`,`sprintId`);--> statement-breakpoint
 CREATE TABLE `tags` (
 	`id` text PRIMARY KEY NOT NULL,
 	`tenantId` text NOT NULL,
-	`workspaceId` text NOT NULL,
+	`scopeId` text NOT NULL,
 	`scopeType` text NOT NULL,
 	`name` text NOT NULL,
 	`createdBy` text,
 	`updatedBy` text,
 	`createdAt` integer,
-	`updatedAt` integer,
-	FOREIGN KEY (`workspaceId`) REFERENCES `workspaces`(`id`) ON UPDATE no action ON DELETE cascade
+	`updatedAt` integer
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX `tag_scope_name_tenant_unique` ON `tags` (`tenantId`,`workspaceId`,`scopeType`,`name`);--> statement-breakpoint
+CREATE UNIQUE INDEX `tag_scope_name_tenant_unique` ON `tags` (`tenantId`,`scopeId`,`scopeType`,`name`);--> statement-breakpoint
 CREATE INDEX `tag_idx_tenant` ON `tags` (`tenantId`);--> statement-breakpoint
-CREATE INDEX `tag_idx_workspace` ON `tags` (`tenantId`,`workspaceId`);--> statement-breakpoint
+CREATE INDEX `tag_idx_scope_id` ON `tags` (`tenantId`,`scopeId`);--> statement-breakpoint
 CREATE INDEX `tag_idx_scope` ON `tags` (`tenantId`,`scopeType`);--> statement-breakpoint
 CREATE TABLE `tasks` (
 	`id` text PRIMARY KEY NOT NULL,
@@ -549,7 +534,7 @@ CREATE INDEX `task_idx_parent` ON `tasks` (`tenantId`,`parentTaskId`);--> statem
 CREATE TABLE `task-comments` (
 	`id` text PRIMARY KEY NOT NULL,
 	`tenantId` text NOT NULL,
-	`workspaceId` text NOT NULL,
+	`scopeId` text NOT NULL,
 	`projectId` text NOT NULL,
 	`taskId` text NOT NULL,
 	`author` text NOT NULL,
@@ -557,13 +542,12 @@ CREATE TABLE `task-comments` (
 	`meta` text,
 	`createdAt` integer,
 	`updatedAt` integer,
-	FOREIGN KEY (`workspaceId`) REFERENCES `workspaces`(`id`) ON UPDATE no action ON DELETE cascade,
 	FOREIGN KEY (`projectId`) REFERENCES `projects`(`id`) ON UPDATE no action ON DELETE cascade,
 	FOREIGN KEY (`taskId`) REFERENCES `tasks`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
 CREATE INDEX `task_comment_idx_tenant` ON `task-comments` (`tenantId`);--> statement-breakpoint
-CREATE INDEX `task_comment_idx_workspace` ON `task-comments` (`tenantId`,`workspaceId`);--> statement-breakpoint
+CREATE INDEX `task_comment_idx_scope` ON `task-comments` (`tenantId`,`scopeId`);--> statement-breakpoint
 CREATE INDEX `task_comment_idx_project` ON `task-comments` (`tenantId`,`projectId`);--> statement-breakpoint
 CREATE INDEX `task_comment_idx_task` ON `task-comments` (`tenantId`,`taskId`);--> statement-breakpoint
 CREATE TABLE `workflow-definitions` (
@@ -648,41 +632,6 @@ CREATE INDEX `workflow_step_run_idx_workflow_step` ON `workflow-step-runs` (`ten
 CREATE INDEX `workflow_step_run_idx_instance` ON `workflow-step-runs` (`tenantId`,`workflowInstanceId`);--> statement-breakpoint
 CREATE INDEX `workflow_step_run_idx_agent_run` ON `workflow-step-runs` (`tenantId`,`agentRunId`);--> statement-breakpoint
 CREATE INDEX `workflow_step_run_idx_child_workflow` ON `workflow-step-runs` (`tenantId`,`childWorkflowId`);--> statement-breakpoint
-CREATE TABLE `workspaces` (
-	`id` text PRIMARY KEY NOT NULL,
-	`tenantId` text NOT NULL,
-	`scopeId` text NOT NULL REFERENCES `scopes`(`id`) ON UPDATE no action ON DELETE restrict,
-	`ownerId` text NOT NULL,
-	`name` text NOT NULL,
-	`description` text,
-	`sharingEnabled` integer DEFAULT true NOT NULL,
-	`createdBy` text,
-	`updatedBy` text,
-	`createdAt` integer,
-	`updatedAt` integer
-);
---> statement-breakpoint
-CREATE INDEX `workspace_idx_tenant` ON `workspaces` (`tenantId`);--> statement-breakpoint
-CREATE UNIQUE INDEX `workspace_scope_unique` ON `workspaces` (`scopeId`);--> statement-breakpoint
-CREATE INDEX `workspace_idx_owner` ON `workspaces` (`tenantId`,`ownerId`);--> statement-breakpoint
-CREATE UNIQUE INDEX `workspace_owner_name_tenant_unique` ON `workspaces` (`tenantId`,`ownerId`,lower("name"));--> statement-breakpoint
-CREATE TABLE `workspace-members` (
-	`id` text PRIMARY KEY NOT NULL,
-	`tenantId` text NOT NULL,
-	`workspaceId` text NOT NULL,
-	`userId` text NOT NULL,
-	`role` text NOT NULL,
-	`createdBy` text,
-	`updatedBy` text,
-	`createdAt` integer,
-	`updatedAt` integer,
-	FOREIGN KEY (`workspaceId`) REFERENCES `workspaces`(`id`) ON UPDATE no action ON DELETE cascade
-);
---> statement-breakpoint
-CREATE UNIQUE INDEX `workspace_member_unique_user` ON `workspace-members` (`tenantId`,`workspaceId`,`userId`);--> statement-breakpoint
-CREATE INDEX `workspace_member_idx_tenant` ON `workspace-members` (`tenantId`);--> statement-breakpoint
-CREATE INDEX `workspace_member_idx_workspace` ON `workspace-members` (`tenantId`,`workspaceId`);--> statement-breakpoint
-CREATE INDEX `workspace_member_idx_user` ON `workspace-members` (`tenantId`,`userId`);--> statement-breakpoint
 CREATE TABLE `scopes` (
 	`id` text PRIMARY KEY NOT NULL,
 	`tenantId` text NOT NULL,

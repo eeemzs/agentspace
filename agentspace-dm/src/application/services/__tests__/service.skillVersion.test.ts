@@ -33,9 +33,8 @@ describe('SkillVersionService', () => {
       Effect.succeed([
         {
           id: 'skill-1',
-          workspaceId: 'workspace-1',
-          scopeType: 'global',
-          scopeId: null,
+          scopeType: 'project',
+          scopeId: 'project-1',
           name: 'my-skill',
           description: 'Example skill',
           shortDescription: 'Example short description',
@@ -48,9 +47,8 @@ describe('SkillVersionService', () => {
     skillService.updateSkill.mockImplementation((id, patch) =>
       Effect.succeed({
         id,
-        workspaceId: 'workspace-1',
-        scopeType: 'global',
-        scopeId: null,
+        scopeType: 'project',
+        scopeId: 'project-1',
         name: 'my-skill',
         description: 'Example skill',
         shortDescription: 'Example short description',
@@ -71,8 +69,7 @@ describe('SkillVersionService', () => {
     repo.create.mockImplementation((data) =>
       Effect.succeed({
         id: 'version-4',
-        workspaceId: data.workspaceId,
-        projectId: data.projectId ?? null,
+        projectId: data.projectId,
         skillId: data.skillId,
         version: data.version,
         status: data.status,
@@ -95,9 +92,9 @@ describe('SkillVersionService', () => {
 
     const result = await Effect.runPromise(
       service.importSkillPackage({
-        workspaceId: 'workspace-1',
-        scopeId: 'global-scope-1',
-        scopeType: 'global',
+        projectId: 'project-1',
+        scopeId: 'project-1',
+        scopeType: 'project',
         createdBy: 'unit-test',
         updatedBy: 'unit-test',
         bundle: {
@@ -117,7 +114,7 @@ describe('SkillVersionService', () => {
     )
 
     expect(result.skillVersion?.version).toBe(4)
-    expect(repo.create).toHaveBeenCalledWith(expect.objectContaining({ version: 4 }))
+    expect(repo.create).toHaveBeenCalledWith(expect.objectContaining({ version: 4, projectId: 'project-1' }))
   })
 
   it('syncs currentVersionId to the highest published version even when repo order is unstable', async () => {
@@ -127,8 +124,7 @@ describe('SkillVersionService', () => {
     repo.findById.mockImplementation(() =>
       Effect.succeed({
         id: 'version-3',
-        workspaceId: 'workspace-1',
-        projectId: null,
+        projectId: 'project-1',
         skillId: 'skill-1',
         version: 3,
         status: 'draft',
@@ -141,8 +137,7 @@ describe('SkillVersionService', () => {
     repo.patchById.mockImplementation((id, patch) =>
       Effect.succeed({
         id,
-        workspaceId: 'workspace-1',
-        projectId: null,
+        projectId: 'project-1',
         skillId: 'skill-1',
         version: 3,
         status: patch.status ?? 'published',
@@ -188,8 +183,7 @@ describe('SkillVersionService', () => {
     repo.findById.mockImplementation(() =>
       Effect.succeed({
         id: 'version-9',
-        workspaceId: 'workspace-1',
-        projectId: null,
+        projectId: 'project-1',
         skillId: 'skill-1',
         version: 9,
         status: 'published',
@@ -238,8 +232,7 @@ describe('SkillVersionService', () => {
     repo.findById.mockImplementation(() =>
       Effect.succeed({
         id: 'version-1',
-        workspaceId: 'workspace-1',
-        projectId: null,
+        projectId: 'project-1',
         skillId: 'skill-1',
         version: 3,
         status: 'draft',
@@ -273,7 +266,7 @@ describe('SkillVersionService', () => {
         },
       } as any)
     )
-    skillService.getById.mockImplementation(() => Effect.succeed({ id: 'skill-1', name: 'my-skill' } as any))
+    skillService.getById.mockImplementation(() => Effect.succeed({ id: 'skill-1', name: 'my-skill', scopeId: 'project-1' } as any))
 
     const service = new SkillVersionService({
       skillVersionRepository: repo as any,
@@ -300,9 +293,11 @@ describe('SkillVersionService', () => {
     expect(result.files.map((file) => file.path)).toEqual(
       expect.arrayContaining(['SKILL.md', 'references/checklist.md'])
     )
+    expect(result.projectId).toBe('project-1')
+    expect(result.scopeId).toBe('project-1')
   })
 
-  it('normalizes null global scope fields before resource create during import', async () => {
+  it('uses project scope when creating resource during import', async () => {
     const repo = makeSkillVersionRepo()
     const skillService = makeSkillService()
     const resourceService = makeResourceService()
@@ -312,8 +307,7 @@ describe('SkillVersionService', () => {
       Effect.succeed({
         id: 'skill-1',
         scopeId: data.scopeId,
-        projectId: null,
-        scopeType: 'global',
+        scopeType: 'project',
         name: data.name,
         description: data.description,
         shortDescription: data.shortDescription,
@@ -325,10 +319,8 @@ describe('SkillVersionService', () => {
     skillService.updateSkill.mockImplementation((id, patch) =>
       Effect.succeed({
         id,
-        workspaceId: 'workspace-1',
-        projectId: null,
-        scopeType: 'global',
-        scopeId: 'global-scope-1',
+        scopeType: 'project',
+        scopeId: 'project-1',
         name: 'my-skill',
         description: 'Example skill',
         shortDescription: '# My Skill',
@@ -343,8 +335,7 @@ describe('SkillVersionService', () => {
     repo.create.mockImplementation((data) =>
       Effect.succeed({
         id: 'version-1',
-        workspaceId: data.workspaceId,
-        projectId: null,
+        projectId: data.projectId,
         skillId: data.skillId,
         version: data.version,
         status: data.status,
@@ -376,9 +367,9 @@ describe('SkillVersionService', () => {
 
     const result = await Effect.runPromise(
       service.importSkillPackage({
-        workspaceId: 'workspace-1',
-        scopeId: 'global-scope-1',
-        scopeType: 'global',
+        projectId: 'project-1',
+        scopeId: 'project-1',
+        scopeType: 'project',
         createdBy: 'unit-test',
         updatedBy: 'unit-test',
         bundle: {
@@ -399,7 +390,7 @@ describe('SkillVersionService', () => {
 
     expect(resourceService.createResource).toHaveBeenCalledTimes(1)
     expect(resourceService.createResource.mock.calls[0][0].projectId).toBeUndefined()
-    expect(resourceService.createResource.mock.calls[0][0].scopeId).toBe('global-scope-1')
+    expect(resourceService.createResource.mock.calls[0][0].scopeId).toBe('project-1')
     expect(result.resource?.id).toBe('resource-1')
   })
 })

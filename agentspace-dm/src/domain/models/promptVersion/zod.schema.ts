@@ -6,7 +6,7 @@ import { IPromptVersionZodCtx } from './resources.js'
 export const promptVersionZodSchema = z
   .object({
     ...IbmZodSchema.shape,
-    workspaceId: z.string(),
+    projectId: z.string(),
     promptId: z.string(),
     version: z.number().int().min(1),
     status: z.enum(PROMPT_VERSION_STATUSES),

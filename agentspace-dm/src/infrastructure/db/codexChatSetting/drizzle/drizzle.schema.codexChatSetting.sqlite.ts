@@ -1,16 +1,13 @@
 import { InferSelectModel } from 'drizzle-orm'
 import { randomUUID } from 'node:crypto'
 import { index, integer, text, sqliteTable, uniqueIndex } from 'drizzle-orm/sqlite-core'
-import { workspaceTableSqlite as workspaceTable } from '../../workspace/drizzle/drizzle.schema.workspace.sqlite.js'
 
 export const codexChatSettingTableSqlite = sqliteTable(
   'codex-chat-settings',
   {
     id: text().primaryKey().$defaultFn(() => randomUUID()),
     tenantId: text().notNull(),
-    workspaceId: text()
-      .notNull()
-      .references(() => workspaceTable.id, { onDelete: 'cascade' }),
+    projectId: text().notNull(),
     userId: text().notNull(),
     binaryPath: text(),
     model: text(),
@@ -33,9 +30,9 @@ export const codexChatSettingTableSqlite = sqliteTable(
     updatedAt: integer({ mode: 'timestamp_ms' }).$defaultFn(() => new Date()),
   },
   (t) => [
-    uniqueIndex('codex_chat_setting_tenant_workspace_user_unique').on(t.tenantId, t.workspaceId, t.userId),
+    uniqueIndex('codex_chat_setting_tenant_project_user_unique').on(t.tenantId, t.projectId, t.userId),
     index('codex_chat_setting_idx_tenant').on(t.tenantId),
-    index('codex_chat_setting_idx_workspace_user').on(t.tenantId, t.workspaceId, t.userId),
+    index('codex_chat_setting_idx_project_user').on(t.tenantId, t.projectId, t.userId),
   ]
 )
 

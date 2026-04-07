@@ -25,8 +25,6 @@ export type {
   IRepositoryPortProjectSummary,
   IRepositoryPortMemoryItem,
   IRepositoryPortTag,
-  IRepositoryPortWorkspace,
-  IRepositoryPortWorkspaceMember,
   IRepositoryPortProjectMember,
   IRepositoryPortProjectPath,
   IRepositoryPortWorkflowInstance,

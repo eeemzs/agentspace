@@ -872,10 +872,6 @@ export const AGENTSPACE_OPERATION_CATALOG_ROWS = [
       {
         "name": "projectId",
         "optional": false
-      },
-      {
-        "name": "workspaceId",
-        "optional": false
       }
     ]
   },
@@ -1695,10 +1691,6 @@ export const AGENTSPACE_OPERATION_CATALOG_ROWS = [
     "kind": "delete",
     "args": [
       {
-        "name": "workspaceId",
-        "optional": false
-      },
-      {
         "name": "projectId",
         "optional": false
       }
@@ -2269,7 +2261,7 @@ export const AGENTSPACE_OPERATION_CATALOG_ROWS = [
     "methodName": "importSkillPackage",
     "kind": "custom",
     "examples": [
-      "{\"data\":{\"workspaceId\":\"<workspace-id>\",\"scopeType\":\"global\",\"createdBy\":\"cli\",\"updatedBy\":\"cli\",\"bundle\":{\"sourcePath\":\"/tmp/my-skill\",\"files\":[{\"path\":\"SKILL.md\",\"kind\":\"instruction\",\"content\":\"---\\nname: my-skill\\ndescription: Example skill\\n---\\n\\n# My Skill\\n\"}]}}}"
+      "{\"data\":{\"projectId\":\"<project-id>\",\"scopeType\":\"project\",\"createdBy\":\"cli\",\"updatedBy\":\"cli\",\"bundle\":{\"sourcePath\":\"/tmp/my-skill\",\"files\":[{\"path\":\"SKILL.md\",\"kind\":\"instruction\",\"content\":\"---\\nname: my-skill\\ndescription: Example skill\\n---\\n\\n# My Skill\\n\"}]}}}"
     ],
     "args": [
       {
@@ -3470,178 +3462,4 @@ export const AGENTSPACE_OPERATION_CATALOG_ROWS = [
       }
     ]
   },
-  {
-    "toolId": "aops-workspace-member-create",
-    "operationId": "workspace-member.create",
-    "summary": "Create workspace-member.",
-    "serviceKey": "workspaceMemberService",
-    "serviceEntity": "workspace-member",
-    "methodName": "create",
-    "kind": "create",
-    "args": [
-      {
-        "name": "data",
-        "optional": false
-      }
-    ]
-  },
-  {
-    "toolId": "aops-workspace-member-get-by-id",
-    "operationId": "workspace-member.get-by-id",
-    "summary": "Get by id workspace-member.",
-    "serviceKey": "workspaceMemberService",
-    "serviceEntity": "workspace-member",
-    "methodName": "getById",
-    "kind": "get",
-    "args": [
-      {
-        "name": "id",
-        "optional": false
-      },
-      {
-        "name": "options",
-        "optional": true
-      }
-    ]
-  },
-  {
-    "toolId": "aops-workspace-member-list-workspace-members",
-    "operationId": "workspace-member.list-workspace-members",
-    "summary": "List workspace members workspace-member.",
-    "serviceKey": "workspaceMemberService",
-    "serviceEntity": "workspace-member",
-    "methodName": "listWorkspaceMembers",
-    "kind": "list",
-    "args": [
-      {
-        "name": "filter",
-        "optional": true
-      },
-      {
-        "name": "options",
-        "optional": true
-      }
-    ]
-  },
-  {
-    "toolId": "aops-workspace-member-remove-workspace-member",
-    "operationId": "workspace-member.remove-workspace-member",
-    "summary": "Remove workspace member workspace-member.",
-    "serviceKey": "workspaceMemberService",
-    "serviceEntity": "workspace-member",
-    "methodName": "removeWorkspaceMember",
-    "kind": "delete",
-    "args": [
-      {
-        "name": "id",
-        "optional": false
-      }
-    ]
-  },
-  {
-    "toolId": "aops-workspace-member-update-workspace-member",
-    "operationId": "workspace-member.update-workspace-member",
-    "summary": "Update workspace member workspace-member.",
-    "serviceKey": "workspaceMemberService",
-    "serviceEntity": "workspace-member",
-    "methodName": "updateWorkspaceMember",
-    "kind": "update",
-    "args": [
-      {
-        "name": "id",
-        "optional": false
-      },
-      {
-        "name": "patch",
-        "optional": false
-      }
-    ]
-  },
-  {
-    "toolId": "aops-workspace-create",
-    "operationId": "workspace.create",
-    "summary": "Create workspace.",
-    "serviceKey": "workspaceService",
-    "serviceEntity": "workspace",
-    "methodName": "create",
-    "kind": "create",
-    "args": [
-      {
-        "name": "data",
-        "optional": false
-      }
-    ]
-  },
-  {
-    "toolId": "aops-workspace-get-by-id",
-    "operationId": "workspace.get-by-id",
-    "summary": "Get by id workspace.",
-    "serviceKey": "workspaceService",
-    "serviceEntity": "workspace",
-    "methodName": "getById",
-    "kind": "get",
-    "args": [
-      {
-        "name": "id",
-        "optional": false
-      },
-      {
-        "name": "options",
-        "optional": true
-      }
-    ]
-  },
-  {
-    "toolId": "aops-workspace-list-workspaces",
-    "operationId": "workspace.list-workspaces",
-    "summary": "List workspaces workspace.",
-    "serviceKey": "workspaceService",
-    "serviceEntity": "workspace",
-    "methodName": "listWorkspaces",
-    "kind": "list",
-    "args": [
-      {
-        "name": "filter",
-        "optional": true
-      },
-      {
-        "name": "options",
-        "optional": true
-      }
-    ]
-  },
-  {
-    "toolId": "aops-workspace-remove-workspace",
-    "operationId": "workspace.remove-workspace",
-    "summary": "Remove workspace workspace.",
-    "serviceKey": "workspaceService",
-    "serviceEntity": "workspace",
-    "methodName": "removeWorkspace",
-    "kind": "delete",
-    "args": [
-      {
-        "name": "id",
-        "optional": false
-      }
-    ]
-  },
-  {
-    "toolId": "aops-workspace-update-workspace",
-    "operationId": "workspace.update-workspace",
-    "summary": "Update workspace workspace.",
-    "serviceKey": "workspaceService",
-    "serviceEntity": "workspace",
-    "methodName": "updateWorkspace",
-    "kind": "update",
-    "args": [
-      {
-        "name": "id",
-        "optional": false
-      },
-      {
-        "name": "patch",
-        "optional": false
-      }
-    ]
-  }
 ] as const satisfies readonly AgentspaceOperationCatalogRow[]

@@ -388,8 +388,8 @@ function main() {
     const help = runner.runStatic('help', ['--help'], 'text')
     assertFileContains(help.outputPath, 'agentspace manifest cli')
 
-    const workspaceHelp = runner.runStatic('workspace-list-help', ['workspace', 'list-workspaces', '--help'], 'text')
-    assertFileContains(workspaceHelp.outputPath, 'Generated from Agentspace DCM docs, shared contract args/examples, and host route projection.')
+    const projectHelp = runner.runStatic('project-list-help', ['project', 'list-projects', '--help'], 'text')
+    assertFileContains(projectHelp.outputPath, 'Generated from Agentspace DCM docs, shared contract args/examples, and host route projection.')
 
     const cliManifestKind = runner.runStatic(
       'manifest-get-cli-kind',
@@ -398,16 +398,16 @@ function main() {
     assert(String(cliManifestKind ?? '') === 'agentspace-cli-projection', 'cli_manifest_kind_mismatch')
 
     const dcmGet = runner.runStatic(
-      'manifest-get-dcm-workspace-list',
-      ['manifest', 'get', 'dcm', '--path', 'docs.operations.workspace.list-workspaces'],
+      'manifest-get-dcm-project-list',
+      ['manifest', 'get', 'dcm', '--path', 'docs.operations.project.list-projects'],
     ).json
-    assert(String(dcmGet.summary ?? '').includes('Workspace'), 'dcm_manifest_workspace_list_summary_missing')
+    assert(String(dcmGet.summary ?? '').includes('Project'), 'dcm_manifest_project_list_summary_missing')
 
     const cliGet = runner.runStatic(
-      'manifest-get-cli-workspace-list',
-      ['manifest', 'get', 'cli', '--path', 'commandsById.workspace.list-workspaces'],
+      'manifest-get-cli-project-list',
+      ['manifest', 'get', 'cli', '--path', 'commandsById.project.list-projects'],
     ).json
-    assert(String(cliGet.title ?? '') === 'agentspace workspace list-workspaces', 'cli_manifest_workspace_list_title_mismatch')
+    assert(String(cliGet.title ?? '') === 'agentspace project list-projects', 'cli_manifest_project_list_title_mismatch')
 
     const hrmShow = runner.runStatic('manifest-show-hrm', ['manifest', 'show', 'hrm'], 'text')
     assertFileContains(hrmShow.outputPath, 'runtime registration metadata only')
@@ -418,47 +418,19 @@ function main() {
     assert(String(hostRegistration.binary ?? '') === 'agentspace', 'host_registration_binary_mismatch')
     assert(
       Array.isArray(hostRegistration.routes) &&
-        hostRegistration.routes.some((route) => String(route?.id ?? '') === 'agentspace.workspace.list-workspaces'),
-      'host_registration_routes_missing_workspace_list',
+        hostRegistration.routes.some((route) => String(route?.id ?? '') === 'agentspace.project.list-projects'),
+      'host_registration_routes_missing_project_list',
     )
 
     assert(fs.existsSync(defaultHomeSqlitePath) === false, 'default_sqlite_should_not_preexist')
 
-    const listedDefault = runner.runRuntime(
-      'workspace-list-default',
-      ['workspace', 'list-workspaces', '--workspace-id', 'default'],
-    ).json
-    assert(Array.isArray(listedDefault), 'workspace_list_default_should_return_array')
+    const listedDefault = runner.runRuntime('project-list-default', ['project', 'list-projects']).json
+    assert(Array.isArray(listedDefault), 'project_list_default_should_return_array')
 
     if (repoDialect === 'sqlite') {
       const sqliteFilename = resolveSqliteFilename(effectiveRepoUrl)
       assert(fs.existsSync(sqliteFilename), `sqlite_repo_missing_file:${sqliteFilename}`)
     }
-
-    const workspaceName = `Agentspace Smoke Workspace ${Date.now()}`
-    const createdWorkspace = runner.runRuntime(
-      'workspace-create',
-      [
-        'workspace',
-        'create',
-        '--data',
-        JSON.stringify({
-          ownerId: defaultWorkspaceOwnerId,
-          name: workspaceName,
-        }),
-      ],
-    ).json
-    createdWorkspaceId = String(createdWorkspace.id ?? createdWorkspace.data?.id ?? '')
-    assert(createdWorkspaceId.length > 0, 'workspace_create_missing_id')
-
-    const listedWorkspace = runner.runRuntime(
-      'workspace-list-created',
-      ['workspace', 'list-workspaces', '--filter', JSON.stringify({ id: createdWorkspaceId })],
-    ).json
-    assert(
-      toItems(listedWorkspace).some((item) => String(item.id ?? '') === createdWorkspaceId),
-      'workspace_list_missing_created_record',
-    )
 
     const projectName = `Agentspace Smoke Project ${Date.now()}`
     const createdProject = runner.runRuntime(
@@ -466,11 +438,8 @@ function main() {
       [
         'project',
         'create',
-        '--workspace-id',
-        createdWorkspaceId,
         '--data',
         JSON.stringify({
-          workspaceId: createdWorkspaceId,
           name: projectName,
         }),
       ],
@@ -480,14 +449,7 @@ function main() {
 
     const listedProject = runner.runRuntime(
       'project-list-created',
-      [
-        'project',
-        'list-projects',
-        '--workspace-id',
-        createdWorkspaceId,
-        '--filter',
-        JSON.stringify({ id: createdProjectId }),
-      ],
+      ['project', 'list-projects', '--filter', JSON.stringify({ id: createdProjectId })],
     ).json
     assert(
       toItems(listedProject).some((item) => String(item.id ?? '') === createdProjectId),
@@ -500,26 +462,9 @@ function main() {
 
     const listedProjectAfterDelete = runner.runRuntime(
       'project-list-after-delete',
-      [
-        'project',
-        'list-projects',
-        '--workspace-id',
-        createdWorkspaceId,
-        '--filter',
-        JSON.stringify({ id: deletedProjectId }),
-      ],
+      ['project', 'list-projects', '--filter', JSON.stringify({ id: deletedProjectId })],
     ).json
     assert(toItems(listedProjectAfterDelete).length === 0, 'project_delete_did_not_remove_record')
-
-    runner.runRuntime('workspace-delete', ['workspace', 'remove-workspace', '--id', createdWorkspaceId])
-    const deletedWorkspaceId = createdWorkspaceId
-    createdWorkspaceId = ''
-
-    const listedWorkspaceAfterDelete = runner.runRuntime(
-      'workspace-list-after-delete',
-      ['workspace', 'list-workspaces', '--filter', JSON.stringify({ id: deletedWorkspaceId })],
-    ).json
-    assert(toItems(listedWorkspaceAfterDelete).length === 0, 'workspace_delete_did_not_remove_record')
 
     runStatus = 'passed'
     log('packaged CLI smoke passed')

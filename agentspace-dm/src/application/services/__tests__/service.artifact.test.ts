@@ -18,8 +18,7 @@ describe('ArtifactService', () => {
     const service = new ArtifactService({ artifactRepository: artifactRepo as any })
     const result = await Effect.runPromise(
       service.storeArtifact({
-        workspaceId: 'workspace-1',
-        projectId: 'project-1',
+        scopeId: 'project-1',
         artifactType: 'file',
         storagePath: 's3://bucket/file.txt',
       })
@@ -27,7 +26,7 @@ describe('ArtifactService', () => {
 
     expect(artifactRepo.create).toHaveBeenCalledTimes(1)
     const payload = artifactRepo.create.mock.calls[0][0]
-    expect(payload.projectId).toBe('project-1')
+    expect(payload.scopeId).toBe('project-1')
     expect(result.id).toBe('artifact-1')
   })
 

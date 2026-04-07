@@ -1,15 +1,12 @@
 import { boolean, index, pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core'
 import { InferSelectModel } from 'drizzle-orm'
-import { workspaceTable } from '../../workspace/drizzle/drizzle.schema.workspace.js'
 
 export const codexChatSettingTable = pgTable(
   'codex-chat-settings',
   {
     id: uuid().primaryKey().defaultRandom(),
     tenantId: text().notNull(),
-    workspaceId: uuid()
-      .notNull()
-      .references(() => workspaceTable.id, { onDelete: 'cascade' }),
+    projectId: uuid().notNull(),
     userId: text().notNull(),
     binaryPath: text(),
     model: text(),
@@ -32,9 +29,9 @@ export const codexChatSettingTable = pgTable(
     updatedAt: timestamp({ withTimezone: true }).defaultNow(),
   },
   (t) => [
-    uniqueIndex('codex_chat_setting_tenant_workspace_user_unique').on(t.tenantId, t.workspaceId, t.userId),
+    uniqueIndex('codex_chat_setting_tenant_project_user_unique').on(t.tenantId, t.projectId, t.userId),
     index('codex_chat_setting_idx_tenant').on(t.tenantId),
-    index('codex_chat_setting_idx_workspace_user').on(t.tenantId, t.workspaceId, t.userId),
+    index('codex_chat_setting_idx_project_user').on(t.tenantId, t.projectId, t.userId),
   ]
 )
 

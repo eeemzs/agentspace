@@ -5,7 +5,6 @@ import { IdbActivityItemDrizzle, ActivityItemColumnsDrizzle } from './drizzle.sc
 const conversions: FieldConversionLookup<IbmActivityItem, ActivityItemColumnsDrizzle> = {
   id: { toDomain: uuidToString, toDb: stringToUuid },
   scopeId: { toDomain: uuidToString, toDb: stringToUuid },
-  workspaceId: { toDomain: uuidToString, toDb: stringToUuid },
   projectId: { toDomain: uuidToString, toDb: stringToUuid },
 }
 

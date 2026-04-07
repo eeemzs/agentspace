@@ -3,7 +3,7 @@ import { Ajv, type AnySchema, type ErrorObject, type ValidateFunction } from 'aj
 import { normalizeAgentspaceOperationInputForCompatibility } from '../shared/codex-chat-input.js'
 import {
   hasNonEmptyValue,
-  resolveWorkspaceAliasValue,
+  resolveProjectContextValue,
   toMissingRequiredArgToken,
   toRecord,
 } from '../shared/tool-input.js'
@@ -30,19 +30,11 @@ type AgentspaceRequiredArg = ReadonlyArray<{ name: string; optional: boolean }>
 
 const AGENTSPACE_CONTEXT_KEYS = new Set([
   'tenantId',
-  'workspaceId',
-  'workspaceUuid',
-  'workspaceUid',
-  'workspaceName',
+  'projectId',
+  'scopeId',
   'locale',
   'fallbackLocale',
   '__hostContext',
-])
-
-const DATA_WORKSPACE_FALLBACK_OPERATIONS = new Set<AgentspaceTypedOperationId>([
-  'project.create',
-  'project-path.create',
-  'project-path.upsert-project-path',
 ])
 
 const AGENTSPACE_OPERATION_ARGS_BY_ID = new Map<AgentspaceTypedOperationId, AgentspaceRequiredArg>(
@@ -60,10 +52,9 @@ const inputSchemaValidatorAjv = new Ajv({
 })
 
 const inputValidatorByOperationId = new Map<AgentspaceTypedOperationId, ValidateFunction>()
-const workspaceInDataRequirementByOperationId = new Map<AgentspaceTypedOperationId, boolean>()
 
-function resolveWorkspaceValue(input: Record<string, unknown>): string | undefined {
-  return resolveWorkspaceAliasValue(input) ?? resolveWorkspaceAliasValue(toRecord(input.__hostContext))
+function resolveProjectValue(input: Record<string, unknown>): string | undefined {
+  return resolveProjectContextValue(input) ?? resolveProjectContextValue(toRecord(input.__hostContext))
 }
 
 function resolveEnvelopeArgName(args: AgentspaceRequiredArg): 'data' | 'patch' | 'input' | null {
@@ -138,49 +129,10 @@ function validateInputBySchema(
   throw new Error(`tool_input_schema_invalid:agentspace.${operationId}:${detail}`)
 }
 
-function requiresWorkspaceIdInDataArg(operationId: AgentspaceTypedOperationId): boolean {
-  const existing = workspaceInDataRequirementByOperationId.get(operationId)
-  if (existing !== undefined) return existing
-
-  const refs = getAgentspaceOperationIoSchemaRefs(operationId)
-  const schema = getAgentspaceContractSchema(refs.inputRef)
-  const root = toRecord(schema)
-  const properties = toRecord(root.properties)
-  const dataSchema = toRecord(properties.data)
-  const required = Array.isArray(dataSchema.required) ? dataSchema.required : []
-  const requiresWorkspace = required.some((field: unknown) => String(field ?? '').trim() === 'workspaceId')
-  workspaceInDataRequirementByOperationId.set(operationId, requiresWorkspace)
-  return requiresWorkspace
-}
-
-function injectWorkspaceIdIntoDataArg(
-  operationId: AgentspaceTypedOperationId,
-  input: Record<string, unknown>,
-  argName: string,
-  rawValue: unknown,
-): unknown {
-  if (argName !== 'data') return rawValue
-
-  const needsWorkspaceInData =
-    DATA_WORKSPACE_FALLBACK_OPERATIONS.has(operationId) || requiresWorkspaceIdInDataArg(operationId)
-  if (!needsWorkspaceInData) return rawValue
-  if (!rawValue || typeof rawValue !== 'object' || Array.isArray(rawValue)) {
-    throw new Error(toMissingRequiredArgToken('data.workspaceId'))
-  }
-
-  const data = rawValue as Record<string, unknown>
-  if (resolveWorkspaceValue(data)) return rawValue
-
-  const workspaceId = resolveWorkspaceValue(input)
-  if (!workspaceId) {
-    throw new Error(toMissingRequiredArgToken('data.workspaceId'))
-  }
-
-  return { ...data, workspaceId }
-}
-
 function hasRequiredOperationArg(input: Record<string, unknown>, argName: string): boolean {
-  if (argName === 'workspaceId') return hasNonEmptyValue(resolveWorkspaceValue(input))
+  if (argName === 'projectId' || argName === 'scopeId') {
+    return hasNonEmptyValue(resolveProjectValue(input))
+  }
   return hasNonEmptyValue(input[argName])
 }
 
@@ -223,20 +175,14 @@ export function parseAgentspaceToolInput<TId extends AgentspaceTypedOperationId>
   const typed: Partial<AgentspaceOperationInput<TId>> = {}
   for (const arg of args) {
     const rawValue =
-      arg.name === 'workspaceId'
-        ? resolveWorkspaceValue(normalizedInput)
+      arg.name === 'projectId' || arg.name === 'scopeId'
+        ? resolveProjectValue(normalizedInput)
         : normalizedInput[arg.name]
-    const normalizedRawValue = injectWorkspaceIdIntoDataArg(
-      operationId,
-      normalizedInput,
-      arg.name,
-      rawValue,
-    )
     if (!arg.optional && !hasRequiredOperationArg(normalizedInput, arg.name)) {
       throw new Error(toMissingRequiredArgToken(arg.name))
     }
-    if (normalizedRawValue !== undefined) {
-      assignTypedValue<AgentspaceOperationInput<TId>>(typed, arg.name, normalizedRawValue)
+    if (rawValue !== undefined) {
+      assignTypedValue<AgentspaceOperationInput<TId>>(typed, arg.name, rawValue)
     }
   }
 

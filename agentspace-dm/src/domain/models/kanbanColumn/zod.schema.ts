@@ -6,7 +6,6 @@ import { IKanbanColumnZodCtx } from './resources.js'
 export const kanbanColumnZodSchema = z
   .object({
     ...IbmZodSchema.shape,
-    workspaceId: z.string(),
     projectId: z.string(),
     boardId: z.string(),
     name: z.string(),

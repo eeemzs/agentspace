@@ -1,4 +1,4 @@
-import { normalizeNonEmpty, resolveWorkspaceAliasValue, toRecord } from '@aopslab/domain-kit-agentspace/shared'
+import { normalizeNonEmpty, resolveProjectContextValue, toRecord } from '@aopslab/domain-kit-agentspace/shared'
 
 import type { HostRequestContext } from './types.js'
 
@@ -65,16 +65,16 @@ export function buildContextScopedInput(
     normalizeNonEmpty(defaultTenantId)
   const contextLocale = normalizeNonEmpty(contextRecord.locale)
   const contextFallbackLocale = normalizeNonEmpty(contextRecord.fallbackLocale)
-  const contextWorkspace = resolveWorkspaceAliasValue(contextRecord)
+  const contextProject = resolveProjectContextValue(contextRecord)
 
   const payloadTenantId = normalizeNonEmpty(inputBase.tenantId)
   if (contextTenantId && payloadTenantId && contextTenantId !== payloadTenantId) {
     throw new Error('validation_failed:tenant_context_mismatch')
   }
 
-  const payloadWorkspace = resolveWorkspaceAliasValue(inputBase)
-  if (contextWorkspace && payloadWorkspace && contextWorkspace !== payloadWorkspace) {
-    throw new Error('validation_failed:workspace_context_mismatch')
+  const payloadProject = resolveProjectContextValue(inputBase)
+  if (contextProject && payloadProject && contextProject !== payloadProject) {
+    throw new Error('validation_failed:project_context_mismatch')
   }
 
   return {
@@ -82,7 +82,7 @@ export function buildContextScopedInput(
     ...(contextTenantId ? { tenantId: contextTenantId } : {}),
     ...(contextLocale ? { locale: contextLocale } : {}),
     ...(contextFallbackLocale ? { fallbackLocale: contextFallbackLocale } : {}),
-    ...(contextWorkspace && !payloadWorkspace ? { workspaceId: contextWorkspace } : {}),
+    ...(contextProject && !payloadProject ? { projectId: contextProject } : {}),
   }
 }
 

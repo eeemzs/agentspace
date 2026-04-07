@@ -10,8 +10,7 @@ import { WorkflowDefinitionService } from '../application/services/service.workf
 describe('workflowDefinition persistence contract', () => {
   it('keeps insert schema strict and accepts the canonical payload', () => {
     const payload = {
-      workspaceId: 'ws-1',
-      projectId: 'project-1',
+      scopeId: 'project-1',
       definitionId: 'wf-template-1',
       name: 'Template workflow',
       mode: 'template',
@@ -36,7 +35,7 @@ describe('workflowDefinition persistence contract', () => {
     expect(getTableName(workflowDefinitionTableSqlite)).toBe('workflow-definitions')
   })
 
-  it('upserts definitions with workspace/definition canonical match keys', async () => {
+  it('upserts definitions with scope/definition canonical match keys', async () => {
     const calls: Array<{ data: unknown; matchEq: unknown }> = []
     const service = new WorkflowDefinitionService({
       workflowDefinitionRepository: {
@@ -65,8 +64,7 @@ describe('workflowDefinition persistence contract', () => {
 
     const result = await Effect.runPromise(
       service.upsertWorkflowDefinition({
-        workspaceId: 'ws-1',
-        projectId: 'project-1',
+        scopeId: 'project-1',
         definitionId: 'wf-template-1',
         name: 'Template workflow',
         mode: 'template',
@@ -80,12 +78,12 @@ describe('workflowDefinition persistence contract', () => {
 
     expect(result).toMatchObject({
       definitionId: 'wf-template-1',
-      workspaceId: 'ws-1',
+      scopeId: 'project-1',
     })
     expect(calls).toEqual([
       expect.objectContaining({
         matchEq: {
-          workspaceId: 'ws-1',
+          scopeId: 'project-1',
           definitionId: 'wf-template-1',
         },
       }),

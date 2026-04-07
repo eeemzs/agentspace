@@ -21,14 +21,14 @@ describe('CodexChatThreadService', () => {
     const service = new CodexChatThreadService({ codexChatThreadRepository: repo as any })
     const result = await Effect.runPromise(
       service.addThread({
-        workspaceId: 'workspace-1',
+        scopeId: 'project-1',
         externalThreadId: '019c-thread',
       } as any)
     )
 
     expect(repo.create).toHaveBeenCalledTimes(1)
     const payload = repo.create.mock.calls[0][0]
-    expect(payload.workspaceId).toBe('workspace-1')
+    expect(payload.scopeId).toBe('project-1')
     expect(payload.externalThreadId).toBe('019c-thread')
     expect(result.id).toBe('thread-1')
   })
@@ -39,11 +39,11 @@ describe('CodexChatThreadService', () => {
 
     const service = new CodexChatThreadService({ codexChatThreadRepository: repo as any })
     const listed = await Effect.runPromise(
-      service.listThreads({ workspaceId: 'workspace-1' } as any, { limit: 10 } as any)
+      service.listThreads({ scopeId: 'project-1' } as any, { limit: 10 } as any)
     )
 
     expect(repo.find).toHaveBeenCalledWith({
-      matchEq: { workspaceId: 'workspace-1' },
+      matchEq: { scopeId: 'project-1' },
       options: { limit: 10 },
     })
     expect(listed).toEqual([{ id: 'thread-1' }])
@@ -66,7 +66,7 @@ describe('CodexChatMessageService', () => {
     const service = new CodexChatMessageService({ codexChatMessageRepository: repo as any })
     const result = await Effect.runPromise(
       service.addMessage({
-        workspaceId: 'workspace-1',
+        projectId: 'project-1',
         threadId: 'thread-1',
         role: 'user',
         text: 'Merhaba',
@@ -77,6 +77,7 @@ describe('CodexChatMessageService', () => {
 
     expect(repo.create).toHaveBeenCalledTimes(1)
     const payload = repo.create.mock.calls[0][0]
+    expect(payload.projectId).toBe('project-1')
     expect(payload.threadId).toBe('thread-1')
     expect(payload.role).toBe('user')
     expect(payload.seq).toBe(1)
@@ -90,7 +91,7 @@ describe('CodexChatMessageService', () => {
     const service = new CodexChatMessageService({ codexChatMessageRepository: repo as any })
     await Effect.runPromise(
       service.addMessage({
-        workspaceId: 'workspace-1',
+        projectId: 'project-1',
         threadId: 'thread-1',
         role: 'user',
         text: 'Merhaba',
@@ -110,7 +111,7 @@ describe('CodexChatMessageService', () => {
     const service = new CodexChatMessageService({ codexChatMessageRepository: repo as any })
     await Effect.runPromise(
       service.addMessage({
-        workspaceId: 'workspace-1',
+        projectId: 'project-1',
         threadId: 'thread-1',
         role: 'assistant',
         text: 'Selam',
@@ -144,7 +145,7 @@ describe('CodexChatSettingService', () => {
     const service = new CodexChatSettingService({ codexChatSettingRepository: repo as any })
     const result = await Effect.runPromise(
       service.addSetting({
-        workspaceId: 'workspace-1',
+        projectId: 'project-1',
         userId: 'user-1',
         executionMode: 'agent-auto',
         sandboxMode: 'workspace-write',

@@ -12,7 +12,6 @@ export const ibmKanbanBoardKeys = [
   'tenantId',
   'createdAt',
   'updatedAt',
-  'workspaceId',
   'projectId',
   'name',
   'description',

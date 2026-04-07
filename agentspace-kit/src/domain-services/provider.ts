@@ -5,12 +5,12 @@ import type { XfLogger } from '@aopslab/xf-logger'
 
 import type { AgentspaceKitProviderOptions, AgentspaceKitProvider, AgentspaceKitContext, AgentspaceKitStaticConfig, AgentspaceKitServiceProviderOptions, AgentspaceKitServices, AgentspaceKitRepositories, AgentspaceKitDomainServiceRegistryStats } from './types.js'
 
-import { RepositoryFactoryProject, RepositoryFactoryProjectPath, RepositoryFactoryScope, RepositoryFactoryWorkspace, RepositoryFactoryWorkspaceMember, RepositoryFactoryProjectMember, RepositoryFactoryPrompt, RepositoryFactoryPromptVersion, RepositoryFactoryResource, RepositoryFactorySkill, RepositoryFactorySkillVersion, RepositoryFactoryKanbanBoard, RepositoryFactoryKanbanColumn, RepositoryFactorySprint, RepositoryFactorySprintItem, RepositoryFactoryTask, RepositoryFactoryTaskComment, RepositoryFactoryAgentSession, RepositoryFactoryAgentRun, RepositoryFactoryAgentRunEvent, RepositoryFactoryActivityItem, RepositoryFactoryArtifact, RepositoryFactoryArtifactLink, RepositoryFactoryCodexChatThread, RepositoryFactoryCodexChatMessage, RepositoryFactoryCodexChatSetting, RepositoryFactoryProjectSummary, RepositoryFactoryMemoryItem, RepositoryFactoryTag, RepositoryFactoryWorkflowDefinition, RepositoryFactoryWorkflowInstance, RepositoryFactoryWorkflowStepRun } from '@aopslab/domain-dm-agentspace/factories'
+import { RepositoryFactoryProject, RepositoryFactoryProjectPath, RepositoryFactoryScope, RepositoryFactoryProjectMember, RepositoryFactoryPrompt, RepositoryFactoryPromptVersion, RepositoryFactoryResource, RepositoryFactorySkill, RepositoryFactorySkillVersion, RepositoryFactoryKanbanBoard, RepositoryFactoryKanbanColumn, RepositoryFactorySprint, RepositoryFactorySprintItem, RepositoryFactoryTask, RepositoryFactoryTaskComment, RepositoryFactoryAgentSession, RepositoryFactoryAgentRun, RepositoryFactoryAgentRunEvent, RepositoryFactoryActivityItem, RepositoryFactoryArtifact, RepositoryFactoryArtifactLink, RepositoryFactoryCodexChatThread, RepositoryFactoryCodexChatMessage, RepositoryFactoryCodexChatSetting, RepositoryFactoryProjectSummary, RepositoryFactoryMemoryItem, RepositoryFactoryTag, RepositoryFactoryWorkflowDefinition, RepositoryFactoryWorkflowInstance, RepositoryFactoryWorkflowStepRun } from '@aopslab/domain-dm-agentspace/factories'
 import { createAgentspaceDrizzleUnitOfWork } from '@aopslab/domain-dm-agentspace/factories'
-import { ProjectService, ProjectPathService, WorkspaceService, WorkspaceMemberService, ProjectMemberService, PromptService, PromptVersionService, ResourceService, SkillService, SkillVersionService, KanbanBoardService, KanbanColumnService, SprintService, SprintItemService, TaskService, TaskCommentService, AgentSessionService, AgentRunService, AgentRunEventService, ActivityItemService, ArtifactService, ArtifactLinkService, CodexChatThreadService, CodexChatMessageService, CodexChatSettingService, ProjectSummaryService, MemoryItemService, TagService, WorkflowDefinitionService, WorkflowInstanceService, WorkflowStepRunService } from '@aopslab/domain-dm-agentspace/services'
+import { ProjectService, ProjectPathService, ProjectMemberService, PromptService, PromptVersionService, ResourceService, SkillService, SkillVersionService, KanbanBoardService, KanbanColumnService, SprintService, SprintItemService, TaskService, TaskCommentService, AgentSessionService, AgentRunService, AgentRunEventService, ActivityItemService, ArtifactService, ArtifactLinkService, CodexChatThreadService, CodexChatMessageService, CodexChatSettingService, ProjectSummaryService, MemoryItemService, TagService, WorkflowDefinitionService, WorkflowInstanceService, WorkflowStepRunService } from '@aopslab/domain-dm-agentspace/services'
 
 function computeConfigKey(name: string, cfg: AgentspaceKitServiceProviderOptions): string {
-  const sigs = [fingerprintRepositoryConfig(cfg.projectRepositoryConfig), fingerprintRepositoryConfig(cfg.projectPathRepositoryConfig), fingerprintRepositoryConfig(cfg.scopeRepositoryConfig), fingerprintRepositoryConfig(cfg.workspaceRepositoryConfig), fingerprintRepositoryConfig(cfg.workspaceMemberRepositoryConfig), fingerprintRepositoryConfig(cfg.projectMemberRepositoryConfig), fingerprintRepositoryConfig(cfg.promptRepositoryConfig), fingerprintRepositoryConfig(cfg.promptVersionRepositoryConfig), fingerprintRepositoryConfig(cfg.resourceRepositoryConfig), fingerprintRepositoryConfig(cfg.skillRepositoryConfig), fingerprintRepositoryConfig(cfg.skillVersionRepositoryConfig), fingerprintRepositoryConfig(cfg.kanbanBoardRepositoryConfig), fingerprintRepositoryConfig(cfg.kanbanColumnRepositoryConfig), fingerprintRepositoryConfig(cfg.sprintRepositoryConfig), fingerprintRepositoryConfig(cfg.sprintItemRepositoryConfig), fingerprintRepositoryConfig(cfg.taskRepositoryConfig), fingerprintRepositoryConfig(cfg.taskCommentRepositoryConfig), fingerprintRepositoryConfig(cfg.agentSessionRepositoryConfig), fingerprintRepositoryConfig(cfg.agentRunRepositoryConfig), fingerprintRepositoryConfig(cfg.agentRunEventRepositoryConfig), fingerprintRepositoryConfig(cfg.activityItemRepositoryConfig), fingerprintRepositoryConfig(cfg.artifactRepositoryConfig), fingerprintRepositoryConfig(cfg.artifactLinkRepositoryConfig), fingerprintRepositoryConfig(cfg.codexChatThreadRepositoryConfig), fingerprintRepositoryConfig(cfg.codexChatMessageRepositoryConfig), fingerprintRepositoryConfig(cfg.codexChatSettingRepositoryConfig), fingerprintRepositoryConfig(cfg.projectSummaryRepositoryConfig), fingerprintRepositoryConfig(cfg.memoryItemRepositoryConfig), fingerprintRepositoryConfig(cfg.tagRepositoryConfig), fingerprintRepositoryConfig(cfg.workflowDefinitionRepositoryConfig), fingerprintRepositoryConfig(cfg.workflowInstanceRepositoryConfig), fingerprintRepositoryConfig(cfg.workflowStepRunRepositoryConfig)].filter(Boolean)
+  const sigs = [fingerprintRepositoryConfig(cfg.projectRepositoryConfig), fingerprintRepositoryConfig(cfg.projectPathRepositoryConfig), fingerprintRepositoryConfig(cfg.scopeRepositoryConfig), fingerprintRepositoryConfig(cfg.projectMemberRepositoryConfig), fingerprintRepositoryConfig(cfg.promptRepositoryConfig), fingerprintRepositoryConfig(cfg.promptVersionRepositoryConfig), fingerprintRepositoryConfig(cfg.resourceRepositoryConfig), fingerprintRepositoryConfig(cfg.skillRepositoryConfig), fingerprintRepositoryConfig(cfg.skillVersionRepositoryConfig), fingerprintRepositoryConfig(cfg.kanbanBoardRepositoryConfig), fingerprintRepositoryConfig(cfg.kanbanColumnRepositoryConfig), fingerprintRepositoryConfig(cfg.sprintRepositoryConfig), fingerprintRepositoryConfig(cfg.sprintItemRepositoryConfig), fingerprintRepositoryConfig(cfg.taskRepositoryConfig), fingerprintRepositoryConfig(cfg.taskCommentRepositoryConfig), fingerprintRepositoryConfig(cfg.agentSessionRepositoryConfig), fingerprintRepositoryConfig(cfg.agentRunRepositoryConfig), fingerprintRepositoryConfig(cfg.agentRunEventRepositoryConfig), fingerprintRepositoryConfig(cfg.activityItemRepositoryConfig), fingerprintRepositoryConfig(cfg.artifactRepositoryConfig), fingerprintRepositoryConfig(cfg.artifactLinkRepositoryConfig), fingerprintRepositoryConfig(cfg.codexChatThreadRepositoryConfig), fingerprintRepositoryConfig(cfg.codexChatMessageRepositoryConfig), fingerprintRepositoryConfig(cfg.codexChatSettingRepositoryConfig), fingerprintRepositoryConfig(cfg.projectSummaryRepositoryConfig), fingerprintRepositoryConfig(cfg.memoryItemRepositoryConfig), fingerprintRepositoryConfig(cfg.tagRepositoryConfig), fingerprintRepositoryConfig(cfg.workflowDefinitionRepositoryConfig), fingerprintRepositoryConfig(cfg.workflowInstanceRepositoryConfig), fingerprintRepositoryConfig(cfg.workflowStepRunRepositoryConfig)].filter(Boolean)
   return [name, cfg.tenantId ?? '', ...sigs].join('|')
 }
 
@@ -24,8 +24,6 @@ function buildResolvedConfig(staticCfg: AgentspaceKitStaticConfig, ctx: Agentspa
     projectRepositoryConfig: buildRepositoryConfig(staticCfg.projectRepository, tenantId),
     projectPathRepositoryConfig: buildRepositoryConfig(staticCfg.projectPathRepository, tenantId),
     scopeRepositoryConfig: buildRepositoryConfig(staticCfg.scopeRepository, tenantId),
-    workspaceRepositoryConfig: buildRepositoryConfig(staticCfg.workspaceRepository, tenantId),
-    workspaceMemberRepositoryConfig: buildRepositoryConfig(staticCfg.workspaceMemberRepository, tenantId),
     projectMemberRepositoryConfig: buildRepositoryConfig(staticCfg.projectMemberRepository, tenantId),
     promptRepositoryConfig: buildRepositoryConfig(staticCfg.promptRepository, tenantId),
     promptVersionRepositoryConfig: buildRepositoryConfig(staticCfg.promptVersionRepository, tenantId),
@@ -97,22 +95,6 @@ projectPathRepository: async (cfg, logger) => {
 scopeRepository: async (cfg, logger) => {
       const eff = RepositoryFactoryScope.create({
         repositoryConfig: cfg.scopeRepositoryConfig,
-        logger,
-        logLevel: cfg.logLevel,
-      })
-      return await Effect.runPromise(eff)
-    },
-workspaceRepository: async (cfg, logger) => {
-      const eff = RepositoryFactoryWorkspace.create({
-        repositoryConfig: cfg.workspaceRepositoryConfig,
-        logger,
-        logLevel: cfg.logLevel,
-      })
-      return await Effect.runPromise(eff)
-    },
-workspaceMemberRepository: async (cfg, logger) => {
-      const eff = RepositoryFactoryWorkspaceMember.create({
-        repositoryConfig: cfg.workspaceMemberRepositoryConfig,
         logger,
         logLevel: cfg.logLevel,
       })
@@ -340,7 +322,6 @@ projectService: async (ctx, _deps, repos, logger) => {
       return new ProjectService({
         projectRepository: repos.projectRepository,
         scopeRepository: repos.scopeRepository,
-        workspaceRepository: repos.workspaceRepository,
         logger,
         locale: ctx.locale,
       })
@@ -348,21 +329,6 @@ projectService: async (ctx, _deps, repos, logger) => {
 projectPathService: async (ctx, _deps, repos, logger) => {
       return new ProjectPathService({
         projectPathRepository: repos.projectPathRepository,
-        logger,
-        locale: ctx.locale,
-      })
-    },
-workspaceService: async (ctx, _deps, repos, logger) => {
-      return new WorkspaceService({
-        scopeRepository: repos.scopeRepository,
-        workspaceRepository: repos.workspaceRepository,
-        logger,
-        locale: ctx.locale,
-      })
-    },
-workspaceMemberService: async (ctx, _deps, repos, logger) => {
-      return new WorkspaceMemberService({
-        workspaceMemberRepository: repos.workspaceMemberRepository,
         logger,
         locale: ctx.locale,
       })
@@ -626,8 +592,6 @@ workflowStepRunService: async (ctx, _deps, repos, logger) => {
       services: {
         projectService: stats.services.projectService,
         projectPathService: stats.services.projectPathService,
-        workspaceService: stats.services.workspaceService,
-        workspaceMemberService: stats.services.workspaceMemberService,
         projectMemberService: stats.services.projectMemberService,
         promptService: stats.services.promptService,
         promptVersionService: stats.services.promptVersionService,
@@ -660,8 +624,6 @@ workflowStepRunService: async (ctx, _deps, repos, logger) => {
         projectRepository: !!stats.repositories.projectRepository,
         projectPathRepository: !!stats.repositories.projectPathRepository,
         scopeRepository: !!stats.repositories.scopeRepository,
-        workspaceRepository: !!stats.repositories.workspaceRepository,
-        workspaceMemberRepository: !!stats.repositories.workspaceMemberRepository,
         projectMemberRepository: !!stats.repositories.projectMemberRepository,
         promptRepository: !!stats.repositories.promptRepository,
         promptVersionRepository: !!stats.repositories.promptVersionRepository,
@@ -705,18 +667,6 @@ workflowStepRunService: async (ctx, _deps, repos, logger) => {
     },
     async createProjectPathService(overrides) {
       return gp.createService('projectPathService', overrides)
-    },
-    async getWorkspaceService(overrides) {
-      return gp.getService('workspaceService', overrides)
-    },
-    async createWorkspaceService(overrides) {
-      return gp.createService('workspaceService', overrides)
-    },
-    async getWorkspaceMemberService(overrides) {
-      return gp.getService('workspaceMemberService', overrides)
-    },
-    async createWorkspaceMemberService(overrides) {
-      return gp.createService('workspaceMemberService', overrides)
     },
     async getProjectMemberService(overrides) {
       return gp.getService('projectMemberService', overrides)
@@ -889,12 +839,6 @@ workflowStepRunService: async (ctx, _deps, repos, logger) => {
     async getScopeRepository(overrides) {
       return gp.getRepository('scopeRepository', overrides)
     },
-    async getWorkspaceRepository(overrides) {
-      return gp.getRepository('workspaceRepository', overrides)
-    },
-    async getWorkspaceMemberRepository(overrides) {
-      return gp.getRepository('workspaceMemberRepository', overrides)
-    },
     async getProjectMemberRepository(overrides) {
       return gp.getRepository('projectMemberRepository', overrides)
     },
@@ -990,12 +934,6 @@ workflowStepRunService: async (ctx, _deps, repos, logger) => {
     },
     clearProjectPathServiceCache(cacheKey?: string) {
       gp.clearServiceCache('projectPathService', cacheKey)
-    },
-    clearWorkspaceServiceCache(cacheKey?: string) {
-      gp.clearServiceCache('workspaceService', cacheKey)
-    },
-    clearWorkspaceMemberServiceCache(cacheKey?: string) {
-      gp.clearServiceCache('workspaceMemberService', cacheKey)
     },
     clearProjectMemberServiceCache(cacheKey?: string) {
       gp.clearServiceCache('projectMemberService', cacheKey)

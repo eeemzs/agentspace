@@ -16,7 +16,7 @@ export interface IKanbanBoardServicePort {
   create(data: IbmKanbanBoardInsert): Effect.Effect<IbmKanbanBoard, KanbanBoardServiceError>
   createBoard(data: IbmKanbanBoardInsert): Effect.Effect<IbmKanbanBoard, KanbanBoardServiceError>
   updateBoard(id: string, patch: Partial<IbmKanbanBoard>): Effect.Effect<IbmKanbanBoard, KanbanBoardServiceError>
-  ensureDefaultBoard(projectId: string, workspaceId: string): Effect.Effect<IbmKanbanBoard, KanbanBoardServiceError>
+  ensureDefaultBoard(projectId: string): Effect.Effect<IbmKanbanBoard, KanbanBoardServiceError>
   listBoards(filter?: Partial<IbmKanbanBoard>, options?: DbQueryOptions<IbmKanbanBoard>): Effect.Effect<IbmKanbanBoard[], KanbanBoardServiceError>
   listBoard(boardId: string): Effect.Effect<KanbanBoardView, KanbanBoardServiceError>
   addColumn(data: KanbanColumnCreateInput): Effect.Effect<IbmKanbanColumn, KanbanBoardServiceError>

@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest'
 
 import {
   hasNonEmptyValue,
-  isWorkspaceArgName,
+  isProjectContextArgName,
   normalizeNonEmpty,
-  resolveWorkspaceAliasValue,
+  resolveProjectContextValue,
   toMissingRequiredArgToken,
   toRecord,
 } from './tool-input.js'
@@ -17,38 +17,22 @@ describe('tool-input shared helper', () => {
     expect(toRecord([1, 2, 3])).toEqual({})
   })
 
-  it('resolveWorkspaceAliasValue uses alias precedence', () => {
-    expect(resolveWorkspaceAliasValue({ workspaceName: 'name-only' })).toBe('name-only')
-    expect(
-      resolveWorkspaceAliasValue({
-        workspaceUid: 'uid-first',
-        workspaceName: 'name-fallback',
-      }),
-    ).toBe('uid-first')
-    expect(
-      resolveWorkspaceAliasValue({
-        workspaceUuid: 'uuid-first',
-        workspaceUid: 'uid-fallback',
-      }),
-    ).toBe('uuid-first')
-    expect(
-      resolveWorkspaceAliasValue({
-        workspaceId: 'id-first',
-        workspaceUuid: 'uuid-fallback',
-        workspaceUid: 'uid-fallback',
-        workspaceName: 'name-fallback',
-      }),
-    ).toBe('id-first')
+  it('resolveProjectContextValue uses project alias precedence', () => {
+    expect(resolveProjectContextValue({ projectId: 'project-1' })).toBe('project-1')
+    expect(resolveProjectContextValue({ scopeId: 'project-2' })).toBe('project-2')
+    expect(resolveProjectContextValue({ projectId: 'project-1', scopeId: 'project-2' })).toBe('project-1')
   })
 
-  it('normalizes required token for workspace-scoped args', () => {
-    expect(isWorkspaceArgName('workspaceId')).toBe(true)
-    expect(isWorkspaceArgName('data.workspaceId')).toBe(true)
-    expect(isWorkspaceArgName('projectId')).toBe(false)
+  it('normalizes required token for project-scoped args', () => {
+    expect(isProjectContextArgName('projectId')).toBe(true)
+    expect(isProjectContextArgName('data.projectId')).toBe(true)
+    expect(isProjectContextArgName('scopeId')).toBe(true)
+    expect(isProjectContextArgName('data.scopeId')).toBe(true)
 
-    expect(toMissingRequiredArgToken('workspaceId')).toBe('workspace_context_required')
-    expect(toMissingRequiredArgToken('data.workspaceId')).toBe('workspace_context_required')
-    expect(toMissingRequiredArgToken('projectId')).toBe('missing_required_arg:projectId')
+    expect(toMissingRequiredArgToken('projectId')).toBe('project_context_required')
+    expect(toMissingRequiredArgToken('data.projectId')).toBe('project_context_required')
+    expect(toMissingRequiredArgToken('scopeId')).toBe('project_context_required')
+    expect(toMissingRequiredArgToken('customArg')).toBe('missing_required_arg:customArg')
   })
 
   it('normalizes and checks non-empty values consistently', () => {
@@ -64,4 +48,3 @@ describe('tool-input shared helper', () => {
     expect(hasNonEmptyValue({})).toBe(false)
   })
 })
-

@@ -12,7 +12,6 @@ export const ibmKanbanColumnKeys = [
   'tenantId',
   'createdAt',
   'updatedAt',
-  'workspaceId',
   'projectId',
   'boardId',
   'name',

@@ -1,18 +1,16 @@
-﻿import { index, integer, jsonb, pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core'
 import { InferSelectModel } from 'drizzle-orm'
+import { index, integer, jsonb, pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core'
 import { projectTable } from '../../project/drizzle/drizzle.schema.project.js'
 import { skillTable } from '../../skill/drizzle/drizzle.schema.skill.js'
-import { workspaceTable } from '../../workspace/drizzle/drizzle.schema.workspace.js'
 
 export const skillVersionTable = pgTable(
   'skill-versions',
   {
     id: uuid().primaryKey().defaultRandom(),
     tenantId: text().notNull(),
-    workspaceId: uuid()
+    projectId: uuid()
       .notNull()
-      .references(() => workspaceTable.id, { onDelete: 'cascade' }),
-    projectId: uuid().references(() => projectTable.id, { onDelete: 'set null' }),
+      .references(() => projectTable.id, { onDelete: 'cascade' }),
     skillId: uuid()
       .notNull()
       .references(() => skillTable.id, { onDelete: 'cascade' }),
@@ -34,10 +32,10 @@ export const skillVersionTable = pgTable(
   (t) => [
     uniqueIndex('skill_version_unique').on(t.tenantId, t.skillId, t.version),
     index('skill_version_idx_tenant').on(t.tenantId),
-    index('skill_version_idx_workspace').on(t.tenantId, t.workspaceId),
+    index('skill_version_idx_project').on(t.tenantId, t.projectId),
     index('skill_version_idx_skill').on(t.tenantId, t.skillId),
   ]
 )
 
-export type IdbSkillVersionDrizzle = InferSelectModel<typeof skillVersionTable>;
-export type SkillVersionColumnsDrizzle = keyof IdbSkillVersionDrizzle;
+export type IdbSkillVersionDrizzle = InferSelectModel<typeof skillVersionTable>
+export type SkillVersionColumnsDrizzle = keyof IdbSkillVersionDrizzle

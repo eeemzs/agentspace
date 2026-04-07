@@ -1,16 +1,16 @@
-﻿import { index, integer, jsonb, pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core'
 import { InferSelectModel } from 'drizzle-orm'
+import { index, integer, jsonb, pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core'
+import { projectTable } from '../../project/drizzle/drizzle.schema.project.js'
 import { promptTable } from '../../prompt/drizzle/drizzle.schema.prompt.js'
-import { workspaceTable } from '../../workspace/drizzle/drizzle.schema.workspace.js'
 
 export const promptVersionTable = pgTable(
   'prompt-versions',
   {
     id: uuid().primaryKey().defaultRandom(),
     tenantId: text().notNull(),
-    workspaceId: uuid()
+    projectId: uuid()
       .notNull()
-      .references(() => workspaceTable.id, { onDelete: 'cascade' }),
+      .references(() => projectTable.id, { onDelete: 'cascade' }),
     promptId: uuid()
       .notNull()
       .references(() => promptTable.id, { onDelete: 'cascade' }),
@@ -30,10 +30,10 @@ export const promptVersionTable = pgTable(
   (t) => [
     uniqueIndex('prompt_version_unique').on(t.tenantId, t.promptId, t.version),
     index('prompt_version_idx_tenant').on(t.tenantId),
-    index('prompt_version_idx_workspace').on(t.tenantId, t.workspaceId),
+    index('prompt_version_idx_project').on(t.tenantId, t.projectId),
     index('prompt_version_idx_prompt').on(t.tenantId, t.promptId),
   ]
 )
 
-export type IdbPromptVersionDrizzle = InferSelectModel<typeof promptVersionTable>;
-export type PromptVersionColumnsDrizzle = keyof IdbPromptVersionDrizzle;
+export type IdbPromptVersionDrizzle = InferSelectModel<typeof promptVersionTable>
+export type PromptVersionColumnsDrizzle = keyof IdbPromptVersionDrizzle

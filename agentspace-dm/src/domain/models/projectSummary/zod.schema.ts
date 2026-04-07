@@ -5,7 +5,6 @@ import { IProjectSummaryZodCtx } from './resources.js'
 export const projectSummaryZodSchema = z
   .object({
     ...IbmZodSchema.shape,
-    workspaceId: z.string(),
     projectId: z.string(),
     summary: z.string().optional(),
     decisions: z.unknown().optional(),

@@ -5,7 +5,7 @@ import { IAgentRunZodCtx } from './resources.js'
 export const agentRunZodSchema = z
   .object({
     ...IbmZodSchema.shape,
-    workspaceId: z.string(),
+    scopeId: z.string(),
     projectId: z.string().nullable().optional(),
     agentSessionId: z.string(),
     taskId: z.string().nullable().optional(),

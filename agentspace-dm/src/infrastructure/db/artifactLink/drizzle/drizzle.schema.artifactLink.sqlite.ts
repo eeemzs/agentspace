@@ -3,16 +3,12 @@ import { randomUUID } from 'node:crypto'
 import { index, integer, text, sqliteTable } from 'drizzle-orm/sqlite-core'
 import { artifactTableSqlite as artifactTable } from '../../artifact/drizzle/drizzle.schema.artifact.sqlite.js'
 import { projectTableSqlite as projectTable } from '../../project/drizzle/drizzle.schema.project.sqlite.js'
-import { workspaceTableSqlite as workspaceTable } from '../../workspace/drizzle/drizzle.schema.workspace.sqlite.js'
 
 export const artifactLinkTableSqlite = sqliteTable(
   'artifact-links',
   {
     id: text().primaryKey().$defaultFn(() => randomUUID()),
     tenantId: text().notNull(),
-    workspaceId: text()
-      .notNull()
-      .references(() => workspaceTable.id, { onDelete: 'cascade' }),
     projectId: text()
       .notNull()
       .references(() => projectTable.id, { onDelete: 'cascade' }),
@@ -27,7 +23,6 @@ export const artifactLinkTableSqlite = sqliteTable(
   },
   (t) => [
     index('artifact_link_idx_tenant').on(t.tenantId),
-    index('artifact_link_idx_workspace').on(t.tenantId, t.workspaceId),
     index('artifact_link_idx_artifact').on(t.tenantId, t.artifactId),
     index('artifact_link_idx_project_ref_created').on(t.tenantId, t.projectId, t.refType, t.refId, t.createdAt),
   ]

@@ -10,7 +10,7 @@ describe('codex-chat input compatibility helper', () => {
   it('injects messageAt for codex-chat message create payloads', () => {
     const normalized = normalizeCodexChatMessageCreateInput({
       data: {
-        workspaceId: 'workspace-1',
+        projectId: 'project-1',
         threadId: 'thread-1',
         role: 'user',
         text: 'hello',
@@ -25,7 +25,7 @@ describe('codex-chat input compatibility helper', () => {
   it('normalizes Date messageAt to ISO string', () => {
     const normalized = normalizeCodexChatMessageCreateInput({
       data: {
-        workspaceId: 'workspace-1',
+        projectId: 'project-1',
         threadId: 'thread-1',
         role: 'user',
         text: 'hello',
@@ -39,7 +39,7 @@ describe('codex-chat input compatibility helper', () => {
 
   it('maps legacy top-level list-messages fields into filter/options', () => {
     const normalized = normalizeAgentspaceOperationInputForCompatibility('codex-chat-message.list-messages', {
-      workspaceId: 'workspace-1',
+      projectId: 'project-1',
       externalThreadId: 'thread-ext-1',
       role: 'user',
       limit: '50',
@@ -49,7 +49,7 @@ describe('codex-chat input compatibility helper', () => {
     expect(normalized.externalThreadId).toBeUndefined()
     expect(normalized.limit).toBeUndefined()
     expect(normalized.filter).toMatchObject({
-      workspaceId: 'workspace-1',
+      projectId: 'project-1',
       externalThreadId: 'thread-ext-1',
       role: 'user',
     })
@@ -61,13 +61,13 @@ describe('codex-chat input compatibility helper', () => {
 
   it('maps top-level list-threads fields into filter/options for agentspace tool ids', () => {
     const normalized = normalizeAgentspaceToolInputForCompatibility('agentspace.codex-chat-thread.list-threads', {
-      workspaceId: 'workspace-1',
+      projectId: 'project-1',
       externalThreadId: 'thread-ext-2',
       limit: 25,
     })
 
     expect(normalized.filter).toMatchObject({
-      workspaceId: 'workspace-1',
+      projectId: 'project-1',
       externalThreadId: 'thread-ext-2',
     })
     expect(normalized.options).toMatchObject({

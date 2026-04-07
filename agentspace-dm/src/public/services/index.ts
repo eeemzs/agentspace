@@ -27,8 +27,6 @@ export {
   ProjectSummaryService, type ProjectSummaryServiceOptions,
   MemoryItemService, type MemoryItemServiceOptions,
   TagService, type TagServiceOptions,
-  WorkspaceService, type WorkspaceServiceOptions,
-  WorkspaceMemberService, type WorkspaceMemberServiceOptions,
   ProjectMemberService, type ProjectMemberServiceOptions,
   ProjectPathService, type ProjectPathServiceOptions,
 } from '../../application/services/index.js';

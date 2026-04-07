@@ -131,12 +131,12 @@ describe('MemoryItemService', () => {
     const projectSummaryRepo = makeRepo()
     repo.find.mockImplementation(() => Effect.succeed([
       {
-        id: 'mem-workspace-noise',
+        id: 'mem-context-noise',
         scopeId: 'scope-project-1',
         kind: 'resume',
-        content: 'Workspace level generic note that should stay low priority.',
+        content: 'Generic top-level note that should stay low priority.',
         sourceType: 'aops.smoke',
-        sourceId: 'workspace-1',
+        sourceId: 'scope-project-1',
         updatedAt: '2026-04-01T08:00:00.000Z',
       },
       {
@@ -416,7 +416,7 @@ describe('ProjectSummaryService', () => {
 
     const service = new ProjectSummaryService({ projectSummaryRepository: repo as any })
     const result = await Effect.runPromise(
-      service.upsertProjectSummary({ workspaceId: 'workspace-1', projectId: 'project-1', summary: 'Kickoff done' })
+      service.upsertProjectSummary({ projectId: 'project-1', summary: 'Kickoff done' })
     )
 
     expect(repo.create).toHaveBeenCalledTimes(1)
@@ -430,7 +430,7 @@ describe('ProjectSummaryService', () => {
 
     const service = new ProjectSummaryService({ projectSummaryRepository: repo as any })
     const result = await Effect.runPromise(
-      service.upsertProjectSummary({ workspaceId: 'workspace-1', projectId: 'project-1', summary: 'Updated' })
+      service.upsertProjectSummary({ projectId: 'project-1', summary: 'Updated' })
     )
 
     expect(repo.patchById).toHaveBeenCalledWith('sum-1', { summary: 'Updated' })

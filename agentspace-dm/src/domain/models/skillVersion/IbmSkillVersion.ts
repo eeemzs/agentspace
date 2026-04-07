@@ -12,7 +12,6 @@ export const ibmSkillVersionKeys = [
   'tenantId',
   'createdAt',
   'updatedAt',
-  'workspaceId',
   'projectId',
   'skillId',
   'version',

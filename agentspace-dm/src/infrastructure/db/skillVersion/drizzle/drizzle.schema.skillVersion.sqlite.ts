@@ -3,17 +3,15 @@ import { randomUUID } from 'node:crypto'
 import { index, integer, text, sqliteTable, uniqueIndex } from 'drizzle-orm/sqlite-core'
 import { projectTableSqlite as projectTable } from '../../project/drizzle/drizzle.schema.project.sqlite.js'
 import { skillTableSqlite as skillTable } from '../../skill/drizzle/drizzle.schema.skill.sqlite.js'
-import { workspaceTableSqlite as workspaceTable } from '../../workspace/drizzle/drizzle.schema.workspace.sqlite.js'
 
 export const skillVersionTableSqlite = sqliteTable(
   'skill-versions',
   {
     id: text().primaryKey().$defaultFn(() => randomUUID()),
     tenantId: text().notNull(),
-    workspaceId: text()
+    projectId: text()
       .notNull()
-      .references(() => workspaceTable.id, { onDelete: 'cascade' }),
-    projectId: text().references(() => projectTable.id, { onDelete: 'set null' }),
+      .references(() => projectTable.id, { onDelete: 'cascade' }),
     skillId: text()
       .notNull()
       .references(() => skillTable.id, { onDelete: 'cascade' }),
@@ -35,10 +33,10 @@ export const skillVersionTableSqlite = sqliteTable(
   (t) => [
     uniqueIndex('skill_version_unique').on(t.tenantId, t.skillId, t.version),
     index('skill_version_idx_tenant').on(t.tenantId),
-    index('skill_version_idx_workspace').on(t.tenantId, t.workspaceId),
+    index('skill_version_idx_project').on(t.tenantId, t.projectId),
     index('skill_version_idx_skill').on(t.tenantId, t.skillId),
   ]
 )
 
-export type IdbSkillVersionDrizzleSqlite = InferSelectModel<typeof skillVersionTableSqlite>;
-export type SkillVersionColumnsDrizzleSqlite = keyof IdbSkillVersionDrizzleSqlite;
+export type IdbSkillVersionDrizzleSqlite = InferSelectModel<typeof skillVersionTableSqlite>
+export type SkillVersionColumnsDrizzleSqlite = keyof IdbSkillVersionDrizzleSqlite

@@ -26,20 +26,19 @@ const makePromptRepo = () => ({
 })
 
 describe('PromptVersionService', () => {
-  it('resolves workspaceId from prompt before create validation', async () => {
+  it('resolves projectId from prompt scope before create validation', async () => {
     const repo = makePromptVersionRepo()
     const promptService = makePromptService()
 
     const promptId = 'prompt-1'
-    const workspaceId = 'workspace-1'
+    const projectId = 'project-1'
     const createdVersionId = 'version-1'
     let createdVersionNumber = 0
 
     promptService.getById.mockImplementation(() =>
       Effect.succeed({
         id: promptId,
-        workspaceId,
-        scopeType: 'global',
+        scopeId: projectId,
         name: 'Prompt',
       } as any)
     )
@@ -50,7 +49,7 @@ describe('PromptVersionService', () => {
           {
             id: createdVersionId,
             promptId,
-            workspaceId,
+            projectId,
             version: createdVersionNumber,
             status: 'draft',
             content: 'hello',
@@ -65,7 +64,7 @@ describe('PromptVersionService', () => {
       return Effect.succeed({
         id: createdVersionId,
         promptId,
-        workspaceId: data.workspaceId,
+        projectId: data.projectId,
         version: data.version,
         status: data.status,
         content: data.content,
@@ -75,8 +74,7 @@ describe('PromptVersionService', () => {
     promptService.updatePrompt.mockImplementation((id, patch) =>
       Effect.succeed({
         id,
-        workspaceId,
-        scopeType: 'global',
+        scopeId: projectId,
         name: 'Prompt',
         ...patch,
       } as any)
@@ -96,9 +94,9 @@ describe('PromptVersionService', () => {
     )
 
     expect(repo.create).toHaveBeenCalledTimes(1)
-    expect(repo.create.mock.calls[0][0].workspaceId).toBe(workspaceId)
+    expect(repo.create.mock.calls[0][0].projectId).toBe(projectId)
     expect(repo.create.mock.calls[0][0].version).toBe(1)
-    expect(result.workspaceId).toBe(workspaceId)
+    expect(result.projectId).toBe(projectId)
   })
 
   it('computes the next version from the highest existing entry and ignores null updatedBy during prompt sync', async () => {
@@ -106,15 +104,14 @@ describe('PromptVersionService', () => {
     const promptService = makePromptService()
 
     const promptId = 'prompt-1'
-    const workspaceId = 'workspace-1'
+    const projectId = 'project-1'
     const createdVersionId = 'version-4'
     let createdVersionNumber = 0
 
     promptService.getById.mockImplementation(() =>
       Effect.succeed({
         id: promptId,
-        workspaceId,
-        scopeType: 'global',
+        scopeId: projectId,
         name: 'Prompt',
       } as any)
     )
@@ -122,15 +119,15 @@ describe('PromptVersionService', () => {
     repo.find.mockImplementation(() => {
       if (createdVersionNumber > 0) {
         return Effect.succeed([
-          { id: 'version-2', version: 2, promptId, workspaceId, status: 'draft' } as any,
-          { id: createdVersionId, version: createdVersionNumber, promptId, workspaceId, status: 'draft' } as any,
-          { id: 'version-1', version: 1, promptId, workspaceId, status: 'draft' } as any,
+          { id: 'version-2', version: 2, promptId, projectId, status: 'draft' } as any,
+          { id: createdVersionId, version: createdVersionNumber, promptId, projectId, status: 'draft' } as any,
+          { id: 'version-1', version: 1, promptId, projectId, status: 'draft' } as any,
         ])
       }
       return Effect.succeed([
-        { id: 'version-2', version: 2, promptId, workspaceId, status: 'draft' } as any,
-        { id: 'version-3', version: 3, promptId, workspaceId, status: 'draft' } as any,
-        { id: 'version-1', version: 1, promptId, workspaceId, status: 'draft' } as any,
+        { id: 'version-2', version: 2, promptId, projectId, status: 'draft' } as any,
+        { id: 'version-3', version: 3, promptId, projectId, status: 'draft' } as any,
+        { id: 'version-1', version: 1, promptId, projectId, status: 'draft' } as any,
       ])
     })
 
@@ -139,7 +136,7 @@ describe('PromptVersionService', () => {
       return Effect.succeed({
         id: createdVersionId,
         promptId,
-        workspaceId: data.workspaceId,
+        projectId: data.projectId,
         version: data.version,
         status: data.status,
         content: data.content,
@@ -150,8 +147,7 @@ describe('PromptVersionService', () => {
     promptService.updatePrompt.mockImplementation((id, patch) =>
       Effect.succeed({
         id,
-        workspaceId,
-        scopeType: 'global',
+        scopeId: projectId,
         name: 'Prompt',
         ...patch,
       } as any)
@@ -192,21 +188,20 @@ describe('PromptVersionService', () => {
     }
 
     const promptId = 'prompt-1'
-    const workspaceId = 'workspace-1'
+    const projectId = 'project-1'
     const createdVersionId = 'version-1'
 
     promptRepository.findById.mockImplementation(() =>
       Effect.succeed({
         id: promptId,
-        workspaceId,
-        scopeType: 'global',
+        scopeId: projectId,
         name: 'Prompt',
       } as any)
     )
 
     promptVersionRepo.find.mockImplementation(() =>
       Effect.succeed([
-        { id: createdVersionId, promptId, workspaceId, version: 1, status: 'draft' } as any,
+        { id: createdVersionId, promptId, projectId, version: 1, status: 'draft' } as any,
       ])
     )
 
@@ -214,7 +209,7 @@ describe('PromptVersionService', () => {
       Effect.succeed({
         id: createdVersionId,
         promptId,
-        workspaceId: data.workspaceId,
+        projectId: data.projectId,
         version: data.version,
         status: data.status,
         content: data.content,
@@ -225,8 +220,7 @@ describe('PromptVersionService', () => {
     promptRepository.patchById.mockImplementation((id, patch) =>
       Effect.succeed({
         id,
-        workspaceId,
-        scopeType: 'global',
+        scopeId: projectId,
         name: 'Prompt',
         ...patch,
       } as any)

@@ -7,7 +7,6 @@ export const activityItemTable = pgTable(
     id: uuid().primaryKey().defaultRandom(),
     tenantId: text().notNull(),
     scopeId: uuid().notNull(),
-    workspaceId: uuid().notNull(),
     projectId: uuid(),
     sourceKind: text().notNull(),
     sourceId: text().notNull(),
@@ -22,7 +21,6 @@ export const activityItemTable = pgTable(
   },
   (t) => [
     index('activity_item_idx_scope_created').on(t.tenantId, t.scopeId, t.createdAt),
-    index('activity_item_idx_workspace_created').on(t.tenantId, t.workspaceId, t.createdAt),
     index('activity_item_idx_project_created').on(t.tenantId, t.projectId, t.createdAt),
     index('activity_item_idx_source_kind_created').on(t.tenantId, t.sourceKind, t.createdAt),
   ]

@@ -96,7 +96,7 @@ export class KanbanBoardService implements IKanbanBoardServicePort {
     )
   }
 
-  ensureDefaultBoard(projectId: string, workspaceId: string): Effect.Effect<IbmKanbanBoard, KanbanBoardServiceError> {
+  ensureDefaultBoard(projectId: string): Effect.Effect<IbmKanbanBoard, KanbanBoardServiceError> {
     const stage = 'KanbanBoardService::ensureDefaultBoard'
     const defaultBoardName = 'Default'
 
@@ -105,9 +105,8 @@ export class KanbanBoardService implements IKanbanBoardServicePort {
 
     return pipe(
       validateInput(projectId, 'projectId', { stage }),
-      Effect.flatMap(() => validateInput(workspaceId, 'workspaceId', { stage })),
       Effect.flatMap((projectId) =>
-        this.kanbanBoardRepository.find({ matchEq: { projectId, workspaceId }, options: { limit: 1 } } as any).pipe(
+        this.kanbanBoardRepository.find({ matchEq: { projectId }, options: { limit: 1 } } as any).pipe(
           Effect.mapError(mapDbError({ stage, operation: 'find', factory: XfErrorFactory.notFound }))
         )
       ),
@@ -115,7 +114,7 @@ export class KanbanBoardService implements IKanbanBoardServicePort {
         if (boards.length > 0) return Effect.succeed(boards[0])
 
         return pipe(
-          this.createBoard({ workspaceId, projectId, name: defaultBoardName } as IbmKanbanBoardInsert),
+          this.createBoard({ projectId, name: defaultBoardName } as IbmKanbanBoardInsert),
           Effect.flatMap((board): Effect.Effect<IbmKanbanBoard, KanbanBoardServiceError> => {
             const boardId = board.id
             if (!boardId) {
@@ -125,7 +124,6 @@ export class KanbanBoardService implements IKanbanBoardServicePort {
               KANBAN_STATUS_KEYS,
               (statusKey, index) =>
                 this.kanbanColumnService.addColumn({
-                  workspaceId,
                   projectId,
                   boardId,
                   name: toColumnName(statusKey),

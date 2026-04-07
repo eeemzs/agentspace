@@ -12,7 +12,6 @@ export const ibmCodexChatMessageKeys = [
   'tenantId',
   'createdAt',
   'updatedAt',
-  'workspaceId',
   'projectId',
   'threadId',
   'externalThreadId',
@@ -38,4 +37,3 @@ export const bmCodexChatMessageMlgFields = mlgFieldsOf<IbmCodexChatMessage>()()
 type _VerifyMlgFields = EnsureExactMlgKeys<IbmCodexChatMessage, typeof bmCodexChatMessageMlgFields>
 const _verifyMlgFields: _VerifyMlgFields = true
 void _verifyMlgFields
-

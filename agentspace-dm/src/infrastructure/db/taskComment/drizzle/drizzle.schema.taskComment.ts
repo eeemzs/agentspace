@@ -2,16 +2,12 @@
 import { InferSelectModel } from 'drizzle-orm'
 import { projectTable } from '../../project/drizzle/drizzle.schema.project.js'
 import { taskTable } from '../../task/drizzle/drizzle.schema.task.js'
-import { workspaceTable } from '../../workspace/drizzle/drizzle.schema.workspace.js'
 
 export const taskCommentTable = pgTable(
   'task-comments',
   {
     id: uuid().primaryKey().defaultRandom(),
     tenantId: text().notNull(),
-    workspaceId: uuid()
-      .notNull()
-      .references(() => workspaceTable.id, { onDelete: 'cascade' }),
     projectId: uuid()
       .notNull()
       .references(() => projectTable.id, { onDelete: 'cascade' }),
@@ -26,7 +22,6 @@ export const taskCommentTable = pgTable(
   },
   (t) => [
     index('task_comment_idx_tenant').on(t.tenantId),
-    index('task_comment_idx_workspace').on(t.tenantId, t.workspaceId),
     index('task_comment_idx_project').on(t.tenantId, t.projectId),
     index('task_comment_idx_task').on(t.tenantId, t.taskId),
   ]

@@ -12,7 +12,7 @@ export const ibmPromptVersionKeys = [
   'tenantId',
   'createdAt',
   'updatedAt',
-  'workspaceId',
+  'projectId',
   'promptId',
   'version',
   'status',

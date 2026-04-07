@@ -65,7 +65,7 @@ describe('agentspace host-plugin lifecycle guards', () => {
     })
   })
 
-  it('injects workspace from request context when payload does not include workspace alias', async () => {
+  it('injects project from request context when payload does not include project context', async () => {
     const runner = vi.fn(async () => ({ ok: true }))
     const plugin = createAgentspacePlugin({ runner })
     const route = findRouteByOperation(plugin.manifest.routes, 'project.delete-cascade')
@@ -74,7 +74,7 @@ describe('agentspace host-plugin lifecycle guards', () => {
       request: createDomainRequest({
         method: route.method,
         body: { projectId: 'project-1' },
-        context: { tenantId: 'tenant-1', workspaceId: 'workspace-context-1' },
+        context: { tenantId: 'tenant-1', projectId: 'project-1' },
       }),
       match: { route, params: {} },
     })
@@ -84,13 +84,12 @@ describe('agentspace host-plugin lifecycle guards', () => {
       'project.delete-cascade',
       expect.objectContaining({
         projectId: 'project-1',
-        workspaceId: 'workspace-context-1',
       }),
     )
     expect(response).toEqual({ ok: true })
   })
 
-  it('returns validation failure when payload workspace conflicts with request context workspace', async () => {
+  it('returns validation failure when payload project conflicts with request context project', async () => {
     const runner = vi.fn(async () => ({ ok: true }))
     const plugin = createAgentspacePlugin({ runner })
     const route = findRouteByOperation(plugin.manifest.routes, 'project.delete-cascade')
@@ -98,8 +97,8 @@ describe('agentspace host-plugin lifecycle guards', () => {
     const response = await plugin.execute({
       request: createDomainRequest({
         method: route.method,
-        body: { projectId: 'project-2', workspaceId: 'workspace-input-2' },
-        context: { tenantId: 'tenant-1', workspaceId: 'workspace-context-2' },
+        body: { projectId: 'project-2' },
+        context: { tenantId: 'tenant-1', projectId: 'project-ctx-2' },
       }),
       match: { route, params: {} },
     })
@@ -114,7 +113,7 @@ describe('agentspace host-plugin lifecycle guards', () => {
       },
     })
     expect((response as { data: { message: string } }).data.message).toContain(
-      'validation_failed:workspace_context_mismatch',
+      'validation_failed:project_context_mismatch',
     )
   })
 
@@ -127,7 +126,7 @@ describe('agentspace host-plugin lifecycle guards', () => {
     const response = await plugin.execute({
       request: createDomainRequest({
         method: route.method,
-        body: { projectId: 'project-3', workspaceId: 'workspace-input-3' },
+        body: { projectId: 'project-3' },
         context: { tenantId: 'tenant-1' },
       }),
       match: { route, params: {} },
@@ -148,7 +147,7 @@ describe('agentspace host-plugin lifecycle guards', () => {
   it('returns a not_found envelope for foreign-key reference failures', async () => {
     const runner = vi.fn(async () => {
       throw new Error(
-        'insert into "memory_items" violates foreign key constraint "memory_items_workspaceId_workspaces_id_fk"',
+        'insert into "memory_items" violates foreign key constraint "memory_items_projectId_projects_id_fk"',
       )
     })
     const plugin = createAgentspacePlugin({ runner })
@@ -159,7 +158,6 @@ describe('agentspace host-plugin lifecycle guards', () => {
         method: route.method,
         body: {
           data: {
-            workspaceId: 'workspace-input-5',
             projectId: 'project-5',
             scopeType: 'project',
             scopeId: 'project-5',
@@ -178,7 +176,7 @@ describe('agentspace host-plugin lifecycle guards', () => {
         ok: false,
         errorCode: 'agentspace_operation_failed.invalid_reference',
         operation: 'memory-item.add-memory-item',
-        message: 'Referenced workspace, project, or owner scope record was not found for the supplied ids.',
+        message: 'Referenced project or owner scope record was not found for the supplied ids.',
       },
     })
   })
@@ -192,7 +190,7 @@ describe('agentspace host-plugin lifecycle guards', () => {
     const response = await plugin.execute({
       request: createDomainRequest({
         method: route.method,
-        body: { projectId: 'project-4', workspaceId: 'workspace-input-4' },
+        body: { projectId: 'project-4' },
         context: { tenantId: 'tenant-1' },
       }),
       match: { route, params: {} },
@@ -221,14 +219,14 @@ describe('agentspace host-plugin lifecycle guards', () => {
         method: route.method,
         body: {
           data: {
-            workspaceId: 'workspace-input-1',
+            projectId: 'project-1',
             threadId: 'thread-1',
             role: 'user',
             text: 'hello',
             seq: 1,
           },
         },
-        context: { tenantId: 'tenant-1', workspaceId: 'workspace-context-1' },
+        context: { tenantId: 'tenant-1', projectId: 'project-1' },
       }),
       match: { route, params: {} },
     })
@@ -253,7 +251,7 @@ describe('agentspace host-plugin lifecycle guards', () => {
           role: 'user',
           limit: 25,
         },
-        context: { tenantId: 'tenant-1', workspaceId: 'workspace-context-1' },
+        context: { tenantId: 'tenant-1', projectId: 'project-1' },
       }),
       match: { route, params: {} },
     })
@@ -262,7 +260,7 @@ describe('agentspace host-plugin lifecycle guards', () => {
     expect(runner).toHaveBeenCalledTimes(1)
     const payload = runner.mock.calls[0][1] as { filter?: Record<string, unknown>; options?: Record<string, unknown> }
     expect(payload.filter).toMatchObject({
-      workspaceId: 'workspace-context-1',
+      projectId: 'project-1',
       externalThreadId: 'thread-ext-1',
       role: 'user',
     })
@@ -286,7 +284,7 @@ describe('agentspace host-plugin lifecycle guards', () => {
             status: 'draft',
           },
         },
-        context: { tenantId: 'tenant-1', workspaceId: 'workspace-context-1' },
+        context: { tenantId: 'tenant-1', projectId: 'project-scope-1' },
       }),
       match: { route, params: {} },
     })
@@ -303,6 +301,8 @@ describe('agentspace host-plugin lifecycle guards', () => {
       }),
     )
     const payload = runner.mock.calls[0][1] as { data?: Record<string, unknown> }
+    expect(payload.data?.scopeId).toBe('project-scope-1')
+    expect(payload.data?.projectId).toBeUndefined()
     expect(payload.data?.workspaceId).toBeUndefined()
   })
 

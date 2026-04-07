@@ -1,8 +1,8 @@
 ﻿import type { DefaultServiceProviderOptions, RegistryStats, ServiceCacheOptions, MetricsCollector, RetryOptions, CircuitBreaker, RepositoryEndpoint } from '@aopslab/xf-dm-kits'
 import type { RepositoryConfig } from '@aopslab/xf-db'
 import type { XfLogger } from '@aopslab/xf-logger'
-import type { IProjectServicePort, IProjectPathServicePort, IPromptServicePort, IPromptVersionServicePort, IResourceServicePort, ISkillServicePort, ISkillVersionServicePort, IKanbanBoardServicePort, IKanbanColumnServicePort, ISprintServicePort, ISprintItemServicePort, ITaskServicePort, ITaskCommentServicePort, IAgentSessionServicePort, IAgentRunServicePort, IAgentRunEventServicePort, IActivityItemServicePort, IArtifactServicePort, IArtifactLinkServicePort, ICodexChatMessageServicePort, ICodexChatSettingServicePort, ICodexChatThreadServicePort, IProjectSummaryServicePort, IMemoryItemServicePort, ITagServicePort, IWorkflowDefinitionServicePort, IWorkflowInstanceServicePort, IWorkflowStepRunServicePort, IWorkspaceServicePort, IWorkspaceMemberServicePort, IProjectMemberServicePort } from '@aopslab/domain-dm-agentspace/ports'
-import type { IRepositoryPortProject, IRepositoryPortProjectPath, IRepositoryPortPrompt, IRepositoryPortPromptVersion, IRepositoryPortResource, IRepositoryPortScope, IRepositoryPortSkill, IRepositoryPortSkillVersion, IRepositoryPortKanbanBoard, IRepositoryPortKanbanColumn, IRepositoryPortSprint, IRepositoryPortSprintItem, IRepositoryPortTask, IRepositoryPortTaskComment, IRepositoryPortAgentSession, IRepositoryPortAgentRun, IRepositoryPortAgentRunEvent, IRepositoryPortActivityItem, IRepositoryPortArtifact, IRepositoryPortArtifactLink, IRepositoryPortCodexChatMessage, IRepositoryPortCodexChatSetting, IRepositoryPortCodexChatThread, IRepositoryPortProjectSummary, IRepositoryPortMemoryItem, IRepositoryPortTag, IRepositoryPortWorkflowDefinition, IRepositoryPortWorkflowInstance, IRepositoryPortWorkflowStepRun, IRepositoryPortWorkspace, IRepositoryPortWorkspaceMember, IRepositoryPortProjectMember } from '@aopslab/domain-dm-agentspace/repository-ports'
+import type { IProjectServicePort, IProjectPathServicePort, IPromptServicePort, IPromptVersionServicePort, IResourceServicePort, ISkillServicePort, ISkillVersionServicePort, IKanbanBoardServicePort, IKanbanColumnServicePort, ISprintServicePort, ISprintItemServicePort, ITaskServicePort, ITaskCommentServicePort, IAgentSessionServicePort, IAgentRunServicePort, IAgentRunEventServicePort, IActivityItemServicePort, IArtifactServicePort, IArtifactLinkServicePort, ICodexChatMessageServicePort, ICodexChatSettingServicePort, ICodexChatThreadServicePort, IProjectSummaryServicePort, IMemoryItemServicePort, ITagServicePort, IWorkflowDefinitionServicePort, IWorkflowInstanceServicePort, IWorkflowStepRunServicePort, IProjectMemberServicePort } from '@aopslab/domain-dm-agentspace/ports'
+import type { IRepositoryPortProject, IRepositoryPortProjectPath, IRepositoryPortPrompt, IRepositoryPortPromptVersion, IRepositoryPortResource, IRepositoryPortScope, IRepositoryPortSkill, IRepositoryPortSkillVersion, IRepositoryPortKanbanBoard, IRepositoryPortKanbanColumn, IRepositoryPortSprint, IRepositoryPortSprintItem, IRepositoryPortTask, IRepositoryPortTaskComment, IRepositoryPortAgentSession, IRepositoryPortAgentRun, IRepositoryPortAgentRunEvent, IRepositoryPortActivityItem, IRepositoryPortArtifact, IRepositoryPortArtifactLink, IRepositoryPortCodexChatMessage, IRepositoryPortCodexChatSetting, IRepositoryPortCodexChatThread, IRepositoryPortProjectSummary, IRepositoryPortMemoryItem, IRepositoryPortTag, IRepositoryPortWorkflowDefinition, IRepositoryPortWorkflowInstance, IRepositoryPortWorkflowStepRun, IRepositoryPortProjectMember } from '@aopslab/domain-dm-agentspace/repository-ports'
 
 export interface AgentspaceKitContext {
   tenantId: string
@@ -17,8 +17,6 @@ export interface AgentspaceKitStaticConfig {
   projectRepository: RepositoryEndpoint
   projectPathRepository: RepositoryEndpoint
   scopeRepository: RepositoryEndpoint
-  workspaceRepository: RepositoryEndpoint
-  workspaceMemberRepository: RepositoryEndpoint
   projectMemberRepository: RepositoryEndpoint
   promptRepository: RepositoryEndpoint
   promptVersionRepository: RepositoryEndpoint
@@ -55,8 +53,6 @@ export interface AgentspaceKitServiceProviderOptions extends DefaultServiceProvi
   projectRepositoryConfig: RepositoryConfig
   projectPathRepositoryConfig: RepositoryConfig
   scopeRepositoryConfig: RepositoryConfig
-  workspaceRepositoryConfig: RepositoryConfig
-  workspaceMemberRepositoryConfig: RepositoryConfig
   projectMemberRepositoryConfig: RepositoryConfig
   promptRepositoryConfig: RepositoryConfig
   promptVersionRepositoryConfig: RepositoryConfig
@@ -89,8 +85,6 @@ export interface AgentspaceKitServiceProviderOptions extends DefaultServiceProvi
 export interface AgentspaceKitServices {
   projectService: IProjectServicePort
   projectPathService: IProjectPathServicePort
-  workspaceService: IWorkspaceServicePort
-  workspaceMemberService: IWorkspaceMemberServicePort
   projectMemberService: IProjectMemberServicePort
   promptService: IPromptServicePort
   promptVersionService: IPromptVersionServicePort
@@ -124,8 +118,6 @@ export interface AgentspaceKitRepositories {
   projectRepository: IRepositoryPortProject
   projectPathRepository: IRepositoryPortProjectPath
   scopeRepository: IRepositoryPortScope
-  workspaceRepository: IRepositoryPortWorkspace
-  workspaceMemberRepository: IRepositoryPortWorkspaceMember
   projectMemberRepository: IRepositoryPortProjectMember
   promptRepository: IRepositoryPortPrompt
   promptVersionRepository: IRepositoryPortPromptVersion
@@ -164,10 +156,6 @@ export interface AgentspaceKitProvider {
   createProjectService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['projectService']>
   getProjectPathService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['projectPathService']>
   createProjectPathService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['projectPathService']>
-  getWorkspaceService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['workspaceService']>
-  createWorkspaceService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['workspaceService']>
-  getWorkspaceMemberService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['workspaceMemberService']>
-  createWorkspaceMemberService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['workspaceMemberService']>
   getProjectMemberService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['projectMemberService']>
   createProjectMemberService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['projectMemberService']>
   getPromptService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['promptService']>
@@ -225,8 +213,6 @@ export interface AgentspaceKitProvider {
   getProjectRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['projectRepository']>
   getProjectPathRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['projectPathRepository']>
   getScopeRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['scopeRepository']>
-  getWorkspaceRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['workspaceRepository']>
-  getWorkspaceMemberRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['workspaceMemberRepository']>
   getProjectMemberRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['projectMemberRepository']>
   getPromptRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['promptRepository']>
   getPromptVersionRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['promptVersionRepository']>
@@ -259,8 +245,6 @@ export interface AgentspaceKitProvider {
   clearServiceCache(cacheKey?: string): void
   clearProjectServiceCache(cacheKey?: string): void
   clearProjectPathServiceCache(cacheKey?: string): void
-  clearWorkspaceServiceCache(cacheKey?: string): void
-  clearWorkspaceMemberServiceCache(cacheKey?: string): void
   clearProjectMemberServiceCache(cacheKey?: string): void
   clearPromptServiceCache(cacheKey?: string): void
   clearPromptVersionServiceCache(cacheKey?: string): void

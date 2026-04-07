@@ -11,7 +11,6 @@ const activityItemRefSchema = z.object({
 export const activityItemZodSchema = z.object({
   ...IbmZodSchema.shape,
   scopeId: z.string(),
-  workspaceId: z.string(),
   projectId: z.string().optional(),
   sourceKind: z.enum(['aops-cli', 'desktop', 'runner', 'system']),
   sourceId: z.string(),

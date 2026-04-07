@@ -12,7 +12,6 @@ export const ibmTaskCommentKeys = [
   'tenantId',
   'createdAt',
   'updatedAt',
-  'workspaceId',
   'projectId',
   'taskId',
   'author',

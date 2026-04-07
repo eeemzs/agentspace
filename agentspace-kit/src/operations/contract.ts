@@ -96,7 +96,6 @@ function toDefaultExampleFromArgs(spec: AgentspaceOperationSpec): string {
     else if (arg.name === 'scopeId') payload.scopeId = '<scopeId>'
     else if (arg.name === 'scopeResolution') payload.scopeResolution = 'cascade'
     else if (arg.name === 'projectId') payload.projectId = '<projectId>'
-    else if (arg.name === 'workspaceId') payload.workspaceId = '<workspaceId>'
     else if (arg.name === 'taskId') payload.taskId = '<taskId>'
     else if (arg.name === 'promptId') payload.promptId = '<promptId>'
     else if (arg.name === 'skillId') payload.skillId = '<skillId>'

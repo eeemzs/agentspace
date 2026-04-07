@@ -20,12 +20,12 @@ describe('Workflow catalog services', () => {
 
     const service = new WorkflowDefinitionService({ workflowDefinitionRepository: repo as any })
     const result = await Effect.runPromise(
-      service.listWorkflowDefinitions({ workspaceId: 'workspace-1', subjectType: 'projectman.issue' })
+      service.listWorkflowDefinitions({ scopeId: 'project-1', subjectType: 'projectman.issue' })
     )
 
     expect(result).toEqual([{ id: 'wf-def-1' }])
     expect(repo.find).toHaveBeenCalledWith({
-      matchEq: { workspaceId: 'workspace-1', subjectType: 'projectman.issue' },
+      matchEq: { scopeId: 'project-1', subjectType: 'projectman.issue' },
       options: undefined,
     })
   })
@@ -36,12 +36,12 @@ describe('Workflow catalog services', () => {
 
     const service = new WorkflowInstanceService({ workflowInstanceRepository: repo as any })
     const result = await Effect.runPromise(
-      service.listWorkflowInstances({ workspaceId: 'workspace-1', status: 'running', subjectType: 'projectman.issue' })
+      service.listWorkflowInstances({ scopeId: 'project-1', status: 'running', subjectType: 'projectman.issue' })
     )
 
     expect(result).toEqual([{ id: 'wf-inst-1' }])
     expect(repo.find).toHaveBeenCalledWith({
-      matchEq: { workspaceId: 'workspace-1', status: 'running', subjectType: 'projectman.issue' },
+      matchEq: { scopeId: 'project-1', status: 'running', subjectType: 'projectman.issue' },
       options: undefined,
     })
   })

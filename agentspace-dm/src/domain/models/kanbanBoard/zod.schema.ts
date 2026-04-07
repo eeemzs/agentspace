@@ -5,7 +5,6 @@ import { IKanbanBoardZodCtx } from './resources.js'
 export const kanbanBoardZodSchema = z
   .object({
     ...IbmZodSchema.shape,
-    workspaceId: z.string(),
     projectId: z.string(),
     name: z.string(),
     description: z.string().optional(),

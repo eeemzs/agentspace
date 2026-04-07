@@ -12,7 +12,6 @@ export const ibmProjectPathKeys = [
   'tenantId',
   'createdAt',
   'updatedAt',
-  'workspaceId',
   'projectId',
   'pathKey',
   'path',

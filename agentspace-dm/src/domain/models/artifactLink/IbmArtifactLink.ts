@@ -12,7 +12,6 @@ export const ibmArtifactLinkKeys = [
   'tenantId',
   'createdAt',
   'updatedAt',
-  'workspaceId',
   'projectId',
   'artifactId',
   'refType',

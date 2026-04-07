@@ -2,17 +2,15 @@ import { index, integer, pgTable, text, timestamp, uniqueIndex, uuid } from 'dri
 import { InferSelectModel } from 'drizzle-orm'
 import { codexChatThreadTable } from '../../codexChatThread/drizzle/drizzle.schema.codexChatThread.js'
 import { projectTable } from '../../project/drizzle/drizzle.schema.project.js'
-import { workspaceTable } from '../../workspace/drizzle/drizzle.schema.workspace.js'
 
 export const codexChatMessageTable = pgTable(
   'codex-chat-messages',
   {
     id: uuid().primaryKey().defaultRandom(),
     tenantId: text().notNull(),
-    workspaceId: uuid()
+    projectId: uuid()
       .notNull()
-      .references(() => workspaceTable.id, { onDelete: 'cascade' }),
-    projectId: uuid().references(() => projectTable.id, { onDelete: 'set null' }),
+      .references(() => projectTable.id, { onDelete: 'cascade' }),
     threadId: uuid()
       .notNull()
       .references(() => codexChatThreadTable.id, { onDelete: 'cascade' }),
@@ -32,7 +30,7 @@ export const codexChatMessageTable = pgTable(
     uniqueIndex('codex_chat_message_tenant_thread_seq_unique').on(t.tenantId, t.threadId, t.seq),
     index('codex_chat_message_idx_tenant').on(t.tenantId),
     index('codex_chat_message_idx_thread_messageat').on(t.tenantId, t.threadId, t.messageAt),
-    index('codex_chat_message_idx_workspace_messageat').on(t.tenantId, t.workspaceId, t.messageAt),
+    index('codex_chat_message_idx_project_messageat').on(t.tenantId, t.projectId, t.messageAt),
   ]
 )
 

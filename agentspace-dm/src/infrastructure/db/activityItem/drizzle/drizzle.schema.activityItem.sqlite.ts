@@ -8,7 +8,6 @@ export const activityItemTableSqlite = sqliteTable(
     id: text().primaryKey().$defaultFn(() => randomUUID()),
     tenantId: text().notNull(),
     scopeId: text().notNull(),
-    workspaceId: text().notNull(),
     projectId: text(),
     sourceKind: text().notNull(),
     sourceId: text().notNull(),
@@ -23,7 +22,6 @@ export const activityItemTableSqlite = sqliteTable(
   },
   (t) => [
     index('activity_item_idx_scope_created').on(t.tenantId, t.scopeId, t.createdAt),
-    index('activity_item_idx_workspace_created').on(t.tenantId, t.workspaceId, t.createdAt),
     index('activity_item_idx_project_created').on(t.tenantId, t.projectId, t.createdAt),
     index('activity_item_idx_source_kind_created').on(t.tenantId, t.sourceKind, t.createdAt),
   ]

@@ -3,16 +3,13 @@ import { InferSelectModel } from 'drizzle-orm'
 import { agentSessionTable } from '../../agentSession/drizzle/drizzle.schema.agentSession.js'
 import { projectTable } from '../../project/drizzle/drizzle.schema.project.js'
 import { taskTable } from '../../task/drizzle/drizzle.schema.task.js'
-import { workspaceTable } from '../../workspace/drizzle/drizzle.schema.workspace.js'
 
 export const agentRunTable = pgTable(
   'agent-runs',
   {
     id: uuid().primaryKey().defaultRandom(),
     tenantId: text().notNull(),
-    workspaceId: uuid()
-      .notNull()
-      .references(() => workspaceTable.id, { onDelete: 'cascade' }),
+    scopeId: uuid().notNull(),
     projectId: uuid().references(() => projectTable.id, { onDelete: 'set null' }),
     agentSessionId: uuid()
       .notNull()
@@ -39,7 +36,7 @@ export const agentRunTable = pgTable(
   },
   (t) => [
     index('agent_run_idx_tenant').on(t.tenantId),
-    index('agent_run_idx_workspace').on(t.tenantId, t.workspaceId),
+    index('agent_run_idx_scope').on(t.tenantId, t.scopeId),
     index('agent_run_idx_session_started').on(t.tenantId, t.agentSessionId, t.startedAt),
     index('agent_run_idx_task_started').on(t.tenantId, t.taskId, t.startedAt),
     index('agent_run_idx_project').on(t.tenantId, t.projectId),

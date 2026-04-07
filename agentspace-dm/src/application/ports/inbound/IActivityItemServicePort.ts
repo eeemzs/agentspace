@@ -7,7 +7,6 @@ import { IbmActivityItem, IbmActivityItemInsert } from '../../../domain/models/i
 export interface ActivityItemListFilter {
   scopeId?: string
   scopeResolution?: ScopeResolution
-  workspaceId?: string
   projectId?: string
   sourceKind?: string
   sourceId?: string

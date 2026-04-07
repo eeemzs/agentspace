@@ -242,10 +242,9 @@ export class PromptVersionService implements IPromptVersionServicePort {
           : Effect.fail(XfErrorFactory.notFound({ stage, identifier: promptId }))
       ),
       Effect.flatMap((prompt): Effect.Effect<IbmPromptVersionInsert, PromptVersionServiceError> => {
-        const dataWorkspaceId = normalizeNonEmpty(data?.workspaceId)
-        const workspaceId = dataWorkspaceId
-        if (!workspaceId) {
-          return Effect.fail(XfErrorFactory.inputRequired({ field: 'workspaceId', stage })).pipe(
+        const projectId = normalizeNonEmpty(data?.projectId) ?? normalizeNonEmpty(prompt.scopeId)
+        if (!projectId) {
+          return Effect.fail(XfErrorFactory.inputRequired({ field: 'projectId', stage })).pipe(
             Effect.mapError((cause): PromptVersionServiceError => cause)
           )
         }
@@ -254,8 +253,8 @@ export class PromptVersionService implements IPromptVersionServicePort {
         if (explicitVersion !== undefined) {
           return Effect.succeed({
             ...data,
+            projectId,
             promptId,
-            workspaceId,
             version: explicitVersion,
           } as IbmPromptVersionInsert)
         }
@@ -266,8 +265,8 @@ export class PromptVersionService implements IPromptVersionServicePort {
           Effect.mapError(mapDbError({ stage, operation: 'find', factory: XfErrorFactory.createFailed })),
           Effect.map((versions) => ({
             ...data,
+            projectId,
             promptId,
-            workspaceId,
             version: Number(selectHighestPromptVersion(versions)?.version ?? 0) + 1,
           } as IbmPromptVersionInsert)),
           Effect.mapError((cause): PromptVersionServiceError => cause)

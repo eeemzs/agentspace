@@ -1,6 +1,6 @@
 # agentspace
 
-Agentspace domain workspace for dm, kit, host-plugin, tooling, cli, and tests.
+Agentspace domain for dm, kit, host-plugin, tooling, cli, and tests.
 
 ## User Guide
 
@@ -10,7 +10,7 @@ Agentspace domain workspace for dm, kit, host-plugin, tooling, cli, and tests.
 
 ## Packages
 
-- `agentspace-dm`: workspace-scoped agent data domain model and repositories
+- `agentspace-dm`: project-scoped agent data domain model and repositories
 - `agentspace-kit`: canonical operation contracts, executor, DCM, and host routes
 - `agentspace-tooling`: tooling facade plus derived manifest generation (`dcm`, `routes`, `agent`, `cli`, `ops`)
 - `agentspace-cli`: canonical `tool` / `op` invoke plus generated sugar commands and projection-driven help
@@ -40,10 +40,10 @@ pnpm run db:push
 ```bash
 pnpm --filter @aopslab/domain-cli-agentspace run start:tsx -- tools
 pnpm --filter @aopslab/domain-cli-agentspace run start:tsx -- manifest cli
-pnpm --filter @aopslab/domain-cli-agentspace run start:tsx -- manifest get dcm --path docs.operations.workspace.list-workspaces
-pnpm --filter @aopslab/domain-cli-agentspace run start:tsx -- manifest show cli --path commandsById.workspace.list-workspaces
-pnpm --filter @aopslab/domain-cli-agentspace run start:tsx -- workspace list-workspaces --workspace-id <id>
-pnpm --filter @aopslab/domain-cli-agentspace run start:tsx -- op agentspace.project.create --data '{"workspaceId":"<id>","name":"Demo"}'
+pnpm --filter @aopslab/domain-cli-agentspace run start:tsx -- manifest get dcm --path docs.operations.project.list-projects
+pnpm --filter @aopslab/domain-cli-agentspace run start:tsx -- manifest show cli --path commandsById.project.list-projects
+pnpm --filter @aopslab/domain-cli-agentspace run start:tsx -- project list-projects --project-id <id>
+pnpm --filter @aopslab/domain-cli-agentspace run start:tsx -- op agentspace.project.create --data '{"name":"Demo"}' --project-id <id>
 ```
 
 ## Projection Rule
@@ -58,7 +58,7 @@ pnpm --filter @aopslab/domain-cli-agentspace run start:tsx -- op agentspace.proj
 - Standalone CLI runtime defaults to host-plugin execution and can fall back to tooling mode with `--execution-mode tooling`.
 - Repo URL precedence is `--repo-url -> AGENTSPACE_REPO_URL -> AGENTSPACE_SQLITE_URL -> AGENTSPACE_PG_URL -> AOPS_PG_URL -> DEV_PG_URL -> file:~/.aops/agentspace.aops.sqlite`.
 - Hicbir repo source verilmezse CLI local sqlite fallback dosyasini bootstrap eder.
-- Workspace-scoped operations should receive either explicit payload workspace fields or `--workspace-id` context.
+- Project-scoped operations should receive `scopeId` or `--project-id` context.
 
 ## AOPS Hosted Refresh Recipe
 

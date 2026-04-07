@@ -2,16 +2,12 @@ import { InferSelectModel } from 'drizzle-orm'
 import { randomUUID } from 'node:crypto'
 import { index, integer, text, sqliteTable, uniqueIndex } from 'drizzle-orm/sqlite-core'
 import { projectTableSqlite as projectTable } from '../../project/drizzle/drizzle.schema.project.sqlite.js'
-import { workspaceTableSqlite as workspaceTable } from '../../workspace/drizzle/drizzle.schema.workspace.sqlite.js'
 
 export const projectPathTableSqlite = sqliteTable(
   'project-paths',
   {
     id: text().primaryKey().$defaultFn(() => randomUUID()),
     tenantId: text().notNull(),
-    workspaceId: text()
-      .notNull()
-      .references(() => workspaceTable.id, { onDelete: 'cascade' }),
     projectId: text()
       .notNull()
       .references(() => projectTable.id, { onDelete: 'cascade' }),
@@ -26,7 +22,6 @@ export const projectPathTableSqlite = sqliteTable(
   (t) => [
     uniqueIndex('project_path_unique_key').on(t.tenantId, t.projectId, t.pathKey),
     index('project_path_idx_tenant').on(t.tenantId),
-    index('project_path_idx_workspace').on(t.tenantId, t.workspaceId),
     index('project_path_idx_project').on(t.tenantId, t.projectId),
   ]
 )

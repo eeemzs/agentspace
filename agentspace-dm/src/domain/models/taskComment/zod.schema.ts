@@ -4,7 +4,6 @@ import { ITaskCommentZodCtx } from './resources.js'
 
 export const taskCommentZodSchema = z.object({
   ...IbmZodSchema.shape,
-  workspaceId: z.string(),
   projectId: z.string(),
   taskId: z.string(),
   author: z.string(),

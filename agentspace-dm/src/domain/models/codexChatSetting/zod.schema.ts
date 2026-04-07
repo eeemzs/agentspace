@@ -13,7 +13,7 @@ const CODEX_CHAT_APPROVALS_REVIEWERS = ['user', 'guardian_subagent'] as const
 
 export const codexChatSettingZodSchema = z.object({
   ...IbmZodSchema.shape,
-  workspaceId: z.string(),
+  projectId: z.string(),
   userId: z.string(),
   binaryPath: z.string().nullable().optional(),
   model: z.string().nullable().optional(),

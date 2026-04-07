@@ -9,15 +9,14 @@ ve `aops-cli` uzerinden nasil kullanilacagini anlatir.
 
 Owner oldugu baslica capability aileleri:
 
-1. workspace
-2. project
-3. prompt
-4. resource
-5. skill
-6. artifact
-7. memory-item
-8. project-summary
-9. activity-item
+1. project
+2. prompt
+3. resource
+4. skill
+5. artifact
+6. memory-item
+7. project-summary
+8. activity-item
 
 Kisa kural:
 
@@ -25,10 +24,6 @@ Kisa kural:
 2. durable context `agentspace`
 
 ## 2. En onemli entity'ler
-
-### Workspace
-
-Tenant ici top-level sahiplik alani.
 
 ### Project
 
@@ -62,7 +57,7 @@ Prompt modeli:
    - `scopeId` owner'lidir
 2. `prompt-version`
    - actual content + lineage
-   - `workspaceId + promptId + version`
+   - lineage kaydi dogrudan `projectId` ile tutulur
 
 Skill modeli:
 
@@ -71,7 +66,7 @@ Skill modeli:
    - `scopeId` owner'lidir
 2. `skill-version`
    - actual content + lineage
-   - `workspaceId + skillId + version`
+   - lineage kaydi dogrudan `projectId` ile tutulur
 
 Not:
 
@@ -86,14 +81,14 @@ Artifact modeli:
    - `artifactType`, `storagePath`, `label`, `mimeType`, `sizeBytes`, `hash`, `meta`
 2. `artifact-link`
    - project-scoped relation kaydidir
-   - `workspaceId + projectId + artifactId + refType + refId`
+   - relation kaydi dogrudan `projectId` ile tutulur
 
 Activity modeli:
 
 1. `activity-item`
    - immutable operator ledger
    - `scopeId` canonical filter alanidir
-   - `workspaceId`, opsiyonel `projectId`
+   - project filter'i `projectId` ile tutulur
    - `sourceKind`, `sourceId`, `action`, `status`, `summary`, `refs`, `payload`
 
 ## 3. Memory modelleri
@@ -132,7 +127,6 @@ Ornek:
 
 ```bash
 aops-cli agent tools --domain agentspace
-aops-cli workspace list --json
 aops-cli project list --json
 aops-cli memory list --subject project --json
 aops-cli memory get --id <memory-id> --json
@@ -146,27 +140,21 @@ aops-cli summary write --summary "Current status" --apply --json
 aops-cli summary get --json
 ```
 
-Workspace / project sugar:
+Project sugar:
 
 ```bash
-aops-cli workspace list --json
-aops-cli workspace get --id <workspace-id> --json
-aops-cli workspace create --name "Demo Workspace" --description "Test alani" --sharing-enabled true --apply --json
-aops-cli workspace update --id <workspace-id> --description "Yeni aciklama" --apply --json
-aops-cli workspace delete --id <workspace-id> --apply --confirm --json
-
 aops-cli project list --json
 aops-cli project get --id <project-id> --json
-aops-cli project create --workspace-name Default --name "Demo Project" --slug demo-project --status active --visibility private --project-type software --apply --json
+aops-cli project create --name "Demo Project" --slug demo-project --status active --visibility private --project-type software --apply --json
 aops-cli project update --id <project-id> --description "Yeni aciklama" --apply --json
 aops-cli project delete --id <project-id> --apply --confirm --json
 ```
 
 Kural:
 
-1. `workspace` ve `project` sugar hosted `agentspace.workspace.*` ve `agentspace.project.*` surface'lerinin operator-friendly karsiligidir
+1. `project` sugar hosted `agentspace.project.*` surface'inin operator-friendly karsiligidir
 2. `list` varsayilan olarak tablo basar; scriptable output icin `--json` kullan
-3. `project list/get` icin workspace baglami zorunlu degildir; `project create` workspace baglamini explicit ister ve `--workspace-name` en okunabilir secenektir
+3. `scopeId` varsayilan olarak `projectId` ile aynidir; project-first owner modeli varsayilir
 4. destructive operasyonlar `--apply --confirm` ister
 
 Prompt sugar:
@@ -185,7 +173,7 @@ aops-cli prompt current --id <prompt-id> --json
 Kural:
 
 1. prompt create `scopeId` owner field kullanir
-2. prompt-version create `workspaceId` lineage field kullanir
+2. prompt-version create icinde lineage `projectId` ile tutulur
 3. publish current version'i domain tarafinda sync eder
 4. bu surface reusable prompt template authoring icindir; execution engine degildir
 
@@ -239,7 +227,7 @@ aops-cli skill current --id <skill-id> --json
 Kural:
 
 1. `skill` reusable capability shell kaydidir ve `scopeId` owner'lidir
-2. `skill-version` content ve lineage kaydidir; `workspaceId + skillId + version` ile ilerler
+2. `skill-version` content ve lineage kaydidir; lineage `projectId` ile tutulur
 3. `skill version publish` current version sync'ini domain tarafinda yapar
 4. `skill version create` icin `--version` opsiyoneldir; verilmezse CLI mevcut skill version zincirinden bir sonraki sayiyi hesaplar
 5. bu surface inventory/authoring/versioning icindir; execution engine degildir
@@ -251,7 +239,7 @@ Ortak hosted sugar contract:
 3. `prompt`, `resource`, `skill` ve `artifact` aileleri ayni envelope contract'ini kullanir:
    `command`, `toolId`, `resolvedContext`, `input`, `result`, opsiyonel `artifacts`
 4. durable activity yalniz mutating hosted write'larda append edilir
-5. desktop'ta `Projects > Logs` ve `Workspaces > Activity` ayni truth'u farkli baglamda gosterir
+5. desktop'ta `Projects > Logs` ve `Projects > Activity` ayni truth'u farkli baglamda gosterir
 
 Sticky guidance:
 

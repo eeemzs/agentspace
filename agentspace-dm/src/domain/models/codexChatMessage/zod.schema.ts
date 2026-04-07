@@ -5,8 +5,7 @@ import { ICodexChatMessageZodCtx } from './resources.js'
 
 export const codexChatMessageZodSchema = z.object({
   ...IbmZodSchema.shape,
-  workspaceId: z.string(),
-  projectId: z.string().nullable().optional(),
+  projectId: z.string(),
   threadId: z.string(),
   externalThreadId: z.string().optional(),
   role: z.enum(CODEX_CHAT_MESSAGE_ROLES),
@@ -32,4 +31,3 @@ export const codexChatMessageZodSchemaInsert = codexChatMessageZodSchema
 export const createCodexChatMessageZodSchemaWithContext = (_ctx?: ICodexChatMessageZodCtx) => {
   return codexChatMessageZodSchema.strict()
 }
-

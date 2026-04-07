@@ -7,7 +7,7 @@ type AgentspaceCatalogRow = (typeof AGENTSPACE_OPERATION_CATALOG_ROWS)[number]
 type AgentspaceOperationId = Extract<AgentspaceCatalogRow['operationId'], string>
 
 type AgentspaceSpecialMethods = {
-  hardDeleteAgentspaceProjectCascade: (workspaceId: string, projectId: string) => Promise<unknown>
+  hardDeleteAgentspaceProjectCascade: (projectId: string) => Promise<unknown>
 }
 
 type AgentspaceServiceByKey = AgentspaceKitServices & {
@@ -75,10 +75,8 @@ export type AgentspaceTypedOperationId = AgentspaceOperationId
 
 export type AgentspaceOperationHostContextInput = {
   tenantId?: string
-  workspaceId?: string
-  workspaceUuid?: string
-  workspaceUid?: string
-  workspaceName?: string
+  projectId?: string
+  scopeId?: string
   locale?: string
   fallbackLocale?: string
 }

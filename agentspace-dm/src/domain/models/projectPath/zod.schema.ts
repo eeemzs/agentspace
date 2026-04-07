@@ -5,7 +5,6 @@ import { IProjectPathZodCtx } from './resources.js'
 export const projectPathZodSchema = z
   .object({
     ...IbmZodSchema.shape,
-    workspaceId: z.string(),
     projectId: z.string(),
     pathKey: z.string(),
     path: z.string(),

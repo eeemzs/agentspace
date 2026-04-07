@@ -12,7 +12,6 @@ export const ibmProjectSummaryKeys = [
   'tenantId',
   'createdAt',
   'updatedAt',
-  'workspaceId',
   'projectId',
   'summary',
   'decisions',

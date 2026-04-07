@@ -89,10 +89,9 @@ const CODEX_CHAT_MESSAGE_CREATE_INPUT_SCHEMA: JsonSchema = {
     data: {
       type: 'object',
       additionalProperties: false,
-      required: ['workspaceId', 'threadId', 'role', 'text', 'messageAt', 'seq'],
+      required: ['projectId', 'threadId', 'role', 'text', 'messageAt', 'seq'],
       properties: {
-        workspaceId: { type: 'string', minLength: 1 },
-        projectId: { type: ['string', 'null'] },
+        projectId: { type: 'string', minLength: 1 },
         threadId: { type: 'string', minLength: 1 },
         externalThreadId: { type: 'string', minLength: 1 },
         role: { type: 'string', enum: ['user', 'assistant', 'system'] },
@@ -145,9 +144,8 @@ const PROJECT_CREATE_INPUT_SCHEMA: JsonSchema = {
     data: {
       type: 'object',
       additionalProperties: true,
-      required: ['workspaceId', 'name'],
+      required: ['name'],
       properties: {
-        workspaceId: { type: 'string', minLength: 1 },
         name: { type: 'string', minLength: 1 },
       },
     },
@@ -162,9 +160,8 @@ const PROJECT_PATH_UPSERT_INPUT_SCHEMA: JsonSchema = {
     data: {
       type: 'object',
       additionalProperties: true,
-      required: ['workspaceId', 'projectId', 'pathKey', 'path'],
+      required: ['projectId', 'pathKey', 'path'],
       properties: {
-        workspaceId: { type: 'string', minLength: 1 },
         projectId: { type: 'string', minLength: 1 },
         pathKey: { type: 'string', minLength: 1 },
         path: { type: 'string', minLength: 1 },

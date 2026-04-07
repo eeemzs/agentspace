@@ -37,9 +37,8 @@ export interface SkillPackageDescriptor {
 }
 
 export interface ImportSkillPackageInput {
-  workspaceId: string
-  projectId?: string
-  scopeType: 'global' | 'project'
+  projectId: string
+  scopeType: 'project'
   scopeId?: string
   skillId?: string
   name?: string
@@ -63,8 +62,8 @@ export interface ExportSkillPackageResult {
   skillVersionId: string
   skillId: string
   skillName?: string
-  workspaceId: string
-  projectId?: string
+  projectId: string
+  scopeId: string
   files: SkillPackageFileInput[]
   metadata: SkillPackageMetadata
   package: SkillPackageDescriptor

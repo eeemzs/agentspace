@@ -5,7 +5,7 @@ import { ISprintItemZodCtx } from './resources.js'
 
 export const sprintItemZodSchema = z.object({
   ...IbmZodSchema.shape,
-  workspaceId: z.string(),
+  projectId: z.string(),
   sprintId: z.string(),
   title: z.string(),
   status: z.enum(SPRINT_ITEM_STATUSES),

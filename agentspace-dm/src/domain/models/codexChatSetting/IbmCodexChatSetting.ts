@@ -12,7 +12,7 @@ export const ibmCodexChatSettingKeys = [
   'tenantId',
   'createdAt',
   'updatedAt',
-  'workspaceId',
+  'projectId',
   'userId',
   'binaryPath',
   'model',

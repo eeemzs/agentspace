@@ -136,7 +136,7 @@ export class ArtifactService implements IArtifactServicePort {
                 Effect.forEach(
                   scopeChain,
                   (chainScopeId) =>
-                    this.artifactLinkRepository!.find({ matchEq: { refType, refId, scopeId: chainScopeId } } as any).pipe(
+                    this.artifactLinkRepository!.find({ matchEq: { refType, refId, projectId: chainScopeId } } as any).pipe(
                       Effect.map((rows) => Array.from(rows))
                     ),
                   { concurrency: 1 }

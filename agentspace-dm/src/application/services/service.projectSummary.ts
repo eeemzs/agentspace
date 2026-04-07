@@ -100,7 +100,7 @@ export class ProjectSummaryService implements IProjectSummaryServicePort {
           )
         }
 
-        return this.create({ workspaceId: payload.workspaceId, projectId: payload.projectId, ...patch } as IbmProjectSummaryInsert)
+        return this.create({ projectId: payload.projectId, ...patch } as IbmProjectSummaryInsert)
       }),
       Effect.tapError((e) => Effect.sync(() => {
         const info = effectErrorInfo(e)

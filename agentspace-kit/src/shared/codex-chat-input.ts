@@ -1,5 +1,5 @@
 import type { AgentspaceTypedOperationId } from '../operations/io-types.js'
-import { hasNonEmptyValue, normalizeNonEmpty, resolveWorkspaceAliasValue, toRecord } from './tool-input.js'
+import { hasNonEmptyValue, normalizeNonEmpty, resolveProjectContextValue, toRecord } from './tool-input.js'
 
 type ToolInputRecord = Record<string, unknown>
 
@@ -17,8 +17,8 @@ const CODEX_CHAT_THREAD_LIST_OPERATION_IDS = new Set<AgentspaceTypedOperationId>
 ])
 
 const MESSAGE_LIST_LEGACY_FILTER_KEYS = [
-  'workspaceId',
   'projectId',
+  'scopeId',
   'externalThreadId',
   'threadId',
   'role',
@@ -27,8 +27,8 @@ const MESSAGE_LIST_LEGACY_FILTER_KEYS = [
 ] as const
 
 const THREAD_LIST_LEGACY_FILTER_KEYS = [
-  'workspaceId',
   'projectId',
+  'scopeId',
   'externalThreadId',
   'title',
   'scopeLabel',
@@ -92,9 +92,9 @@ function normalizeLegacyListInput(
   if (Object.prototype.hasOwnProperty.call(source, 'sortField')) delete source.sortField
   if (Object.prototype.hasOwnProperty.call(source, 'sortDir')) delete source.sortDir
 
-  if (!hasNonEmptyValue(filter.workspaceId)) {
-    const workspaceId = resolveWorkspaceAliasValue(source)
-    if (workspaceId) filter.workspaceId = workspaceId
+  if (!hasNonEmptyValue(filter.projectId)) {
+    const projectId = resolveProjectContextValue(source)
+    if (projectId) filter.projectId = projectId
   }
 
   if (Object.keys(filter).length > 0) {

@@ -70,8 +70,8 @@ const OPERATION_DOCS_OVERRIDES = new Map<string, AgentspaceDomainCapabilityOpera
       notes: [
         'Use the custom input envelope: {"data":{...}}.',
         'data.bundle.files must include SKILL.md as the canonical entry file.',
-        'workspaceId carries hosted context; scopeId is the canonical owner for scoped imports.',
-        'For project-scoped imports, provide scopeId consistently with scopeType=project. projectId is only a bridge field for older callers.',
+        'projectId carries hosted context; scopeId is the canonical owner for scoped imports.',
+        'For project-scoped imports, provide scopeId consistently with scopeType=project.',
       ],
     },
   ],
@@ -120,7 +120,7 @@ function inferResourceKind(resourceId: string): string | undefined {
 
 function buildResourceSummary(resourceTitle: string, operationKinds: string[]): string {
   if (operationKinds.length === 0) {
-    return `${resourceTitle} records used inside the Agentspace workspace and agent runtime.`
+    return `${resourceTitle} records used inside the Agentspace project runtime.`
   }
   if (operationKinds.length === 1) {
     return `Supports ${operationKinds[0]} operations for ${resourceTitle.toLowerCase()} in Agentspace runtime workflows.`
@@ -243,7 +243,7 @@ export function buildAgentspaceDomainCapabilityManifest(
       id: 'agentspace',
       version: options.domainVersion ?? '0.0.0',
       displayName: 'Agentspace',
-      description: 'Agent workspace tooling for projects, prompts, tasks, skills, memory, chat, and agent runtime records.',
+      description: 'Project-scoped agent tooling for prompts, tasks, skills, memory, chat, and runtime records.',
     },
     capabilities: {
       operations: operations.map(toCapabilityOperation),
@@ -254,11 +254,11 @@ export function buildAgentspaceDomainCapabilityManifest(
   if (options.includeDocs !== false) {
     manifest.docs = {
       domain: {
-        summary: 'Manage Agentspace workspace state such as projects, tasks, prompts, skills, chat threads, memory items, agent runs, and related runtime records.',
+        summary: 'Manage Agentspace project state such as projects, tasks, prompts, skills, chat threads, memory items, agent runs, and related runtime records.',
         notes: [
           'Canonical skill package standard: aops-skill-package-v1.',
           'Canonical package entry file: SKILL.md.',
-          'If manifests or projections look stale after a domain change, run `pnpm run manifest:sync`, then `aops-cli host diagnostics --reset --warmup`, then `aops-cli agent tools --domain agentspace --workspace-name Default`.',
+          'If manifests or projections look stale after a domain change, run `pnpm run manifest:sync`, then `aops-cli host diagnostics --reset --warmup`, then `aops-cli agent tools --domain agentspace --project-id <project-id>`.',
         ],
       },
       resources: buildResourceDocs(operations),

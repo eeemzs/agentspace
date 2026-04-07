@@ -682,14 +682,16 @@ export class SkillVersionService implements ISkillVersionServicePort {
       validateInput(data, 'data', { stage }),
       Effect.flatMap((payload) =>
         Effect.gen(function* (_) {
-          const workspaceId = normalizeNonEmpty(payload.workspaceId)
-          if (!workspaceId) {
-            return yield* _(Effect.fail(XfErrorFactory.inputRequired({ field: 'workspaceId', stage })))
+          const projectId = normalizeNonEmpty(payload.projectId) ?? normalizeNonEmpty(payload.scopeId)
+          const scopeType = payload.scopeType
+          if (scopeType !== 'project') {
+            return yield* _(Effect.fail(XfErrorFactory.createFailed({ stage, message: 'scope_type_project_required' })))
+          }
+          if (!projectId) {
+            return yield* _(Effect.fail(XfErrorFactory.inputRequired({ field: 'projectId', stage })))
           }
 
-          const scopeType = payload.scopeType
-          const projectId = normalizeNonEmpty(payload.projectId)
-          const scopeId = normalizeNonEmpty(payload.scopeId) ?? (scopeType === 'project' ? projectId : undefined)
+          const scopeId = normalizeNonEmpty(payload.scopeId) ?? projectId
           if (!scopeId) {
             return yield* _(Effect.fail(XfErrorFactory.inputRequired({ field: 'scopeId', stage })))
           }
@@ -856,7 +858,6 @@ export class SkillVersionService implements ISkillVersionServicePort {
           const status = payload.publish === true ? 'published' : (payload.status ?? 'draft')
 
           const versionInsert: IbmSkillVersionInsert = {
-            workspaceId,
             projectId,
             skillId,
             version: nextVersion,
@@ -965,12 +966,22 @@ export class SkillVersionService implements ISkillVersionServicePort {
         const entryFile = normalizeNonEmpty(version.entryFile) ?? SKILL_PACKAGE_ENTRY_FILE
         const skillStandard = normalizeNonEmpty(version.skillStandard) ?? SKILL_PACKAGE_STANDARD
         const packageSourcePath = normalizeNonEmpty(packageRecord.sourcePath)
+        const scopeId = normalizeNonEmpty(skill?.scopeId) ?? normalizeNonEmpty(version.projectId)
+        const projectId = normalizeNonEmpty(version.projectId)
+        if (!projectId || !scopeId) {
+          return Effect.fail(
+            XfErrorFactory.createFailed({
+              stage,
+              message: 'skill_version_project_scope_missing',
+            })
+          )
+        }
         return Effect.succeed({
           skillVersionId,
           skillId: version.skillId,
           skillName: skill?.name,
-          workspaceId: version.workspaceId,
-          projectId: version.projectId,
+          projectId,
+          scopeId,
           files,
           metadata: packageMetadata,
           package: {

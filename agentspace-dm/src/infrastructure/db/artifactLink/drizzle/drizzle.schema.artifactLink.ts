@@ -2,16 +2,12 @@
 import { InferSelectModel } from 'drizzle-orm'
 import { artifactTable } from '../../artifact/drizzle/drizzle.schema.artifact.js'
 import { projectTable } from '../../project/drizzle/drizzle.schema.project.js'
-import { workspaceTable } from '../../workspace/drizzle/drizzle.schema.workspace.js'
 
 export const artifactLinkTable = pgTable(
   'artifact-links',
   {
     id: uuid().primaryKey().defaultRandom(),
     tenantId: text().notNull(),
-    workspaceId: uuid()
-      .notNull()
-      .references(() => workspaceTable.id, { onDelete: 'cascade' }),
     projectId: uuid()
       .notNull()
       .references(() => projectTable.id, { onDelete: 'cascade' }),
@@ -26,7 +22,6 @@ export const artifactLinkTable = pgTable(
   },
   (t) => [
     index('artifact_link_idx_tenant').on(t.tenantId),
-    index('artifact_link_idx_workspace').on(t.tenantId, t.workspaceId),
     index('artifact_link_idx_artifact').on(t.tenantId, t.artifactId),
     index('artifact_link_idx_project_ref_created').on(t.tenantId, t.projectId, t.refType, t.refId, t.createdAt),
   ]
