@@ -2,7 +2,7 @@
 import { pipe } from 'effect/Function'
 import { validateInput, XfErrorFactory, effectErrorInfo } from '@aopslab/xf-core'
 import { XfLogger } from '@aopslab/xf-logger'
-import type { IRepositoryPortMemoryItem, IRepositoryPortProjectSummary, IRepositoryPortScope } from '../ports/repository-ports/index.js'
+import type { IRepositoryPortMemoryItem, IRepositoryPortScope } from '../ports/repository-ports/index.js'
 import type {
   IMemoryItemServicePort,
   MemoryItemListFilter,
@@ -11,6 +11,8 @@ import type {
   MemoryResumePackOptions,
   MemoryResumePackRef,
   MemorySearchRetrievalRequest,
+  MemorySynopsis,
+  MemorySynopsisOptions,
 } from '../ports/inbound/index.js'
 import { MemoryItemServiceError } from '../errors/MemoryItemServiceError.js'
 import { IbmMemoryItem, IbmMemoryItemInsert, memoryItemZodSchemaInsert } from '../../domain/models/index.js'
@@ -22,7 +24,6 @@ export interface MemoryItemServiceDependencies {}
 
 export interface MemoryItemServiceOptions {
   memoryItemRepository: IRepositoryPortMemoryItem
-  projectSummaryRepository?: IRepositoryPortProjectSummary
   scopeRepository?: IRepositoryPortScope
   serviceDependencies?: Partial<MemoryItemServiceDependencies>
   logger?: XfLogger
@@ -78,6 +79,16 @@ function parseDateValue(value: unknown): Date | null {
   if (typeof value !== 'string') return null
   const parsed = new Date(value)
   return Number.isNaN(parsed.getTime()) ? null : parsed
+}
+
+function readExpiresAt(item: IbmMemoryItem): Date | null {
+  const meta = isPlainObject(item.meta) ? item.meta : {}
+  return parseDateValue(meta.expiresAt)
+}
+
+function isExpiredMemoryItem(item: IbmMemoryItem, now = Date.now()): boolean {
+  const expiresAt = readExpiresAt(item)
+  return Boolean(expiresAt && expiresAt.getTime() <= now)
 }
 
 function clampCandidateLimit(value: unknown): number {
@@ -318,6 +329,7 @@ function rankMemoryItems(
       const linkage = scoreLinkage(entry, retrieval)
       const recency = scoreRecency(entry)
       const importance = scoreImportance(entry)
+      const expired = isExpiredMemoryItem(entry)
       const score = lexical.score + semantic + linkage + recency + importance
 
       return {
@@ -327,9 +339,11 @@ function rankMemoryItems(
         lexicalMatches: lexical.matches.length,
         linkage,
         importance,
+        expired,
       }
     })
     .sort((left, right) => {
+      if (left.expired !== right.expired) return left.expired ? 1 : -1
       if (right.score !== left.score) return right.score - left.score
       if (right.linkage !== left.linkage) return right.linkage - left.linkage
       if (right.lexicalMatches !== left.lexicalMatches) return right.lexicalMatches - left.lexicalMatches
@@ -356,7 +370,6 @@ function normalizeResumePackOptions(options?: MemoryResumePackOptions): Required
   return {
     depth: options?.depth === 'deep' ? 'deep' : 'light',
     limit: clampResumePackLimit(options?.limit),
-    includeProjectSummary: Boolean(options?.includeProjectSummary !== false),
   }
 }
 
@@ -439,10 +452,40 @@ function collectNextActions(items: IbmMemoryItem[]): string[] {
   }))
 }
 
+function hasTag(item: IbmMemoryItem, expectedTag: string): boolean {
+  const normalizedExpected = normalizeTextToken(expectedTag)
+  if (!normalizedExpected) return false
+  return toArray(item.tags).some((entry) => normalizeTextToken(entry) === normalizedExpected)
+}
+
+function isDecisionTraceMemory(item: IbmMemoryItem): boolean {
+  const kind = normalizeTextToken(item.kind)
+  if (kind === 'decision') return true
+  if (kind !== 'note' || !hasTag(item, 'phase:decision')) return false
+  const meta = readMetaRecord(item)
+  return !Array.isArray(meta.openItems)
+}
+
+function isWorkingMemoryItem(item: IbmMemoryItem): boolean {
+  if (readDurability(item) === 'short') return true
+  const kind = normalizeTextToken(item.kind)
+  return kind === 'kickoff' || kind === 'resume' || kind === 'closeout' || kind === 'decision' || kind === 'constraint'
+}
+
+function buildSynopsisDecisions(items: IbmMemoryItem[], limit: number): string[] {
+  return uniqueStrings(
+    items
+      .filter((item) => readDurability(item) === 'durable' && isDecisionTraceMemory(item))
+      .map((item) => normalizeNonEmpty(item.content))
+      .filter((entry): entry is string => Boolean(entry)),
+  ).slice(0, limit)
+}
+
 function toResumePackItem(item: IbmMemoryItem): MemoryResumePackItem {
   return {
     id: normalizeNonEmpty(item.id),
     kind: normalizeNonEmpty(item.kind),
+    durability: normalizeNonEmpty((item as Record<string, unknown>).durability),
     content: normalizeNonEmpty(item.content),
     importance: typeof item.importance === 'number' ? item.importance : undefined,
     sourceType: normalizeNonEmpty(item.sourceType),
@@ -460,16 +503,12 @@ function readMetaSubjectId(item: IbmMemoryItem): string {
   return normalizeNonEmpty(readMetaRecord(item).subjectId) ?? ''
 }
 
-function readMetaBoolean(item: IbmMemoryItem, key: string): boolean {
-  return readMetaRecord(item)[key] === true
+function readDurability(item: IbmMemoryItem): string {
+  return normalizeTextToken((item as Record<string, unknown>).durability)
 }
 
 function readStickyScope(item: IbmMemoryItem): string {
   return normalizeTextToken(readMetaRecord(item).stickyScope)
-}
-
-function readSummaryRole(item: IbmMemoryItem): string {
-  return normalizeTextToken(readMetaRecord(item).summaryRole)
 }
 
 function readSupersedesId(item: IbmMemoryItem): string {
@@ -555,14 +594,14 @@ function isProjectGenericMatch(item: IbmMemoryItem, projectId: string): boolean 
 }
 
 function isStickyProjectGuidance(item: IbmMemoryItem, projectId: string): boolean {
-  if (!readMetaBoolean(item, 'sticky')) return false
+  if (readDurability(item) !== 'sticky') return false
   if (readStickyScope(item) && readStickyScope(item) !== 'project') return false
   if (!projectId) return false
   return readProjectId(item) === projectId
 }
 
 function isStickySubjectGuidance(item: IbmMemoryItem, retrieval?: MemorySearchRetrievalRequest): boolean {
-  if (!readMetaBoolean(item, 'sticky')) return false
+  if (readDurability(item) !== 'sticky') return false
   if (readStickyScope(item) !== 'subject') return false
   return isExactSubjectMatch(item, retrieval) || isLineageMatch(item, retrieval)
 }
@@ -570,14 +609,6 @@ function isStickySubjectGuidance(item: IbmMemoryItem, retrieval?: MemorySearchRe
 function filterSupersededItems(entries: IbmMemoryItem[]): IbmMemoryItem[] {
   const supersededIds = new Set(entries.map((entry) => readSupersedesId(entry)).filter(Boolean))
   return entries.filter((entry) => !supersededIds.has(normalizeNonEmpty(entry.id)))
-}
-
-function scoreStickyRole(item: IbmMemoryItem): number {
-  const role = readSummaryRole(item)
-  if (role === 'bootstrap') return 3
-  if (role === 'guidance') return 2
-  if (role === 'rule') return 1
-  return 0
 }
 
 function dedupeMemoryItems(entries: IbmMemoryItem[]): IbmMemoryItem[] {
@@ -631,8 +662,9 @@ function curateRelatedMemory(
     : []
   const bootstrapGuidance = [...stickyProjectMatches, ...stickySubjectMatches]
     .sort((left, right) => {
-      const roleDelta = scoreStickyRole(right) - scoreStickyRole(left)
-      if (roleDelta !== 0) return roleDelta
+      const leftExpired = isExpiredMemoryItem(left)
+      const rightExpired = isExpiredMemoryItem(right)
+      if (leftExpired !== rightExpired) return leftExpired ? 1 : -1
       const rankDelta = Number(readMetaRecord(right).stickyRank ?? 0) - Number(readMetaRecord(left).stickyRank ?? 0)
       if (rankDelta !== 0) return rankDelta
       return readItemTimestamp(right) - readItemTimestamp(left)
@@ -712,38 +744,43 @@ function buildBootstrapGuidance(items: IbmMemoryItem[]): string[] {
   ).slice(0, 3)
 }
 
-function buildProjectSummaryText(projectSummary: unknown): string | undefined {
-  const summaryRecord = isPlainObject(projectSummary) ? projectSummary : {}
-  return normalizeNonEmpty(summaryRecord.summary) || undefined
-}
-
-function buildResumeSummary(items: IbmMemoryItem[], projectSummary?: unknown): string | undefined {
-  const topContents = items
-    .map((item) => normalizeNonEmpty(item.content))
+function buildSynopsisSummary(
+  knowledgeItems: IbmMemoryItem[],
+  workingItems: IbmMemoryItem[],
+  nextActions: string[],
+  retrieval?: MemorySearchRetrievalRequest
+): string | undefined {
+  const topContents = uniqueStrings([
+    ...knowledgeItems
+      .filter((item) => normalizeTextToken(item.kind) === 'note')
+      .map((item) => normalizeNonEmpty(item.content)),
+    ...workingItems
+      .filter((item) => normalizeTextToken(item.kind) !== 'decision')
+      .map((item) => normalizeNonEmpty(item.content)),
+  ])
     .filter((entry): entry is string => Boolean(entry))
     .slice(0, 3)
 
   if (topContents.length > 0) return topContents.join('\n\n')
-
-  const summaryRecord = isPlainObject(projectSummary) ? projectSummary : {}
-  return normalizeNonEmpty(summaryRecord.summary)
+  if (nextActions.length > 0) return nextActions.join('\n')
+  return normalizeNonEmpty(retrieval?.goal) || normalizeNonEmpty(retrieval?.query)
 }
 
 function inferCurrentFocus(items: IbmMemoryItem[], nextActions: string[], retrieval?: MemorySearchRetrievalRequest): string | undefined {
   const firstAction = nextActions[0]
   if (firstAction) return firstAction
 
-  const primary = items[0]
+  const primary = items.find((item) => normalizeTextToken(item.kind) !== 'decision') ?? items[0]
   if (primary) {
     const meta = readMetaRecord(primary)
     return (
-      normalizeNonEmpty(meta.subjectTitle) ??
-      normalizeNonEmpty(retrieval?.subject?.label) ??
+      normalizeNonEmpty(meta.subjectTitle) ||
+      normalizeNonEmpty(retrieval?.subject?.label) ||
       normalizeNonEmpty(primary.content)
     )
   }
 
-  return normalizeNonEmpty(retrieval?.goal) ?? normalizeNonEmpty(retrieval?.query)
+  return normalizeNonEmpty(retrieval?.goal) || normalizeNonEmpty(retrieval?.query)
 }
 
 function inferConfidence(params: {
@@ -778,6 +815,31 @@ function inferReadStrategy(confidence: number, refs: MemoryResumePackRef[], gaps
   return refs.length > 0 || gaps.length > 0 ? 'expand' : 'recommended'
 }
 
+function composeSynopsis(params: {
+  relatedMemory: IbmMemoryItem[]
+  knowledgeMemory: IbmMemoryItem[]
+  workingMemory: IbmMemoryItem[]
+  bootstrapMemory: IbmMemoryItem[]
+  decisions: string[]
+  blockers: string[]
+  nextActions: string[]
+  retrieval?: MemorySearchRetrievalRequest
+}): MemorySynopsis {
+  const bootstrapGuidance = buildBootstrapGuidance(params.bootstrapMemory)
+  return {
+    summary: buildSynopsisSummary(params.knowledgeMemory, params.workingMemory, params.nextActions, params.retrieval),
+    decisions: params.decisions,
+    openItems: uniqueStrings([...params.blockers, ...params.nextActions]),
+    bootstrapGuidance,
+    currentFocus: inferCurrentFocus(params.workingMemory, params.nextActions, params.retrieval),
+    sourceMemoryIds: uniqueStrings([
+      ...params.bootstrapMemory.map((item) => normalizeNonEmpty(item.id)),
+      ...params.relatedMemory.map((item) => normalizeNonEmpty(item.id)),
+    ]),
+    generatedAt: new Date().toISOString(),
+  }
+}
+
 function normalizeMemoryItemQueryFilter(filter: MemoryItemListFilter): MemoryItemListFilter {
   const normalized = { ...(filter as Record<string, unknown>) }
   delete normalized.projectId
@@ -786,13 +848,11 @@ function normalizeMemoryItemQueryFilter(filter: MemoryItemListFilter): MemoryIte
 
 export class MemoryItemService implements IMemoryItemServicePort {
   private readonly memoryItemRepository: IRepositoryPortMemoryItem
-  private readonly projectSummaryRepository?: IRepositoryPortProjectSummary
   private readonly scopeRepository?: IRepositoryPortScope
   private readonly logger?: XfLogger
 
   constructor(options: MemoryItemServiceOptions) {
     this.memoryItemRepository = options.memoryItemRepository
-    this.projectSummaryRepository = options.projectSummaryRepository
     this.scopeRepository = options.scopeRepository
     this.logger = options.logger?.child({ module: this.constructor.name })
   }
@@ -973,17 +1033,20 @@ export class MemoryItemService implements IMemoryItemServicePort {
           normalizedOptions.depth,
         )
         const relatedMemory = curated.relatedMemory
-        const decisions = relatedMemory
+        const workingMemory = relatedMemory.filter((item) => isWorkingMemoryItem(item))
+        const knowledgeMemory = relatedMemory.filter((item) => !workingMemory.includes(item))
+        const openDecisions = workingMemory
           .filter((item) => item.kind === 'decision')
           .map((item) => normalizeNonEmpty(item.content))
           .filter((entry): entry is string => Boolean(entry))
           .slice(0, normalizedOptions.limit)
-        const blockers = relatedMemory
+        const decisions = buildSynopsisDecisions(knowledgeMemory, normalizedOptions.limit)
+        const blockers = workingMemory
           .filter((item) => item.kind === 'constraint')
           .map((item) => normalizeNonEmpty(item.content))
           .filter((entry): entry is string => Boolean(entry))
           .slice(0, normalizedOptions.limit)
-        const nextActions = collectNextActions(relatedMemory).slice(0, normalizedOptions.limit)
+        const nextActions = collectNextActions(workingMemory).slice(0, normalizedOptions.limit)
         const recommendedRefs = uniqueRefs(
           [...curated.bootstrapGuidance, ...relatedMemory].flatMap((item) => collectItemRefs(item))
         ).slice(0, normalizedOptions.depth === 'deep' ? normalizedOptions.limit * 2 : normalizedOptions.limit)
@@ -1002,38 +1065,90 @@ export class MemoryItemService implements IMemoryItemServicePort {
           recommendedRefs.length === 0 ? 'recommended-refs-missing' : undefined,
         ])
         const readStrategy = inferReadStrategy(confidence, recommendedRefs, gaps, normalizedOptions.depth)
+        const synopsis = composeSynopsis({
+          relatedMemory,
+          knowledgeMemory,
+          workingMemory,
+          bootstrapMemory: curated.bootstrapGuidance,
+          decisions,
+          blockers,
+          nextActions,
+          retrieval: normalizedRetrieval,
+        })
 
-        const fetchProjectSummary: Effect.Effect<unknown | null, MemoryItemServiceError> =
-          normalizedOptions.includeProjectSummary && this.projectSummaryRepository && projectId
-            ? this.projectSummaryRepository.find({ matchEq: { projectId }, options: { limit: 1 } } as any).pipe(
-                Effect.mapError(mapDbError({ stage, operation: 'find', factory: XfErrorFactory.notFound })),
-                Effect.map((items) => items?.[0] ?? null),
-              )
-            : Effect.succeed(null)
-
-        return pipe(
-          fetchProjectSummary,
-          Effect.map((projectSummary): MemoryResumePack => ({
-            subject: normalizedRetrieval?.subject,
-            projectSummary: projectSummary ?? undefined,
-            projectSummaryText: buildProjectSummaryText(projectSummary ?? undefined),
-            bootstrapGuidance: buildBootstrapGuidance(curated.bootstrapGuidance),
-            resumeSummary: buildResumeSummary(relatedMemory, projectSummary ?? undefined),
-            currentFocus: inferCurrentFocus(relatedMemory, nextActions, normalizedRetrieval),
-            openDecisions: decisions,
-            openBlockers: blockers,
-            nextActions,
-            recommendedRefs,
-            relatedMemory: relatedMemory.map((item) => toResumePackItem(item)),
-            confidence,
-            gaps,
-            readStrategy,
-          })),
-        )
+        return Effect.succeed({
+          subject: normalizedRetrieval?.subject,
+          synopsis,
+          bootstrapGuidance: synopsis.bootstrapGuidance,
+          resumeSummary: synopsis.summary,
+          currentFocus: synopsis.currentFocus,
+          openDecisions,
+          openBlockers: blockers,
+          nextActions,
+          recommendedRefs,
+          relatedMemory: relatedMemory.map((item) => toResumePackItem(item)),
+          confidence,
+          gaps,
+          readStrategy,
+        } satisfies MemoryResumePack)
       }),
       Effect.tapError((e) => Effect.sync(() => {
         const info = effectErrorInfo(e)
         this.logger?.error({ error: info.unwrapped, stage }, 'Error in buildResumePack')
+      }))
+    )
+  }
+
+  buildSynopsis(
+    filter: MemoryItemListFilter,
+    retrieval?: MemorySearchRetrievalRequest,
+    options?: MemorySynopsisOptions
+  ): Effect.Effect<MemorySynopsis, MemoryItemServiceError> {
+    const stage = 'MemoryItemService::buildSynopsis'
+    const normalizedRetrieval = normalizeRetrievalRequest(retrieval)
+    const scopeId = normalizeNonEmpty(filter?.scopeId)
+    if (!scopeId) {
+      return Effect.fail(XfErrorFactory.inputRequired({ field: 'filter.scopeId', stage }))
+    }
+
+    const filterRecord = filter as Record<string, unknown>
+    const projectId = normalizeNonEmpty(filterRecord.projectId)
+    const limit = clampResumePackLimit(options?.limit)
+    const searchFilter = normalizeMemoryItemQueryFilter(filter)
+    const listOptions: DbQueryOptions<IbmMemoryItem> = {
+      limit: Math.max(limit * 3, clampCandidateLimit(normalizedRetrieval?.candidateLimit)),
+    }
+
+    return pipe(
+      this.searchMemoryItems(searchFilter, normalizedRetrieval, listOptions),
+      Effect.map((rows) => rows.slice(0, listOptions.limit as number)),
+      Effect.map((rows) => curateRelatedMemory(rows, normalizedRetrieval, projectId, limit, 'deep')),
+      Effect.map((curated) => {
+        const relatedMemory = curated.relatedMemory
+        const workingMemory = relatedMemory.filter((item) => isWorkingMemoryItem(item))
+        const knowledgeMemory = relatedMemory.filter((item) => !workingMemory.includes(item))
+        const decisions = buildSynopsisDecisions(knowledgeMemory, limit)
+        const blockers = workingMemory
+          .filter((item) => item.kind === 'constraint')
+          .map((item) => normalizeNonEmpty(item.content))
+          .filter((entry): entry is string => Boolean(entry))
+          .slice(0, limit)
+        const nextActions = collectNextActions(workingMemory).slice(0, limit)
+
+        return composeSynopsis({
+          relatedMemory,
+          knowledgeMemory,
+          workingMemory,
+          bootstrapMemory: curated.bootstrapGuidance,
+          decisions,
+          blockers,
+          nextActions,
+          retrieval: normalizedRetrieval,
+        })
+      }),
+      Effect.tapError((e) => Effect.sync(() => {
+        const info = effectErrorInfo(e)
+        this.logger?.error({ error: info.unwrapped, stage }, 'Error in buildSynopsis')
       }))
     )
   }

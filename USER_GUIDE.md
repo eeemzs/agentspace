@@ -15,8 +15,7 @@ Owner oldugu baslica capability aileleri:
 4. skill
 5. artifact
 6. memory-item
-7. project-summary
-8. activity-item
+7. activity-item
 
 Kisa kural:
 
@@ -31,11 +30,11 @@ Repo veya calisma alaniyla iliskilenen owner baglami.
 
 ### Memory Item
 
-Durable handoff, resume, decision, lesson, rule ve sticky guidance kaydi.
+Short handoff/resume/decision kaydi, durable note kaydi ve sticky guidance kaydi.
 
-### Project Summary
+### Generated Synopsis
 
-Projenin yasayan synopsis'i.
+Projenin yasayan synopsis'i memory truth'tan generated read model olarak uretilir.
 
 ### Activity Item
 
@@ -87,8 +86,8 @@ Activity modeli:
 
 1. `activity-item`
    - immutable operator ledger
-   - `scopeId` canonical filter alanidir
-   - project filter'i `projectId` ile tutulur
+   - operator surface project-first'tur; `projectId` primary giristir
+   - owner chain'de ayni deger `scopeId` olarak da tasinabilir
    - `sourceKind`, `sourceId`, `action`, `status`, `summary`, `refs`, `payload`
 
 ## 3. Memory modelleri
@@ -113,9 +112,9 @@ Ornek:
 2. "su dokumanlardan basla"
 3. "bu projede migration boyle yapilir"
 
-### Project summary
+### Generated synopsis
 
-Yasayan proje ozeti.
+Memory truth'tan uretilen proje ozeti.
 
 Ornek:
 
@@ -128,16 +127,15 @@ Ornek:
 ```bash
 aops-cli agent tools --domain agentspace
 aops-cli project list --json
-aops-cli memory list --subject project --json
-aops-cli memory get --id <memory-id> --json
-aops-cli memory write --mode resume --subject project --content "Yarin buradan devam et." --apply --json
-aops-cli memory write --mode resume --subject sprint --content "Bu sprintten devam et." --next-read-ref @./next-read-ref.json --apply --json
-aops-cli memory update --id <memory-id> --content "Guncel ozet" --apply --json
-aops-cli memory delete --id <memory-id> --apply --confirm --json
-aops-cli memory resume --subject project --json
-aops-cli memory search --subject sprint --id <sprint-id> --json
-aops-cli summary write --summary "Current status" --apply --json
-aops-cli summary get --json
+aops-cli mem list --subject project --json
+aops-cli mem get --id <memory-id> --json
+aops-cli mem write --mode resume --subject project --durability short --content "Yarin buradan devam et." --apply --json
+aops-cli mem write --mode resume --subject sprint --durability short --content "Bu sprintten devam et." --next-read-ref @./next-read-ref.json --apply --json
+aops-cli mem update --id <memory-id> --durability durable --content "Guncel ozet" --apply --json
+aops-cli mem delete --id <memory-id> --apply --confirm --json
+aops-cli mem resume --subject project --json
+aops-cli mem synopsis --subject project --json
+aops-cli mem search --subject sprint --id <sprint-id> --json
 ```
 
 Project sugar:
@@ -244,30 +242,46 @@ Ortak hosted sugar contract:
 Sticky guidance:
 
 ```bash
-aops-cli memory write \
+aops-cli mem write --kind resume --durability short --content "Bu session ozetini 1 haftalik tut." --apply --json
+aops-cli mem write --kind note --durability durable --content "ADK sugar once manifest sync sonra electron bridge." --purpose howto --area adk-electron --next-read-ref '{"kind":"doc","documentVersionId":"<docver-id>","sectionId":"<section-id>"}' --apply --json
+aops-cli mem update --id <memory-id> --durability durable --content "Guncel ozet" --status active --apply --json
+
+aops-cli mem write \
   --mode rule \
   --subject project \
-  --sticky \
-  --summary-role bootstrap \
+  --durability sticky \
   --content "Hexagen kullan; plan before generate." \
+  --apply \
+  --json
+
+aops-cli mem write \
+  --mode rule \
+  --subject project \
+  --purpose howto \
+  --area adk-electron \
+  --status active \
+  --review-after-days 30 \
+  --content "ADK sugar komutunu once manifest sync, sonra electron bridge ile bagla." \
   --apply \
   --json
 ```
 
 Cleanup veya replacement ihtiyacinda:
 
-1. `memory list` veya `memory search` ile eski kaydi bul
-2. gerekiyorsa `memory update` ile yerinde guncelle
-3. tamamen kaldirmak istiyorsan `memory delete --apply --confirm`
+1. `mem list` veya `mem search` ile eski kaydi bul
+2. operator-facing patch icin `mem update` kullan
+3. tamamen kaldirmak istiyorsan `mem delete --apply --confirm`
 4. sticky replacement icin yeni kaydi `--supersede <oldId>` ile yaz
+5. `--purpose`, `--area`, `--status` alanlari memory'yi tekrar bulunabilir tag/meta ile siniflandirir; doc gerekiyorsa `nextReadRefs/sourceRefs` kullan
+6. `mem search` icinde ayni alanlar varsayilan olarak retrieval hint'tir; strict post-filter icin `--strict-classification` kullan
 
 Docman read shortcut:
 
 ```bash
-aops-cli memory doc refs --subject sprint --id <sprint-id> --json
-aops-cli memory doc answer --subject sprint --id <sprint-id> --q "Ne degisti?" --ensure summary --json
-aops-cli memory doc source --subject sprint --id <sprint-id> --json
-aops-cli memory doc publish --subject sprint --id <sprint-id> --target markdown --json
+aops-cli mem doc refs --subject sprint --id <sprint-id> --json
+aops-cli mem doc answer --subject sprint --id <sprint-id> --q "Ne degisti?" --ensure summary --json
+aops-cli mem doc source --subject sprint --id <sprint-id> --json
+aops-cli mem doc publish --subject sprint --id <sprint-id> --target markdown --json
 ```
 
 Not:
@@ -281,14 +295,33 @@ Not:
    - `pageNumber`
    - `target`
 
-## 5. Resume pack nasil calisir
+## 5.1 Memory usage model
+
+Secim mantigi:
+
+1. `short` = kisa carry-forward / handoff / bir sonraki session'a devam notu
+2. `long` = proje hakkinda tekrar kullanilacak genel bilgi
+3. `critical` = yuksek onemli pattern, how-to, architecture veya karar izi
+4. `resume` / `carry-forward` = devam notu
+5. `project` = subject bagimsiz proje bilgisi
+6. `pattern` / `howto` / `architecture` = tekrar bulunabilir bilgi; gerekirse Docman ref'i ile birlikte yaz
+7. `decision` = session/sprint penceresi icindeki calisma karari
+8. kalici karar veya reusable bilgi = `note`
+
+Owner kural:
+
+1. `memory` neyin okunacagini soyler
+2. `docman` canonical icerigi verir
+3. `projectman` execution state truth'unu verir
+
+## 6. Resume pack nasil calisir
 
 `agentspace.memory-item.build-resume-pack` curated bir toplu cikti uretir.
 
 Oncelik sirasi:
 
 1. sticky guidance
-2. project summary
+2. generated synopsis
 3. exact subject memory
 4. lineage memory
 5. project-level rule
@@ -299,7 +332,7 @@ Default amac:
 1. her seyi okumadan devam edebilmek
 2. doc/resource okumayi sadece gerekirse tetiklemek
 
-## 6. Ne zaman Agentspace kullan
+## 7. Ne zaman Agentspace kullan
 
 1. baska agent daha sonra devam edecekse
 2. PM artifact disi resumable calisma varsa
