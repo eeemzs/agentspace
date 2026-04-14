@@ -73,4 +73,18 @@ export class TaskCommentService implements ITaskCommentServicePort {
       }))
     )
   }
+
+  listByProject(projectId: string, options?: DbQueryOptions<IbmTaskComment>): Effect.Effect<IbmTaskComment[], TaskCommentServiceError> {
+    const stage = 'TaskCommentService::listByProject'
+    return pipe(
+      validateInput(projectId, 'projectId', { stage }),
+      Effect.flatMap((projectId) => this.taskCommentRepository.find({ matchEq: { projectId }, options } as any).pipe(
+        Effect.mapError(mapDbError({ stage, operation: 'find', factory: XfErrorFactory.notFound }))
+      )),
+      Effect.tapError((e) => Effect.sync(() => {
+        const info = effectErrorInfo(e)
+        this.logger?.error({ error: info.unwrapped, stage }, 'Error in listByProject')
+      }))
+    )
+  }
 }

@@ -36,11 +36,12 @@ for (const variant of repoVariants) {
           }),
         ],
         variant.url,
-      )) as { id?: string; name?: string }
+      )) as { id?: string; name?: string; scopeId?: string }
 
       const projectId = String(created.id ?? '')
       expect(projectId).not.toBe('')
       expect(String(created.name ?? '')).toBe(projectName)
+      expect(String(created.scopeId ?? '')).toBe(projectId)
 
       try {
         const loadedViaOp = (await runAgentspaceCli(
@@ -122,10 +123,11 @@ for (const variant of repoVariants) {
             }),
           ],
           variant.url,
-        )) as { id?: string }
+        )) as { id?: string; scopeId?: string }
 
         projectId = String(createdProject.id ?? '')
         expect(projectId).not.toBe('')
+        expect(String(createdProject.scopeId ?? '')).toBe(projectId)
 
         const imported = (await runAgentspaceCli(
           [
@@ -315,10 +317,11 @@ describe('agentspace-cli default sqlite fallback', () => {
           }),
         ],
         isolatedEnv,
-      )) as { id?: string }
+      )) as { id?: string; scopeId?: string }
 
       projectId = String(created.id ?? '')
       expect(projectId).not.toBe('')
+      expect(String(created.scopeId ?? '')).toBe(projectId)
       expect(fs.existsSync(localDbPath)).toBe(true)
 
       const listed = await runAgentspaceCliWithoutRepo(

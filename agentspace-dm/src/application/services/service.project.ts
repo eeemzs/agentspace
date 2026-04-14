@@ -20,6 +20,10 @@ export interface ProjectServiceOptions {
   locale?: string
 }
 
+type ExplicitIdCreateRepository<TModel> = {
+  createPreservingId?: (data: TModel) => Effect.Effect<TModel, unknown>
+}
+
 export class ProjectService implements IProjectServicePort {
   private readonly projectRepository: IRepositoryPortProject
   private readonly scopeRepository?: IRepositoryPortScope
@@ -40,6 +44,7 @@ export class ProjectService implements IProjectServicePort {
       )),
       Effect.tapError((e) => Effect.sync(() => {
         const info = effectErrorInfo(e)
+        if ((info.unwrapped as { _tag?: string } | undefined)?._tag === 'NotFoundError') return
         this.logger?.error({ error: info.unwrapped, stage }, 'Error in getById')
       }))
     )
@@ -65,8 +70,14 @@ export class ProjectService implements IProjectServicePort {
         return yield* _(Effect.fail(XfErrorFactory.notFound({ stage, identifier: 'scopeRepository' })))
       }
 
+      const scopeRepository = this.scopeRepository as IRepositoryPortScope & ExplicitIdCreateRepository<any>
+      const createScope =
+        typeof scopeRepository.createPreservingId === 'function'
+          ? scopeRepository.createPreservingId.bind(scopeRepository)
+          : scopeRepository.create.bind(scopeRepository)
+
       const projectScope = yield* _(
-        this.scopeRepository.create({
+        createScope({
           id: scopeId,
           type: 'project',
           parentScopeId: null,
@@ -81,8 +92,14 @@ export class ProjectService implements IProjectServicePort {
         return yield* _(Effect.fail(XfErrorFactory.notFound({ stage, identifier: 'project-scope' })))
       }
 
+      const projectRepository = this.projectRepository as IRepositoryPortProject & ExplicitIdCreateRepository<any>
+      const createProject =
+        typeof projectRepository.createPreservingId === 'function'
+          ? projectRepository.createPreservingId.bind(projectRepository)
+          : projectRepository.create.bind(projectRepository)
+
       return yield* _(
-        this.projectRepository.create({ ...parsed, id, scopeId: persistedScopeId } as any).pipe(
+        createProject({ ...parsed, id, scopeId: persistedScopeId } as any).pipe(
           Effect.mapError(mapDbError({ stage, operation: 'create', factory: XfErrorFactory.createFailed })),
         ),
       )

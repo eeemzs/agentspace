@@ -42,6 +42,21 @@ export class SprintItemService implements ISprintItemServicePort {
     const stage = 'SprintItemService::create'
     return pipe(
       validateInput(data, 'data', { stage }),
+      Effect.flatMap((data) => {
+        if (data.position === undefined || data.position === null) {
+          return pipe(
+            this.listSprintItems({ sprintId: data.sprintId }),
+            Effect.map((items) => {
+              const next = (items ?? []).reduce(
+                (max, item) => Math.max(max, Number.isFinite(item?.position) ? item.position : -1),
+                -1,
+              )
+              return { ...data, position: next + 1 }
+            })
+          )
+        }
+        return Effect.succeed(data)
+      }),
       Effect.flatMap((data) =>
         validateBmInputWithSchema({
           input: data,
@@ -51,18 +66,6 @@ export class SprintItemService implements ISprintItemServicePort {
           field: 'data',
         })
       ),
-      Effect.flatMap((data) => {
-        if (data.position === undefined || data.position === null) {
-          return pipe(
-            this.listSprintItems({ sprintId: data.sprintId }, { sort: [{ field: 'position', type: 'desc' }], limit: 1 }),
-            Effect.map((items) => {
-              const next = items?.[0]?.position ?? -1
-              return { ...data, position: next + 1 }
-            })
-          )
-        }
-        return Effect.succeed(data)
-      }),
       Effect.flatMap((data) => this.sprintItemRepository.create(data).pipe(
         Effect.mapError(mapDbError({ stage, operation: 'create', factory: XfErrorFactory.createFailed }))
       ))

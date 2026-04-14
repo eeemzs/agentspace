@@ -44,7 +44,6 @@ type HardDeleteProjectKit = Pick<
   | 'getProjectRepository'
   | 'getProjectPathRepository'
   | 'getProjectMemberRepository'
-  | 'getProjectSummaryRepository'
   | 'getPromptRepository'
   | 'getPromptVersionRepository'
   | 'getSkillRepository'
@@ -130,7 +129,6 @@ export async function hardDeleteAgentspaceProjectCascade(params: {
     projectRepository,
     projectPathRepository,
     projectMemberRepository,
-    projectSummaryRepository,
     promptRepository,
     promptVersionRepository,
     skillRepository,
@@ -153,7 +151,6 @@ export async function hardDeleteAgentspaceProjectCascade(params: {
     kit.getProjectRepository(),
     kit.getProjectPathRepository(),
     kit.getProjectMemberRepository(),
-    kit.getProjectSummaryRepository(),
     kit.getPromptRepository(),
     kit.getPromptVersionRepository(),
     kit.getSkillRepository(),
@@ -202,7 +199,6 @@ export async function hardDeleteAgentspaceProjectCascade(params: {
     project: 0,
     projectMembers: 0,
     projectPaths: 0,
-    projectSummary: 0,
     tasks: 0,
     taskComments: 0,
     kanbanBoards: 0,
@@ -228,10 +224,6 @@ export async function hardDeleteAgentspaceProjectCascade(params: {
     projectId,
   })
   deleted.projectPaths = await deleteManyByMatchEq('projectPathRepository.deleteMany', projectPathRepository, {
-    projectId,
-  })
-
-  deleted.projectSummary = await deleteManyByMatchEq('projectSummaryRepository.deleteMany', projectSummaryRepository, {
     projectId,
   })
 

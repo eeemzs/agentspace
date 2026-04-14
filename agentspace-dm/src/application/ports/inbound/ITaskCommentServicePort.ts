@@ -7,6 +7,7 @@ export interface ITaskCommentServicePort {
   getById(id: string, options?: DbQueryOptions<IbmTaskComment>): Effect.Effect<IbmTaskComment | null, TaskCommentServiceError>
   create(data: IbmTaskCommentInsert): Effect.Effect<IbmTaskComment, TaskCommentServiceError>
   listByTask(taskId: string, options?: DbQueryOptions<IbmTaskComment>): Effect.Effect<IbmTaskComment[], TaskCommentServiceError>
+  listByProject(projectId: string, options?: DbQueryOptions<IbmTaskComment>): Effect.Effect<IbmTaskComment[], TaskCommentServiceError>
 }
 
 export interface ITaskCommentLookupPort {

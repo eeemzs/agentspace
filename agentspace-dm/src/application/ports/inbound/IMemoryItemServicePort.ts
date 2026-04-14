@@ -28,7 +28,10 @@ export type MemoryResumePackDepth = 'light' | 'deep'
 export type MemoryResumePackOptions = {
   depth?: MemoryResumePackDepth
   limit?: number
-  includeProjectSummary?: boolean
+}
+
+export type MemorySynopsisOptions = {
+  limit?: number
 }
 
 export type MemoryResumePackRef = {
@@ -54,6 +57,7 @@ export type MemoryResumePackSubject = {
 export type MemoryResumePackItem = {
   id?: string
   kind?: string
+  durability?: string
   content?: string
   importance?: number
   sourceType?: string
@@ -64,8 +68,7 @@ export type MemoryResumePackItem = {
 
 export type MemoryResumePack = {
   subject?: MemoryResumePackSubject
-  projectSummary?: unknown
-  projectSummaryText?: string
+  synopsis: MemorySynopsis
   bootstrapGuidance: string[]
   resumeSummary?: string
   currentFocus?: string
@@ -77,6 +80,16 @@ export type MemoryResumePack = {
   confidence: number
   gaps: string[]
   readStrategy: 'none' | 'recommended' | 'expand'
+}
+
+export type MemorySynopsis = {
+  summary?: string
+  decisions: string[]
+  openItems: string[]
+  bootstrapGuidance: string[]
+  currentFocus?: string
+  sourceMemoryIds: string[]
+  generatedAt: string
 }
 
 export type MemoryItemListFilter = Partial<IbmMemoryItem> & {
@@ -101,6 +114,11 @@ export interface IMemoryItemServicePort {
     retrieval?: MemorySearchRetrievalRequest,
     options?: MemoryResumePackOptions
   ): Effect.Effect<MemoryResumePack, MemoryItemServiceError>
+  buildSynopsis(
+    filter: MemoryItemListFilter,
+    retrieval?: MemorySearchRetrievalRequest,
+    options?: MemorySynopsisOptions
+  ): Effect.Effect<MemorySynopsis, MemoryItemServiceError>
   removeMemoryItem(id: string): Effect.Effect<void, MemoryItemServiceError>
 }
 

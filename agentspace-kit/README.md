@@ -50,7 +50,6 @@ Services:
 - `agentRunService`
 - `artifactService`
 - `artifactLinkService`
-- `projectSummaryService`
 - `memoryItemService`
 
 Repositories:
@@ -70,7 +69,6 @@ Repositories:
 - `agentRunRepository`
 - `artifactRepository`
 - `artifactLinkRepository`
-- `projectSummaryRepository`
 - `memoryItemRepository`
 
 ## Notlar

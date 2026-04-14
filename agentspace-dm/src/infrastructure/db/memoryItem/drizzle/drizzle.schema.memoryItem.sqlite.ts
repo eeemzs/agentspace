@@ -9,6 +9,7 @@ export const memoryItemTableSqlite = sqliteTable(
     tenantId: text().notNull(),
     scopeId: text().notNull(),
     kind: text().notNull(),
+    durability: text().notNull(),
     content: text().notNull(),
     tags: text({ mode: 'json' }).$type<string[]>(),
     importance: integer(),
@@ -22,6 +23,7 @@ export const memoryItemTableSqlite = sqliteTable(
     index('memory_item_idx_tenant').on(t.tenantId),
     index('memory_item_idx_scope').on(t.tenantId, t.scopeId),
     index('memory_item_idx_kind').on(t.tenantId, t.kind),
+    index('memory_item_idx_durability').on(t.tenantId, t.durability),
   ]
 )
 

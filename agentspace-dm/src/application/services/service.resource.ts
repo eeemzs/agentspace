@@ -136,6 +136,7 @@ export class ResourceService implements IResourceServicePort {
       )),
       Effect.tapError((e) => Effect.sync(() => {
         const info = effectErrorInfo(e)
+        if ((info.unwrapped as { _tag?: string } | undefined)?._tag === 'NotFoundError') return
         this.logger?.error({ error: info.unwrapped, stage }, 'Error in listResources')
       }))
     )

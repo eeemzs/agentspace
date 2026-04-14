@@ -14,6 +14,7 @@ export const ibmMemoryItemKeys = [
   'updatedAt',
   'scopeId',
   'kind',
+  'durability',
   'content',
   'tags',
   'importance',

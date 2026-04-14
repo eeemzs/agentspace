@@ -6,10 +6,20 @@ import { getParent, XfLogger } from '@aopslab/xf-logger'
 import { RedisConfig } from '@aopslab/xf-db-redis'
 import { RepositoryConfig } from '@aopslab/xf-db'
 import type { ITaskServicePort, ITaskCommentServicePort } from '../ports/inbound/index.js'
-import type { IRepositoryPortTask } from '../ports/repository-ports/index.js'
+import type {
+  IRepositoryPortTask,
+  IRepositoryPortTaskChecklistItem,
+  IRepositoryPortTaskLabel,
+  IRepositoryPortTaskLabelLink,
+  IRepositoryPortTaskRelation,
+} from '../ports/repository-ports/index.js'
 import { TaskService, type TaskServiceOptions } from '../services/index.js'
 import { TaskServiceError } from '../errors/TaskServiceError.js'
 import { RepositoryFactoryTask } from './RepositoryFactoryTask.js'
+import { RepositoryFactoryTaskChecklistItem } from './RepositoryFactoryTaskChecklistItem.js'
+import { RepositoryFactoryTaskLabel } from './RepositoryFactoryTaskLabel.js'
+import { RepositoryFactoryTaskLabelLink } from './RepositoryFactoryTaskLabelLink.js'
+import { RepositoryFactoryTaskRelation } from './RepositoryFactoryTaskRelation.js'
 
 export interface TaskServiceFactoryConfig {
   repositoryConfig?: RepositoryConfig
@@ -24,6 +34,10 @@ export interface TaskServiceFactoryConfig {
 
 export interface TaskServiceFactoryOverrides {
   taskRepository?: IRepositoryPortTask
+  taskLabelRepository?: IRepositoryPortTaskLabel
+  taskLabelLinkRepository?: IRepositoryPortTaskLabelLink
+  taskChecklistItemRepository?: IRepositoryPortTaskChecklistItem
+  taskRelationRepository?: IRepositoryPortTaskRelation
   //==> custom-factory-overrides
   // Add domain-specific overrides here (e.g., dependent services).
   //<==//
@@ -99,6 +113,10 @@ export class ServiceBuilderTask {
       )
 
       let taskRepository: IRepositoryPortTask;
+      let taskLabelRepository: IRepositoryPortTaskLabel;
+      let taskLabelLinkRepository: IRepositoryPortTaskLabelLink;
+      let taskChecklistItemRepository: IRepositoryPortTaskChecklistItem;
+      let taskRelationRepository: IRepositoryPortTaskRelation;
       if (self.overrides.taskRepository) {
         taskRepository = self.overrides.taskRepository as IRepositoryPortTask
       } else {
@@ -132,6 +150,130 @@ export class ServiceBuilderTask {
         )
       }
 
+      if (self.overrides.taskLabelRepository) {
+        taskLabelRepository = self.overrides.taskLabelRepository as IRepositoryPortTaskLabel
+      } else {
+        if (!config.repositoryConfig) {
+          return yield* _(
+            Effect.fail(
+              new XfConfigurationError({
+                message: 'Repository konfigürasyonu gerekli. withConfig() sonrası repositoryConfig ayarlayın.',
+                stage: 'ServiceBuilderTask::build',
+              })
+            )
+          )
+        }
+        const repositoryParams: RepositoryCreateParams = {
+          repositoryConfig: config.repositoryConfig,
+          redisConfig: config.redisConfig,
+          logger,
+        };
+        taskLabelRepository = yield* _(
+          Effect.mapError(
+            RepositoryFactoryTaskLabel.create(repositoryParams),
+            (error) =>
+              new XfConfigurationError({
+                message: `RepositoryFactoryTaskLabel.create başarısız: ${(error as any)?.message ?? 'unknown'}`,
+                stage: 'ServiceBuilderTask::build',
+                cause: error,
+              }),
+          ),
+        )
+      }
+
+      if (self.overrides.taskLabelLinkRepository) {
+        taskLabelLinkRepository = self.overrides.taskLabelLinkRepository as IRepositoryPortTaskLabelLink
+      } else {
+        if (!config.repositoryConfig) {
+          return yield* _(
+            Effect.fail(
+              new XfConfigurationError({
+                message: 'Repository konfigürasyonu gerekli. withConfig() sonrası repositoryConfig ayarlayın.',
+                stage: 'ServiceBuilderTask::build',
+              })
+            )
+          )
+        }
+        const repositoryParams: RepositoryCreateParams = {
+          repositoryConfig: config.repositoryConfig,
+          redisConfig: config.redisConfig,
+          logger,
+        };
+        taskLabelLinkRepository = yield* _(
+          Effect.mapError(
+            RepositoryFactoryTaskLabelLink.create(repositoryParams),
+            (error) =>
+              new XfConfigurationError({
+                message: `RepositoryFactoryTaskLabelLink.create başarısız: ${(error as any)?.message ?? 'unknown'}`,
+                stage: 'ServiceBuilderTask::build',
+                cause: error,
+              }),
+          ),
+        )
+      }
+
+      if (self.overrides.taskChecklistItemRepository) {
+        taskChecklistItemRepository = self.overrides.taskChecklistItemRepository as IRepositoryPortTaskChecklistItem
+      } else {
+        if (!config.repositoryConfig) {
+          return yield* _(
+            Effect.fail(
+              new XfConfigurationError({
+                message: 'Repository konfigürasyonu gerekli. withConfig() sonrası repositoryConfig ayarlayın.',
+                stage: 'ServiceBuilderTask::build',
+              })
+            )
+          )
+        }
+        const repositoryParams: RepositoryCreateParams = {
+          repositoryConfig: config.repositoryConfig,
+          redisConfig: config.redisConfig,
+          logger,
+        };
+        taskChecklistItemRepository = yield* _(
+          Effect.mapError(
+            RepositoryFactoryTaskChecklistItem.create(repositoryParams),
+            (error) =>
+              new XfConfigurationError({
+                message: `RepositoryFactoryTaskChecklistItem.create başarısız: ${(error as any)?.message ?? 'unknown'}`,
+                stage: 'ServiceBuilderTask::build',
+                cause: error,
+              }),
+          ),
+        )
+      }
+
+      if (self.overrides.taskRelationRepository) {
+        taskRelationRepository = self.overrides.taskRelationRepository as IRepositoryPortTaskRelation
+      } else {
+        if (!config.repositoryConfig) {
+          return yield* _(
+            Effect.fail(
+              new XfConfigurationError({
+                message: 'Repository konfigürasyonu gerekli. withConfig() sonrası repositoryConfig ayarlayın.',
+                stage: 'ServiceBuilderTask::build',
+              })
+            )
+          )
+        }
+        const repositoryParams: RepositoryCreateParams = {
+          repositoryConfig: config.repositoryConfig,
+          redisConfig: config.redisConfig,
+          logger,
+        };
+        taskRelationRepository = yield* _(
+          Effect.mapError(
+            RepositoryFactoryTaskRelation.create(repositoryParams),
+            (error) =>
+              new XfConfigurationError({
+                message: `RepositoryFactoryTaskRelation.create başarısız: ${(error as any)?.message ?? 'unknown'}`,
+                stage: 'ServiceBuilderTask::build',
+                cause: error,
+              }),
+          ),
+        )
+      }
+
       if (!self.serviceDependencies.taskCommentService) {
         return yield* _(
           Effect.fail(
@@ -146,6 +288,10 @@ export class ServiceBuilderTask {
       const serviceOptions: TaskServiceOptions = {
         taskRepository,
         taskCommentService: self.serviceDependencies.taskCommentService as ITaskCommentServicePort,
+        taskLabelRepository,
+        taskLabelLinkRepository,
+        taskChecklistItemRepository,
+        taskRelationRepository,
         logger,
         //==> custom-service-options
         // Map factory config / overrides to service options here.

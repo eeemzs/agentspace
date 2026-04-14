@@ -8,6 +8,7 @@ export const memoryItemTable = pgTable(
     tenantId: text().notNull(),
     scopeId: uuid().notNull(),
     kind: text().notNull(),
+    durability: text().notNull(),
     content: text().notNull(),
     tags: jsonb().$type<string[]>(),
     importance: integer(),
@@ -21,6 +22,7 @@ export const memoryItemTable = pgTable(
     index('memory_item_idx_tenant').on(t.tenantId),
     index('memory_item_idx_scope').on(t.tenantId, t.scopeId),
     index('memory_item_idx_kind').on(t.tenantId, t.kind),
+    index('memory_item_idx_durability').on(t.tenantId, t.durability),
   ]
 )
 

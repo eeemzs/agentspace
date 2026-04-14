@@ -220,6 +220,7 @@ CREATE TABLE `memory-items` (
 	`tenantId` text NOT NULL,
 	`scopeId` text NOT NULL,
 	`kind` text NOT NULL,
+	`durability` text NOT NULL,
 	`content` text NOT NULL,
 	`tags` text,
 	`importance` integer,
@@ -233,6 +234,7 @@ CREATE TABLE `memory-items` (
 CREATE INDEX `memory_item_idx_tenant` ON `memory-items` (`tenantId`);--> statement-breakpoint
 CREATE INDEX `memory_item_idx_scope` ON `memory-items` (`tenantId`,`scopeId`);--> statement-breakpoint
 CREATE INDEX `memory_item_idx_kind` ON `memory-items` (`tenantId`,`kind`);--> statement-breakpoint
+CREATE INDEX `memory_item_idx_durability` ON `memory-items` (`tenantId`,`durability`);--> statement-breakpoint
 CREATE TABLE `activity-items` (
 	`id` text PRIMARY KEY NOT NULL,
 	`tenantId` text NOT NULL,
@@ -313,24 +315,6 @@ CREATE INDEX `project_member_idx_tenant` ON `project-members` (`tenantId`);--> s
 CREATE INDEX `project_member_idx_scope` ON `project-members` (`tenantId`,`scopeId`);--> statement-breakpoint
 CREATE INDEX `project_member_idx_project` ON `project-members` (`tenantId`,`projectId`);--> statement-breakpoint
 CREATE INDEX `project_member_idx_user` ON `project-members` (`tenantId`,`userId`);--> statement-breakpoint
-CREATE TABLE `project-summaries` (
-	`id` text PRIMARY KEY NOT NULL,
-	`tenantId` text NOT NULL,
-	`scopeId` text NOT NULL,
-	`projectId` text NOT NULL,
-	`summary` text,
-	`decisions` text,
-	`openItems` text,
-	`lastRunId` text,
-	`lastSessionId` text,
-	`createdAt` integer,
-	`updatedAt` integer,
-	FOREIGN KEY (`projectId`) REFERENCES `projects`(`id`) ON UPDATE no action ON DELETE cascade
-);
---> statement-breakpoint
-CREATE UNIQUE INDEX `project_summary_project_unique` ON `project-summaries` (`tenantId`,`projectId`);--> statement-breakpoint
-CREATE INDEX `project_summary_idx_tenant` ON `project-summaries` (`tenantId`);--> statement-breakpoint
-CREATE INDEX `project_summary_idx_scope` ON `project-summaries` (`tenantId`,`scopeId`);--> statement-breakpoint
 CREATE TABLE `prompts` (
 	`id` text PRIMARY KEY NOT NULL,
 	`tenantId` text NOT NULL,
@@ -531,6 +515,63 @@ CREATE INDEX `task_idx_column` ON `tasks` (`tenantId`,`columnId`);--> statement-
 CREATE INDEX `task_idx_sprint` ON `tasks` (`tenantId`,`sprintId`);--> statement-breakpoint
 CREATE INDEX `task_idx_prompt_version` ON `tasks` (`tenantId`,`promptVersionId`);--> statement-breakpoint
 CREATE INDEX `task_idx_parent` ON `tasks` (`tenantId`,`parentTaskId`);--> statement-breakpoint
+CREATE TABLE `task-labels` (
+	`id` text PRIMARY KEY NOT NULL,
+	`tenantId` text NOT NULL,
+	`scopeId` text NOT NULL,
+	`name` text NOT NULL,
+	`color` text NOT NULL,
+	`position` integer DEFAULT 0 NOT NULL,
+	`meta` text,
+	`createdBy` text,
+	`updatedBy` text,
+	`createdAt` integer,
+	`updatedAt` integer,
+	FOREIGN KEY (`scopeId`) REFERENCES `projects`(`id`) ON UPDATE no action ON DELETE cascade
+);
+--> statement-breakpoint
+CREATE UNIQUE INDEX `task_label_scope_name_tenant_unique` ON `task-labels` (`tenantId`,`scopeId`,`name`);--> statement-breakpoint
+CREATE INDEX `task_label_idx_tenant` ON `task-labels` (`tenantId`);--> statement-breakpoint
+CREATE INDEX `task_label_idx_scope` ON `task-labels` (`tenantId`,`scopeId`);--> statement-breakpoint
+CREATE TABLE `task-label-links` (
+	`id` text PRIMARY KEY NOT NULL,
+	`tenantId` text NOT NULL,
+	`scopeId` text NOT NULL,
+	`taskId` text NOT NULL,
+	`labelId` text NOT NULL,
+	`createdBy` text,
+	`updatedBy` text,
+	`createdAt` integer,
+	`updatedAt` integer,
+	FOREIGN KEY (`scopeId`) REFERENCES `projects`(`id`) ON UPDATE no action ON DELETE cascade,
+	FOREIGN KEY (`taskId`) REFERENCES `tasks`(`id`) ON UPDATE no action ON DELETE cascade,
+	FOREIGN KEY (`labelId`) REFERENCES `task-labels`(`id`) ON UPDATE no action ON DELETE cascade
+);
+--> statement-breakpoint
+CREATE UNIQUE INDEX `task_label_link_unique` ON `task-label-links` (`tenantId`,`taskId`,`labelId`);--> statement-breakpoint
+CREATE INDEX `task_label_link_idx_tenant` ON `task-label-links` (`tenantId`);--> statement-breakpoint
+CREATE INDEX `task_label_link_idx_scope` ON `task-label-links` (`tenantId`,`scopeId`);--> statement-breakpoint
+CREATE INDEX `task_label_link_idx_task` ON `task-label-links` (`tenantId`,`taskId`);--> statement-breakpoint
+CREATE INDEX `task_label_link_idx_label` ON `task-label-links` (`tenantId`,`labelId`);--> statement-breakpoint
+CREATE TABLE `task-checklist-items` (
+	`id` text PRIMARY KEY NOT NULL,
+	`tenantId` text NOT NULL,
+	`scopeId` text NOT NULL,
+	`taskId` text NOT NULL,
+	`content` text NOT NULL,
+	`isDone` integer DEFAULT false NOT NULL,
+	`position` integer DEFAULT 0 NOT NULL,
+	`createdBy` text,
+	`updatedBy` text,
+	`createdAt` integer,
+	`updatedAt` integer,
+	FOREIGN KEY (`scopeId`) REFERENCES `projects`(`id`) ON UPDATE no action ON DELETE cascade,
+	FOREIGN KEY (`taskId`) REFERENCES `tasks`(`id`) ON UPDATE no action ON DELETE cascade
+);
+--> statement-breakpoint
+CREATE INDEX `task_checklist_item_idx_tenant` ON `task-checklist-items` (`tenantId`);--> statement-breakpoint
+CREATE INDEX `task_checklist_item_idx_scope` ON `task-checklist-items` (`tenantId`,`scopeId`);--> statement-breakpoint
+CREATE INDEX `task_checklist_item_idx_task` ON `task-checklist-items` (`tenantId`,`taskId`);--> statement-breakpoint
 CREATE TABLE `task-comments` (
 	`id` text PRIMARY KEY NOT NULL,
 	`tenantId` text NOT NULL,
@@ -550,6 +591,27 @@ CREATE INDEX `task_comment_idx_tenant` ON `task-comments` (`tenantId`);--> state
 CREATE INDEX `task_comment_idx_scope` ON `task-comments` (`tenantId`,`scopeId`);--> statement-breakpoint
 CREATE INDEX `task_comment_idx_project` ON `task-comments` (`tenantId`,`projectId`);--> statement-breakpoint
 CREATE INDEX `task_comment_idx_task` ON `task-comments` (`tenantId`,`taskId`);--> statement-breakpoint
+CREATE TABLE `task-relations` (
+	`id` text PRIMARY KEY NOT NULL,
+	`tenantId` text NOT NULL,
+	`scopeId` text NOT NULL,
+	`fromTaskId` text NOT NULL,
+	`toTaskId` text NOT NULL,
+	`kind` text NOT NULL,
+	`createdBy` text,
+	`updatedBy` text,
+	`createdAt` integer,
+	`updatedAt` integer,
+	FOREIGN KEY (`scopeId`) REFERENCES `projects`(`id`) ON UPDATE no action ON DELETE cascade,
+	FOREIGN KEY (`fromTaskId`) REFERENCES `tasks`(`id`) ON UPDATE no action ON DELETE cascade,
+	FOREIGN KEY (`toTaskId`) REFERENCES `tasks`(`id`) ON UPDATE no action ON DELETE cascade
+);
+--> statement-breakpoint
+CREATE UNIQUE INDEX `task_relation_unique` ON `task-relations` (`tenantId`,`fromTaskId`,`toTaskId`,`kind`);--> statement-breakpoint
+CREATE INDEX `task_relation_idx_tenant` ON `task-relations` (`tenantId`);--> statement-breakpoint
+CREATE INDEX `task_relation_idx_scope` ON `task-relations` (`tenantId`,`scopeId`);--> statement-breakpoint
+CREATE INDEX `task_relation_idx_from` ON `task-relations` (`tenantId`,`fromTaskId`);--> statement-breakpoint
+CREATE INDEX `task_relation_idx_to` ON `task-relations` (`tenantId`,`toTaskId`);--> statement-breakpoint
 CREATE TABLE `workflow-definitions` (
 	`id` text PRIMARY KEY NOT NULL,
 	`tenantId` text NOT NULL,

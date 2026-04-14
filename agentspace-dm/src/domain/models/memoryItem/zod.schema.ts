@@ -1,6 +1,6 @@
 ﻿import { z } from 'zod'
 import { IbmZodSchema } from '@aopslab/xf-bm'
-import { MEMORY_ITEM_KINDS, scopeableFields } from '../../types.js'
+import { MEMORY_ITEM_DURABILITIES, MEMORY_ITEM_KINDS, scopeableFields } from '../../types.js'
 import { IMemoryItemZodCtx } from './resources.js'
 
 export const memoryItemZodSchema = z
@@ -8,6 +8,7 @@ export const memoryItemZodSchema = z
     ...IbmZodSchema.shape,
     ...scopeableFields,
     kind: z.enum(MEMORY_ITEM_KINDS),
+    durability: z.enum(MEMORY_ITEM_DURABILITIES),
     content: z.string(),
     tags: z.array(z.string()).optional(),
     importance: z.number().int().min(0).optional(),

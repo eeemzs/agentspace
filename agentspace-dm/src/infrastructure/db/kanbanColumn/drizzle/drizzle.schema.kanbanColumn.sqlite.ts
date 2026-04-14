@@ -23,10 +23,10 @@ export const kanbanColumnTableSqlite = sqliteTable(
     updatedAt: integer({ mode: 'timestamp_ms' }).$defaultFn(() => new Date()),
   },
   (t) => [
-    uniqueIndex('kanban_column_position_unique').on(t.tenantId, t.boardId, t.position),
-    index('aops_kanban_column_idx_tenant').on(t.tenantId),
-    index('kanban_column_idx_board').on(t.tenantId, t.boardId),
-    index('kanban_column_idx_project').on(t.tenantId, t.projectId),
+    uniqueIndex('agentspace_kanban_column_position_unique').on(t.tenantId, t.boardId, t.position),
+    index('agentspace_kanban_column_idx_tenant').on(t.tenantId),
+    index('agentspace_kanban_column_idx_board').on(t.tenantId, t.boardId),
+    index('agentspace_kanban_column_idx_project').on(t.tenantId, t.projectId),
   ]
 )
 

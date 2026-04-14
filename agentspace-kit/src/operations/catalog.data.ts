@@ -1283,7 +1283,7 @@ export const AGENTSPACE_OPERATION_CATALOG_ROWS = [
   {
     "toolId": "aops-memory-item-build-resume-pack",
     "operationId": "memory-item.build-resume-pack",
-    "summary": "Build a curated resume pack from durable memory and project summary signals.",
+    "summary": "Build a curated resume pack from memory-derived synopsis and related context signals.",
     "serviceKey": "memoryItemService",
     "serviceEntity": "memory-item",
     "methodName": "buildResumePack",
@@ -1303,7 +1303,33 @@ export const AGENTSPACE_OPERATION_CATALOG_ROWS = [
       }
     ],
     "examples": [
-      "{\"filter\":{\"scopeId\":\"<scopeId>\",\"scopeResolution\":\"cascade\",\"projectId\":\"<projectId>\"},\"retrieval\":{\"query\":\"resume active sprint context\",\"subject\":{\"type\":\"projectman.sprint\",\"id\":\"<sprintId>\"},\"runtimeProfile\":\"planning\",\"sourceTypes\":[\"projectman.sprint\",\"projectman.microtask\"],\"sourceIds\":[\"<sprintId>\"]},\"options\":{\"depth\":\"light\",\"limit\":8,\"includeProjectSummary\":true}}"
+      "{\"filter\":{\"scopeId\":\"<scopeId>\",\"scopeResolution\":\"cascade\",\"projectId\":\"<projectId>\"},\"retrieval\":{\"query\":\"resume active sprint context\",\"subject\":{\"type\":\"projectman.sprint\",\"id\":\"<sprintId>\"},\"runtimeProfile\":\"planning\",\"sourceTypes\":[\"projectman.sprint\",\"projectman.microtask\"],\"sourceIds\":[\"<sprintId>\"]},\"options\":{\"depth\":\"light\",\"limit\":8}}"
+    ]
+  },
+  {
+    "toolId": "aops-memory-item-build-synopsis",
+    "operationId": "memory-item.build-synopsis",
+    "summary": "Build a generated synopsis from memory truth only.",
+    "serviceKey": "memoryItemService",
+    "serviceEntity": "memory-item",
+    "methodName": "buildSynopsis",
+    "kind": "custom",
+    "args": [
+      {
+        "name": "filter",
+        "optional": false
+      },
+      {
+        "name": "retrieval",
+        "optional": true
+      },
+      {
+        "name": "options",
+        "optional": true
+      }
+    ],
+    "examples": [
+      "{\"filter\":{\"scopeId\":\"<scopeId>\",\"scopeResolution\":\"cascade\",\"projectId\":\"<projectId>\"},\"retrieval\":{\"subject\":{\"type\":\"projectman.sprint\",\"id\":\"<sprintId>\"},\"query\":\"current sprint synopsis\"},\"options\":{\"limit\":8}}"
     ]
   },
   {
@@ -1525,124 +1551,6 @@ export const AGENTSPACE_OPERATION_CATALOG_ROWS = [
     "serviceKey": "projectPathService",
     "serviceEntity": "project-path",
     "methodName": "upsertProjectPath",
-    "kind": "custom",
-    "args": [
-      {
-        "name": "data",
-        "optional": false
-      }
-    ]
-  },
-  {
-    "toolId": "aops-project-summary-append-decision",
-    "operationId": "project-summary.append-decision",
-    "summary": "Append decision project-summary.",
-    "serviceKey": "projectSummaryService",
-    "serviceEntity": "project-summary",
-    "methodName": "appendDecision",
-    "kind": "custom",
-    "args": [
-      {
-        "name": "projectId",
-        "optional": false
-      },
-      {
-        "name": "decision",
-        "optional": false
-      },
-      {
-        "name": "lastRunId",
-        "optional": true
-      },
-      {
-        "name": "lastSessionId",
-        "optional": true
-      }
-    ]
-  },
-  {
-    "toolId": "aops-project-summary-create",
-    "operationId": "project-summary.create",
-    "summary": "Create project-summary.",
-    "serviceKey": "projectSummaryService",
-    "serviceEntity": "project-summary",
-    "methodName": "create",
-    "kind": "create",
-    "args": [
-      {
-        "name": "data",
-        "optional": false
-      }
-    ]
-  },
-  {
-    "toolId": "aops-project-summary-get-by-id",
-    "operationId": "project-summary.get-by-id",
-    "summary": "Get by id project-summary.",
-    "serviceKey": "projectSummaryService",
-    "serviceEntity": "project-summary",
-    "methodName": "getById",
-    "kind": "get",
-    "args": [
-      {
-        "name": "id",
-        "optional": false
-      },
-      {
-        "name": "options",
-        "optional": true
-      }
-    ]
-  },
-  {
-    "toolId": "aops-project-summary-get-project-summary",
-    "operationId": "project-summary.get-project-summary",
-    "summary": "Get project summary project-summary.",
-    "serviceKey": "projectSummaryService",
-    "serviceEntity": "project-summary",
-    "methodName": "getProjectSummary",
-    "kind": "get",
-    "args": [
-      {
-        "name": "projectId",
-        "optional": false
-      }
-    ]
-  },
-  {
-    "toolId": "aops-project-summary-set-open-items",
-    "operationId": "project-summary.set-open-items",
-    "summary": "Set open items project-summary.",
-    "serviceKey": "projectSummaryService",
-    "serviceEntity": "project-summary",
-    "methodName": "setOpenItems",
-    "kind": "update",
-    "args": [
-      {
-        "name": "projectId",
-        "optional": false
-      },
-      {
-        "name": "openItems",
-        "optional": false
-      },
-      {
-        "name": "lastRunId",
-        "optional": true
-      },
-      {
-        "name": "lastSessionId",
-        "optional": true
-      }
-    ]
-  },
-  {
-    "toolId": "aops-project-summary-upsert-project-summary",
-    "operationId": "project-summary.upsert-project-summary",
-    "summary": "Upsert project summary project-summary.",
-    "serviceKey": "projectSummaryService",
-    "serviceEntity": "project-summary",
-    "methodName": "upsertProjectSummary",
     "kind": "custom",
     "args": [
       {
@@ -3285,6 +3193,259 @@ export const AGENTSPACE_OPERATION_CATALOG_ROWS = [
       {
         "name": "patch",
         "optional": false
+      }
+    ]
+  },
+  {
+    "toolId": "aops-task-delete-task",
+    "operationId": "task.delete-task",
+    "summary": "Delete task task.",
+    "serviceKey": "taskService",
+    "serviceEntity": "task",
+    "methodName": "deleteTask",
+    "kind": "delete",
+    "args": [
+      {
+        "name": "id",
+        "optional": false
+      }
+    ]
+  },
+  {
+    "toolId": "aops-task-create-task-label",
+    "operationId": "task.create-task-label",
+    "summary": "Create task label task.",
+    "serviceKey": "taskService",
+    "serviceEntity": "task",
+    "methodName": "createTaskLabel",
+    "kind": "create",
+    "args": [
+      {
+        "name": "data",
+        "optional": false
+      }
+    ]
+  },
+  {
+    "toolId": "aops-task-delete-task-label",
+    "operationId": "task.delete-task-label",
+    "summary": "Delete task label task.",
+    "serviceKey": "taskService",
+    "serviceEntity": "task",
+    "methodName": "deleteTaskLabel",
+    "kind": "delete",
+    "args": [
+      {
+        "name": "id",
+        "optional": false
+      }
+    ]
+  },
+  {
+    "toolId": "aops-task-list-task-labels",
+    "operationId": "task.list-task-labels",
+    "summary": "List task labels task.",
+    "serviceKey": "taskService",
+    "serviceEntity": "task",
+    "methodName": "listTaskLabels",
+    "kind": "list",
+    "args": [
+      {
+        "name": "scopeId",
+        "optional": false
+      },
+      {
+        "name": "options",
+        "optional": true
+      }
+    ]
+  },
+  {
+    "toolId": "aops-task-list-labels-for-task",
+    "operationId": "task.list-labels-for-task",
+    "summary": "List labels for task task.",
+    "serviceKey": "taskService",
+    "serviceEntity": "task",
+    "methodName": "listLabelsForTask",
+    "kind": "list",
+    "args": [
+      {
+        "name": "taskId",
+        "optional": false
+      }
+    ]
+  },
+  {
+    "toolId": "aops-task-set-task-label",
+    "operationId": "task.set-task-label",
+    "summary": "Set task label task.",
+    "serviceKey": "taskService",
+    "serviceEntity": "task",
+    "methodName": "setTaskLabel",
+    "kind": "update",
+    "args": [
+      {
+        "name": "taskId",
+        "optional": false
+      },
+      {
+        "name": "labelId",
+        "optional": false
+      }
+    ]
+  },
+  {
+    "toolId": "aops-task-unset-task-label",
+    "operationId": "task.unset-task-label",
+    "summary": "Unset task label task.",
+    "serviceKey": "taskService",
+    "serviceEntity": "task",
+    "methodName": "unsetTaskLabel",
+    "kind": "update",
+    "args": [
+      {
+        "name": "taskId",
+        "optional": false
+      },
+      {
+        "name": "labelId",
+        "optional": false
+      }
+    ]
+  },
+  {
+    "toolId": "aops-task-add-checklist-item",
+    "operationId": "task.add-checklist-item",
+    "summary": "Add checklist item task.",
+    "serviceKey": "taskService",
+    "serviceEntity": "task",
+    "methodName": "addChecklistItem",
+    "kind": "create",
+    "args": [
+      {
+        "name": "data",
+        "optional": false
+      }
+    ]
+  },
+  {
+    "toolId": "aops-task-toggle-checklist-item",
+    "operationId": "task.toggle-checklist-item",
+    "summary": "Toggle checklist item task.",
+    "serviceKey": "taskService",
+    "serviceEntity": "task",
+    "methodName": "toggleChecklistItem",
+    "kind": "update",
+    "args": [
+      {
+        "name": "id",
+        "optional": false
+      },
+      {
+        "name": "isDone",
+        "optional": false
+      }
+    ]
+  },
+  {
+    "toolId": "aops-task-remove-checklist-item",
+    "operationId": "task.remove-checklist-item",
+    "summary": "Remove checklist item task.",
+    "serviceKey": "taskService",
+    "serviceEntity": "task",
+    "methodName": "removeChecklistItem",
+    "kind": "delete",
+    "args": [
+      {
+        "name": "id",
+        "optional": false
+      }
+    ]
+  },
+  {
+    "toolId": "aops-task-reorder-checklist-items",
+    "operationId": "task.reorder-checklist-items",
+    "summary": "Reorder checklist items task.",
+    "serviceKey": "taskService",
+    "serviceEntity": "task",
+    "methodName": "reorderChecklistItems",
+    "kind": "update",
+    "args": [
+      {
+        "name": "taskId",
+        "optional": false
+      },
+      {
+        "name": "orderedItemIds",
+        "optional": false
+      }
+    ]
+  },
+  {
+    "toolId": "aops-task-list-checklist-items",
+    "operationId": "task.list-checklist-items",
+    "summary": "List checklist items task.",
+    "serviceKey": "taskService",
+    "serviceEntity": "task",
+    "methodName": "listChecklistItems",
+    "kind": "list",
+    "args": [
+      {
+        "name": "taskId",
+        "optional": false
+      },
+      {
+        "name": "options",
+        "optional": true
+      }
+    ]
+  },
+  {
+    "toolId": "aops-task-add-task-relation",
+    "operationId": "task.add-task-relation",
+    "summary": "Add task relation task.",
+    "serviceKey": "taskService",
+    "serviceEntity": "task",
+    "methodName": "addTaskRelation",
+    "kind": "create",
+    "args": [
+      {
+        "name": "data",
+        "optional": false
+      }
+    ]
+  },
+  {
+    "toolId": "aops-task-remove-task-relation",
+    "operationId": "task.remove-task-relation",
+    "summary": "Remove task relation task.",
+    "serviceKey": "taskService",
+    "serviceEntity": "task",
+    "methodName": "removeTaskRelation",
+    "kind": "delete",
+    "args": [
+      {
+        "name": "id",
+        "optional": false
+      }
+    ]
+  },
+  {
+    "toolId": "aops-task-list-task-relations",
+    "operationId": "task.list-task-relations",
+    "summary": "List task relations task.",
+    "serviceKey": "taskService",
+    "serviceEntity": "task",
+    "methodName": "listTaskRelations",
+    "kind": "list",
+    "args": [
+      {
+        "name": "taskId",
+        "optional": false
+      },
+      {
+        "name": "options",
+        "optional": true
       }
     ]
   },

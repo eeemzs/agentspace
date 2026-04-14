@@ -19,6 +19,10 @@ export type KanbanStatusKey = (typeof KANBAN_STATUS_KEYS)[number]
 
 export const TASK_TYPES = ['epic', 'story', 'task', 'bug', 'chore', 'spike'] as const
 export type TaskType = (typeof TASK_TYPES)[number]
+export const TASK_LABEL_COLORS = ['gray', 'red', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink'] as const
+export type TaskLabelColor = (typeof TASK_LABEL_COLORS)[number]
+export const TASK_RELATION_KINDS = ['blocks', 'precedes', 'relates_to'] as const
+export type TaskRelationKind = (typeof TASK_RELATION_KINDS)[number]
 
 export const SPRINT_STATUSES = ['draft', 'active', 'completed', 'superseded', 'blocked'] as const
 export type SprintStatus = (typeof SPRINT_STATUSES)[number]
@@ -45,17 +49,18 @@ export const ARTIFACT_LINK_REF_TYPES = ['task', 'agent-run', 'prompt-version', '
 export type ArtifactLinkRefType = (typeof ARTIFACT_LINK_REF_TYPES)[number]
 
 export const MEMORY_ITEM_KINDS = [
+  'kickoff',
+  'resume',
+  'closeout',
   'decision',
+  'constraint',
   'rule',
   'note',
-  'lesson',
-  'context',
-  'constraint',
-  'resume',
-  'start',
-  'request',
 ] as const
 export type MemoryItemKind = (typeof MEMORY_ITEM_KINDS)[number]
+
+export const MEMORY_ITEM_DURABILITIES = ['short', 'durable', 'sticky'] as const
+export type MemoryItemDurability = (typeof MEMORY_ITEM_DURABILITIES)[number]
 
 export const CODEX_CHAT_MESSAGE_ROLES = ['user', 'assistant', 'system'] as const
 export type CodexChatMessageRole = (typeof CODEX_CHAT_MESSAGE_ROLES)[number]

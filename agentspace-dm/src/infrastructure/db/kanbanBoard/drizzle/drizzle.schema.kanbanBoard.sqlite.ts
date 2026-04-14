@@ -13,8 +13,8 @@ export const kanbanBoardTableSqlite = sqliteTable(
     updatedAt: integer({ mode: 'timestamp_ms' }).$defaultFn(() => new Date()),
   },
   (t) => [
-    index('kanban_board_idx_tenant').on(t.tenantId),
-    index('kanban_board_idx_project').on(t.tenantId, t.projectId),
+    index('agentspace_kanban_board_idx_tenant').on(t.tenantId),
+    index('agentspace_kanban_board_idx_project').on(t.tenantId, t.projectId),
   ]
 )
 

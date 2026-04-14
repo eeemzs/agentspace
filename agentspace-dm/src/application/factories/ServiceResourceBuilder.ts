@@ -6,10 +6,11 @@ import { getParent, XfLogger } from '@aopslab/xf-logger'
 import { RedisConfig } from '@aopslab/xf-db-redis'
 import { RepositoryConfig } from '@aopslab/xf-db'
 import type { IResourceServicePort } from '../ports/inbound/index.js'
-import type { IRepositoryPortResource } from '../ports/repository-ports/index.js'
+import type { IRepositoryPortResource, IRepositoryPortScope } from '../ports/repository-ports/index.js'
 import { ResourceService, type ResourceServiceOptions } from '../services/index.js'
 import { ResourceServiceError } from '../errors/ResourceServiceError.js'
 import { RepositoryFactoryResource } from './RepositoryFactoryResource.js'
+import { RepositoryFactoryScope } from './RepositoryFactoryScope.js'
 
 export interface ResourceServiceFactoryConfig {
   repositoryConfig?: RepositoryConfig
@@ -24,6 +25,7 @@ export interface ResourceServiceFactoryConfig {
 
 export interface ResourceServiceFactoryOverrides {
   resourceRepository?: IRepositoryPortResource
+  scopeRepository?: IRepositoryPortScope
   //==> custom-factory-overrides
   // Add domain-specific overrides here (e.g., dependent services).
   //<==//
@@ -88,7 +90,8 @@ export class ServiceBuilderResource {
         { level: effectiveLogLevel },
       )
 
-      let resourceRepository: IRepositoryPortResource;
+      let resourceRepository: IRepositoryPortResource
+      let scopeRepository: IRepositoryPortScope | undefined = self.overrides.scopeRepository
       if (self.overrides.resourceRepository) {
         resourceRepository = self.overrides.resourceRepository as IRepositoryPortResource
       } else {
@@ -122,8 +125,29 @@ export class ServiceBuilderResource {
         )
       }
 
+      if (!scopeRepository && config.repositoryConfig) {
+        const repositoryParams: RepositoryCreateParams = {
+          repositoryConfig: config.repositoryConfig,
+          redisConfig: config.redisConfig,
+          logger,
+        }
+
+        scopeRepository = yield* _(
+          Effect.mapError(
+            RepositoryFactoryScope.create(repositoryParams),
+            (error) =>
+              new XfConfigurationError({
+                message: `RepositoryFactoryScope.create başarısız: ${(error as any)?.message ?? 'unknown'}`,
+                stage: 'ServiceBuilderResource::build',
+                cause: error,
+              }),
+          ),
+        )
+      }
+
       const serviceOptions: ResourceServiceOptions = {
         resourceRepository,
+        scopeRepository,
         logger,
         //==> custom-service-options
         // Map factory config / overrides to service options here.
