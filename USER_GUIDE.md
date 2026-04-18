@@ -320,7 +320,9 @@ Owner kural:
 
 Oncelik sirasi:
 
-1. sticky guidance
+1. sticky guidance (board-scoped: eger retrieval.tags icerisinde `board:<slug>`
+   tag'i varsa, yalnizca o board'un `board-bootstrap` tag'li sticky kayitlari
+   dahil edilir; genel project-level sticky rule'lar hala gecer)
 2. generated synopsis
 3. exact subject memory
 4. lineage memory

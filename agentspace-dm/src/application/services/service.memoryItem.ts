@@ -593,11 +593,24 @@ function isProjectGenericMatch(item: IbmMemoryItem, projectId: string): boolean 
   return readProjectId(item) === projectId
 }
 
-function isStickyProjectGuidance(item: IbmMemoryItem, projectId: string): boolean {
+function isStickyProjectGuidance(item: IbmMemoryItem, projectId: string, retrieval?: MemorySearchRetrievalRequest): boolean {
   if (readDurability(item) !== 'sticky') return false
   if (readStickyScope(item) && readStickyScope(item) !== 'project') return false
   if (!projectId) return false
-  return readProjectId(item) === projectId
+  if (readProjectId(item) !== projectId) return false
+
+  const requestedBoardTags = toArray(retrieval?.tags)
+    .map((entry) => normalizeTextToken(entry))
+    .filter((entry) => entry?.startsWith('board:'))
+  if (requestedBoardTags.length > 0) {
+    const itemTags = new Set(toArray(item.tags).map((entry) => normalizeTextToken(entry)))
+    const hasBoardBootstrap = itemTags.has(normalizeTextToken('board-bootstrap'))
+    if (hasBoardBootstrap) {
+      return requestedBoardTags.some((tag) => itemTags.has(tag))
+    }
+  }
+
+  return true
 }
 
 function isStickySubjectGuidance(item: IbmMemoryItem, retrieval?: MemorySearchRetrievalRequest): boolean {
@@ -656,7 +669,7 @@ function curateRelatedMemory(
   fallbackMatches: IbmMemoryItem[]
 } {
   const deduped = filterSupersededItems(dedupeMemoryItems(entries))
-  const stickyProjectMatches = deduped.filter((item) => isStickyProjectGuidance(item, projectId))
+  const stickyProjectMatches = deduped.filter((item) => isStickyProjectGuidance(item, projectId, normalizedRetrieval))
   const stickySubjectMatches = depth === 'deep'
     ? deduped.filter((item) => !stickyProjectMatches.includes(item) && isStickySubjectGuidance(item, normalizedRetrieval))
     : []
