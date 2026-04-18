@@ -55,7 +55,7 @@ catalogs:
       specifier: ^0.31.8
       version: 0.31.9
     drizzle-orm:
-      specifier: ^0.45.1
+      specifier: 0.45.1
       version: 0.45.1
     effect:
       specifier: ^3.19.15

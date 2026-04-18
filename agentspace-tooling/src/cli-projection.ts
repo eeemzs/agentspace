@@ -303,7 +303,7 @@ function buildRootCommandDescriptor(): AgentspaceCliCommandDescriptor {
   appendSection(sections, 'Generated sugar commands', [
     'agentspace project list-projects',
     'agentspace project create --data <json>',
-    'agentspace task list-tasks --filter <json> --project-id <id>',
+    'agentspace prompt list-prompts --filter <json> --project-id <id>',
   ])
   appendSection(sections, 'Runtime options', buildCommonRuntimeHelpRows())
   appendSection(sections, 'Examples', [

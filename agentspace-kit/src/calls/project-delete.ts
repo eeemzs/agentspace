@@ -1,5 +1,5 @@
 import { Effect } from 'effect'
-import type { IbmPrompt, IbmProject, IbmSkill, IbmSprint } from '@aopslab/domain-dm-agentspace/models'
+import type { IbmPrompt, IbmProject, IbmSkill } from '@aopslab/domain-dm-agentspace/models'
 import type { AgentspaceKitProvider } from '../domain-services/types.js'
 
 function normalizeNonEmpty(value: unknown): string | undefined {
@@ -15,6 +15,12 @@ function isNotFoundError(error: unknown): boolean {
   if (err.cause?.code === 'NotFound') return true
   if (err._tag === 'RepositoryError' && err.code === 'NotFound') return true
   if (err._tag === 'NotFoundError') return true
+  const message = error instanceof Error ? error.message : String(error)
+  if (message.includes('"code":"NotFound"')) return true
+  if (message.includes('"_tag":"NotFoundError"')) return true
+  if (message.includes('"_tag":"RepositoryError"') && message.includes('"code":"NotFound"')) return true
+  if (message.includes('"_tag":"RecordNotFoundError"')) return true
+  if (message.includes('Record not found')) return true
   return false
 }
 
@@ -48,12 +54,6 @@ type HardDeleteProjectKit = Pick<
   | 'getPromptVersionRepository'
   | 'getSkillRepository'
   | 'getSkillVersionRepository'
-  | 'getKanbanBoardRepository'
-  | 'getKanbanColumnRepository'
-  | 'getTaskRepository'
-  | 'getTaskCommentRepository'
-  | 'getSprintRepository'
-  | 'getSprintItemRepository'
   | 'getAgentSessionRepository'
   | 'getAgentRunRepository'
   | 'getArtifactRepository'
@@ -114,7 +114,7 @@ async function deleteManyByMatchEq<TDomainModel>(
 }
 
 /**
- * Hard-delete a project and ALL AOPS-linked child records (child-first).
+ * Hard-delete a project and Agentspace-owned child records (child-first).
  *
  * This is intended for orchestrators (e.g. host plugin runner / ops scripts) that need a
  * safe permanent delete operation.
@@ -133,12 +133,6 @@ export async function hardDeleteAgentspaceProjectCascade(params: {
     promptVersionRepository,
     skillRepository,
     skillVersionRepository,
-    kanbanBoardRepository,
-    kanbanColumnRepository,
-    taskRepository,
-    taskCommentRepository,
-    sprintRepository,
-    sprintItemRepository,
     agentSessionRepository,
     agentRunRepository,
     artifactRepository,
@@ -155,12 +149,6 @@ export async function hardDeleteAgentspaceProjectCascade(params: {
     kit.getPromptVersionRepository(),
     kit.getSkillRepository(),
     kit.getSkillVersionRepository(),
-    kit.getKanbanBoardRepository(),
-    kit.getKanbanColumnRepository(),
-    kit.getTaskRepository(),
-    kit.getTaskCommentRepository(),
-    kit.getSprintRepository(),
-    kit.getSprintItemRepository(),
     kit.getAgentSessionRepository(),
     kit.getAgentRunRepository(),
     kit.getArtifactRepository(),
@@ -171,40 +159,10 @@ export async function hardDeleteAgentspaceProjectCascade(params: {
     kit.getCodexChatMessageRepository(),
   ])
 
-  let project: IbmProject
-  try {
-    project = await Effect.runPromise(asFindByIdRepository<IbmProject>(projectRepository).findById(projectId))
-  } catch (error) {
-    throw new Error('hardDeleteAgentspaceProjectCascade.findById failed: projectRepository.findById', {
-      cause: error,
-    })
-  }
-
-  const projectScopeId = normalizeNonEmpty(project.scopeId)
-  if (!projectScopeId) {
-    throw new Error(`hardDeleteAgentspaceProjectCascade.missing_scope:${projectId}`)
-  }
-
-  const [prompts, skills, sprints] = await Promise.all([
-    findByMatchEq<IbmPrompt>('promptRepository.find', promptRepository, { scopeId: projectScopeId }),
-    findByMatchEq<IbmSkill>('skillRepository.find', skillRepository, { scopeId: projectScopeId }),
-    findByMatchEq<IbmSprint>('sprintRepository.find', sprintRepository, { scopeId: projectScopeId }),
-  ])
-
-  const promptIds = collectIds(prompts)
-  const skillIds = collectIds(skills)
-  const sprintIds = collectIds(sprints)
-
   const deleted: Record<string, number> = {
     project: 0,
     projectMembers: 0,
     projectPaths: 0,
-    tasks: 0,
-    taskComments: 0,
-    kanbanBoards: 0,
-    kanbanColumns: 0,
-    sprints: 0,
-    sprintItems: 0,
     prompts: 0,
     promptVersions: 0,
     skills: 0,
@@ -219,6 +177,31 @@ export async function hardDeleteAgentspaceProjectCascade(params: {
     codexChatMessages: 0,
   }
 
+  let project: IbmProject
+  try {
+    project = await Effect.runPromise(asFindByIdRepository<IbmProject>(projectRepository).findById(projectId))
+  } catch (error) {
+    if (isNotFoundError(error)) {
+      return deleted
+    }
+    throw new Error('hardDeleteAgentspaceProjectCascade.findById failed: projectRepository.findById', {
+      cause: error,
+    })
+  }
+
+  const projectScopeId = normalizeNonEmpty(project.scopeId)
+  if (!projectScopeId) {
+    throw new Error(`hardDeleteAgentspaceProjectCascade.missing_scope:${projectId}`)
+  }
+
+  const [prompts, skills] = await Promise.all([
+    findByMatchEq<IbmPrompt>('promptRepository.find', promptRepository, { scopeId: projectScopeId }),
+    findByMatchEq<IbmSkill>('skillRepository.find', skillRepository, { scopeId: projectScopeId }),
+  ])
+
+  const promptIds = collectIds(prompts)
+  const skillIds = collectIds(skills)
+
   // Child-first deletion order (safer if FK constraints exist in DB).
   deleted.projectMembers = await deleteManyByMatchEq('projectMemberRepository.deleteMany', projectMemberRepository, {
     projectId,
@@ -226,26 +209,6 @@ export async function hardDeleteAgentspaceProjectCascade(params: {
   deleted.projectPaths = await deleteManyByMatchEq('projectPathRepository.deleteMany', projectPathRepository, {
     projectId,
   })
-
-  deleted.taskComments = await deleteManyByMatchEq('taskCommentRepository.deleteMany', taskCommentRepository, {
-    projectId,
-  })
-  deleted.tasks = await deleteManyByMatchEq('taskRepository.deleteMany', taskRepository, { scopeId: projectScopeId })
-
-  deleted.kanbanColumns = await deleteManyByMatchEq('kanbanColumnRepository.deleteMany', kanbanColumnRepository, {
-    projectId,
-  })
-  deleted.kanbanBoards = await deleteManyByMatchEq('kanbanBoardRepository.deleteMany', kanbanBoardRepository, {
-    projectId,
-  })
-
-  // Sprint items live under sprint ids (no projectId column).
-  for (const sprintId of sprintIds) {
-    deleted.sprintItems += Number(
-      await deleteManyByMatchEq('sprintItemRepository.deleteMany', sprintItemRepository, { sprintId })
-    )
-  }
-  deleted.sprints = await deleteManyByMatchEq('sprintRepository.deleteMany', sprintRepository, { scopeId: projectScopeId })
 
   // Prompt versions live under prompt ids (no projectId column).
   for (const promptId of promptIds) {

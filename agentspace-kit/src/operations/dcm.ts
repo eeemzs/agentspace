@@ -243,7 +243,7 @@ export function buildAgentspaceDomainCapabilityManifest(
       id: 'agentspace',
       version: options.domainVersion ?? '0.0.0',
       displayName: 'Agentspace',
-      description: 'Project-scoped agent tooling for prompts, tasks, skills, memory, chat, and runtime records.',
+      description: 'Context and runtime domain for projects, prompts, skills, memory, chat, artifacts, agent runs, and related runtime records.',
     },
     capabilities: {
       operations: operations.map(toCapabilityOperation),
@@ -254,7 +254,7 @@ export function buildAgentspaceDomainCapabilityManifest(
   if (options.includeDocs !== false) {
     manifest.docs = {
       domain: {
-        summary: 'Manage Agentspace project state such as projects, tasks, prompts, skills, chat threads, memory items, agent runs, and related runtime records.',
+        summary: 'Manage Agentspace context state such as projects, prompts, skills, chat threads, memory items, artifacts, agent runs, and related runtime records.',
         notes: [
           'Canonical skill package standard: aops-skill-package-v1.',
           'Canonical package entry file: SKILL.md.',

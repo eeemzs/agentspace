@@ -2,7 +2,6 @@
 import { InferSelectModel } from 'drizzle-orm'
 import { agentSessionTable } from '../../agentSession/drizzle/drizzle.schema.agentSession.js'
 import { projectTable } from '../../project/drizzle/drizzle.schema.project.js'
-import { taskTable } from '../../task/drizzle/drizzle.schema.task.js'
 
 export const agentRunTable = pgTable(
   'agent-runs',
@@ -14,7 +13,7 @@ export const agentRunTable = pgTable(
     agentSessionId: uuid()
       .notNull()
       .references(() => agentSessionTable.id, { onDelete: 'cascade' }),
-    taskId: uuid().references(() => taskTable.id, { onDelete: 'set null' }),
+    taskId: uuid(),
     runId: text().notNull(),
     sessionId: text().notNull(),
     agent: text().notNull(),

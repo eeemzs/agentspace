@@ -3,7 +3,6 @@ import { randomUUID } from 'node:crypto'
 import { index, integer, text, real, sqliteTable } from 'drizzle-orm/sqlite-core'
 import { agentSessionTableSqlite as agentSessionTable } from '../../agentSession/drizzle/drizzle.schema.agentSession.sqlite.js'
 import { projectTableSqlite as projectTable } from '../../project/drizzle/drizzle.schema.project.sqlite.js'
-import { taskTableSqlite as taskTable } from '../../task/drizzle/drizzle.schema.task.sqlite.js'
 
 export const agentRunTableSqlite = sqliteTable(
   'agent-runs',
@@ -15,7 +14,7 @@ export const agentRunTableSqlite = sqliteTable(
     agentSessionId: text()
       .notNull()
       .references(() => agentSessionTable.id, { onDelete: 'cascade' }),
-    taskId: text().references(() => taskTable.id, { onDelete: 'set null' }),
+    taskId: text(),
     runId: text().notNull(),
     sessionId: text().notNull(),
     agent: text().notNull(),

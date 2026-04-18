@@ -10,6 +10,15 @@ import { AGENTSPACE_OPERATION_CATALOG_ROWS } from './catalog.data.js'
 
 let cachedOperations: AgentspaceOperationSpec[] | null = null
 
+const EXTRACTED_TASKER_OPERATION_PREFIXES = [
+  'kanban-board.',
+  'kanban-column.',
+  'sprint.',
+  'sprint-item.',
+  'task.',
+  'task-comment.',
+] as const
+
 function toRecord(input: unknown): Record<string, unknown> {
   if (!input || typeof input !== 'object' || Array.isArray(input)) return {}
   return input as Record<string, unknown>
@@ -30,10 +39,15 @@ function cloneArgs(args: ReadonlyArray<{ name: string; optional: boolean }>): { 
   return args.map((arg) => ({ ...arg }))
 }
 
+function isExtractedTaskerOperation(operationId: string): boolean {
+  return EXTRACTED_TASKER_OPERATION_PREFIXES.some((prefix) => operationId.startsWith(prefix))
+}
+
 function buildOperationsInternal(): AgentspaceOperationSpec[] {
   const operations: AgentspaceOperationSpec[] = []
 
   for (const row of AGENTSPACE_OPERATION_CATALOG_ROWS) {
+    if (isExtractedTaskerOperation(row.operationId)) continue
     const action = row.operationId.split('.').slice(1).join('.') || 'custom'
     const operation = defineAgentspaceKitOperation({
       operationId: row.operationId,
