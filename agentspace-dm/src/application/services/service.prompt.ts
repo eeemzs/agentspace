@@ -20,6 +20,24 @@ export interface PromptServiceOptions {
   locale?: string
 }
 
+function normalizeNonEmpty(value: unknown): string | undefined {
+  if (typeof value !== 'string') return undefined
+  const normalized = value.trim()
+  return normalized.length > 0 ? normalized : undefined
+}
+
+function normalizePromptListFilter(filter: PromptListFilter = {}): PromptListFilter {
+  const normalizedProjectId = normalizeNonEmpty((filter as Record<string, unknown>).projectId)
+  const normalizedScopeId = normalizeNonEmpty(filter.scopeId)
+  if (!normalizedProjectId || normalizedScopeId) return filter
+  const nextFilter = { ...(filter as Record<string, unknown>) }
+  delete nextFilter.projectId
+  return {
+    ...nextFilter,
+    scopeId: normalizedProjectId,
+  } as PromptListFilter
+}
+
 export class PromptService implements IPromptServicePort {
   private readonly promptRepository: IRepositoryPortPrompt
   private readonly scopeRepository?: IRepositoryPortScope
@@ -73,8 +91,9 @@ export class PromptService implements IPromptServicePort {
     options?: DbQueryOptions<IbmPrompt>
   ): Effect.Effect<IbmPrompt[], PromptServiceError> {
     const stage = 'PromptService::listPrompts'
+    const normalizedFilter = normalizePromptListFilter(filter)
     return pipe(
-      validateInput(filter, 'filter', { stage }),
+      validateInput(normalizedFilter, 'filter', { stage }),
       Effect.flatMap((value) => listRecordsByScopeResolution(this.promptRepository as any, this.scopeRepository, value, options, {
         stage,
         defaultResolution: 'cascade',
