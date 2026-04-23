@@ -26,6 +26,7 @@ export type {
   IRepositoryPortCodexChatMessage,
   IRepositoryPortCodexChatSetting,
   IRepositoryPortCodexChatThread,
+  IRepositoryPortExperienceItem,
   IRepositoryPortMemoryItem,
   IRepositoryPortTag,
   IRepositoryPortProjectMember,

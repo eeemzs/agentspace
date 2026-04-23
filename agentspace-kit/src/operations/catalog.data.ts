@@ -1371,6 +1371,127 @@ export const AGENTSPACE_OPERATION_CATALOG_ROWS = [
     ]
   },
   {
+    "toolId": "aops-experience-item-add-experience-item",
+    "operationId": "experience-item.add-experience-item",
+    "summary": "Add experience item experience-item.",
+    "serviceKey": "experienceItemService",
+    "serviceEntity": "experience-item",
+    "methodName": "addExperienceItem",
+    "kind": "create",
+    "args": [
+      {
+        "name": "data",
+        "optional": false
+      }
+    ]
+  },
+  {
+    "toolId": "aops-experience-item-create",
+    "operationId": "experience-item.create",
+    "summary": "Create experience-item.",
+    "serviceKey": "experienceItemService",
+    "serviceEntity": "experience-item",
+    "methodName": "create",
+    "kind": "create",
+    "args": [
+      {
+        "name": "data",
+        "optional": false
+      }
+    ]
+  },
+  {
+    "toolId": "aops-experience-item-get-by-id",
+    "operationId": "experience-item.get-by-id",
+    "summary": "Get by id experience-item.",
+    "serviceKey": "experienceItemService",
+    "serviceEntity": "experience-item",
+    "methodName": "getById",
+    "kind": "get",
+    "args": [
+      {
+        "name": "id",
+        "optional": false
+      },
+      {
+        "name": "options",
+        "optional": true
+      }
+    ]
+  },
+  {
+    "toolId": "aops-experience-item-get-experience-item",
+    "operationId": "experience-item.get-experience-item",
+    "summary": "Get experience item experience-item.",
+    "serviceKey": "experienceItemService",
+    "serviceEntity": "experience-item",
+    "methodName": "getExperienceItem",
+    "kind": "get",
+    "args": [
+      {
+        "name": "id",
+        "optional": false
+      },
+      {
+        "name": "options",
+        "optional": true
+      }
+    ]
+  },
+  {
+    "toolId": "aops-experience-item-list-experience-items",
+    "operationId": "experience-item.list-experience-items",
+    "summary": "List experience items experience-item.",
+    "serviceKey": "experienceItemService",
+    "serviceEntity": "experience-item",
+    "methodName": "listExperienceItems",
+    "kind": "list",
+    "args": [
+      {
+        "name": "filter",
+        "optional": true
+      },
+      {
+        "name": "options",
+        "optional": true
+      }
+    ]
+  },
+  {
+    "toolId": "aops-experience-item-remove-experience-item",
+    "operationId": "experience-item.remove-experience-item",
+    "summary": "Remove experience item experience-item.",
+    "serviceKey": "experienceItemService",
+    "serviceEntity": "experience-item",
+    "methodName": "removeExperienceItem",
+    "kind": "delete",
+    "args": [
+      {
+        "name": "id",
+        "optional": false
+      }
+    ]
+  },
+  {
+    "toolId": "aops-experience-item-update-experience-item",
+    "operationId": "experience-item.update-experience-item",
+    "summary": "Update experience item experience-item.",
+    "serviceKey": "experienceItemService",
+    "serviceEntity": "experience-item",
+    "methodName": "updateExperienceItem",
+    "kind": "update",
+    "args": [
+      {
+        "name": "id",
+        "optional": false
+      },
+      {
+        "name": "patch",
+        "optional": false
+      }
+    ]
+  },
+  {
     "toolId": "aops-project-member-create",
     "operationId": "project-member.create",
     "summary": "Create project-member.",

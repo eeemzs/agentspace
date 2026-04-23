@@ -10,6 +10,7 @@ const agentspaceTables = [
   'codex-chat-messages',
   'codex-chat-settings',
   'codex-chat-threads',
+  'experience-items',
   'memory-items',
   'project-members',
   'project-paths',

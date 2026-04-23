@@ -59,6 +59,7 @@ type HardDeleteProjectKit = Pick<
   | 'getArtifactRepository'
   | 'getArtifactLinkRepository'
   | 'getResourceRepository'
+  | 'getExperienceItemRepository'
   | 'getMemoryItemRepository'
   | 'getCodexChatThreadRepository'
   | 'getCodexChatMessageRepository'
@@ -138,6 +139,7 @@ export async function hardDeleteAgentspaceProjectCascade(params: {
     artifactRepository,
     artifactLinkRepository,
     resourceRepository,
+    experienceItemRepository,
     memoryItemRepository,
     codexChatThreadRepository,
     codexChatMessageRepository,
@@ -154,6 +156,7 @@ export async function hardDeleteAgentspaceProjectCascade(params: {
     kit.getArtifactRepository(),
     kit.getArtifactLinkRepository(),
     kit.getResourceRepository(),
+    kit.getExperienceItemRepository(),
     kit.getMemoryItemRepository(),
     kit.getCodexChatThreadRepository(),
     kit.getCodexChatMessageRepository(),
@@ -172,6 +175,7 @@ export async function hardDeleteAgentspaceProjectCascade(params: {
     artifacts: 0,
     artifactLinks: 0,
     resources: 0,
+    experienceItems: 0,
     memoryItems: 0,
     codexChatThreads: 0,
     codexChatMessages: 0,
@@ -250,6 +254,9 @@ export async function hardDeleteAgentspaceProjectCascade(params: {
   })
 
   deleted.resources = await deleteManyByMatchEq('resourceRepository.deleteMany', resourceRepository, {
+    scopeId: projectScopeId,
+  })
+  deleted.experienceItems = await deleteManyByMatchEq('experienceItemRepository.deleteMany', experienceItemRepository, {
     scopeId: projectScopeId,
   })
   deleted.memoryItems = await deleteManyByMatchEq('memoryItemRepository.deleteMany', memoryItemRepository, {

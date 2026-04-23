@@ -62,6 +62,17 @@ export type MemoryItemKind = (typeof MEMORY_ITEM_KINDS)[number]
 export const MEMORY_ITEM_DURABILITIES = ['short', 'durable', 'sticky'] as const
 export type MemoryItemDurability = (typeof MEMORY_ITEM_DURABILITIES)[number]
 
+export const EXPERIENCE_ITEM_TYPES = [
+  'technique',
+  'problem-solution',
+  'tool',
+  'script',
+  'pattern',
+  'anti-pattern',
+  'idea',
+] as const
+export type ExperienceItemType = (typeof EXPERIENCE_ITEM_TYPES)[number]
+
 export const CODEX_CHAT_MESSAGE_ROLES = ['user', 'assistant', 'system'] as const
 export type CodexChatMessageRole = (typeof CODEX_CHAT_MESSAGE_ROLES)[number]
 

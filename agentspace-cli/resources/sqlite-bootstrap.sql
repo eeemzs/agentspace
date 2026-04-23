@@ -235,6 +235,31 @@ CREATE INDEX `memory_item_idx_tenant` ON `memory-items` (`tenantId`);--> stateme
 CREATE INDEX `memory_item_idx_scope` ON `memory-items` (`tenantId`,`scopeId`);--> statement-breakpoint
 CREATE INDEX `memory_item_idx_kind` ON `memory-items` (`tenantId`,`kind`);--> statement-breakpoint
 CREATE INDEX `memory_item_idx_durability` ON `memory-items` (`tenantId`,`durability`);--> statement-breakpoint
+CREATE TABLE `experience-items` (
+	`id` text PRIMARY KEY NOT NULL,
+	`tenantId` text NOT NULL,
+	`scopeId` text NOT NULL,
+	`type` text NOT NULL,
+	`title` text NOT NULL,
+	`problem` text,
+	`solution` text,
+	`content` text NOT NULL,
+	`areas` text,
+	`stack` text,
+	`commands` text,
+	`files` text,
+	`sourceRefs` text,
+	`tags` text,
+	`confidence` text,
+	`reusability` text,
+	`meta` text,
+	`createdAt` integer,
+	`updatedAt` integer
+);
+--> statement-breakpoint
+CREATE INDEX `experience_item_idx_tenant` ON `experience-items` (`tenantId`);--> statement-breakpoint
+CREATE INDEX `experience_item_idx_scope` ON `experience-items` (`tenantId`,`scopeId`);--> statement-breakpoint
+CREATE INDEX `experience_item_idx_type` ON `experience-items` (`tenantId`,`type`);--> statement-breakpoint
 CREATE TABLE `activity-items` (
 	`id` text PRIMARY KEY NOT NULL,
 	`tenantId` text NOT NULL,
