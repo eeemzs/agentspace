@@ -20,8 +20,6 @@ export const memoryItemZodSchema = z
 /* Insert schema */
 export const memoryItemZodSchemaInsert = memoryItemZodSchema.omit({
   id: true,
-  createdAt: true,
-  updatedAt: true,
   tenantId: true,
 }).strict()
 

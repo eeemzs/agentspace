@@ -25,8 +25,6 @@ export const experienceItemZodSchema = z
 
 export const experienceItemZodSchemaInsert = experienceItemZodSchema.omit({
   id: true,
-  createdAt: true,
-  updatedAt: true,
   tenantId: true,
 }).strict()
 
