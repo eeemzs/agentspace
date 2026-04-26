@@ -16,6 +16,10 @@ const CODEX_CHAT_THREAD_LIST_OPERATION_IDS = new Set<AgentspaceTypedOperationId>
   'codex-chat-thread.list-threads',
 ])
 
+const CODEX_CHAT_THREAD_CREATE_OPERATION_IDS = new Set<AgentspaceTypedOperationId>([
+  'codex-chat-thread.create',
+])
+
 const MESSAGE_LIST_LEGACY_FILTER_KEYS = [
   'projectId',
   'scopeId',
@@ -118,10 +122,35 @@ export function normalizeCodexChatMessageCreateInput(input: ToolInputRecord): To
   return source
 }
 
+export function normalizeCodexChatThreadCreateInput(input: ToolInputRecord): ToolInputRecord {
+  const source: ToolInputRecord = { ...toRecord(input) }
+  const data: ToolInputRecord = { ...toRecord(source.data) }
+  if (Object.keys(data).length === 0) return source
+
+  const scopeId =
+    normalizeNonEmpty(data.scopeId) ??
+    normalizeNonEmpty(data.projectId) ??
+    normalizeNonEmpty(data.projectName) ??
+    normalizeNonEmpty(data.project) ??
+    resolveProjectContextValue(source)
+  if (scopeId) {
+    data.scopeId = scopeId
+  }
+  delete data.projectId
+  delete data.projectName
+  delete data.project
+
+  source.data = data
+  return source
+}
+
 export function normalizeAgentspaceOperationInputForCompatibility(
   operationId: AgentspaceTypedOperationId,
   input: ToolInputRecord,
 ): ToolInputRecord {
+  if (CODEX_CHAT_THREAD_CREATE_OPERATION_IDS.has(operationId)) {
+    return normalizeCodexChatThreadCreateInput(input)
+  }
   if (CODEX_CHAT_MESSAGE_CREATE_OPERATION_IDS.has(operationId)) {
     return normalizeCodexChatMessageCreateInput(input)
   }

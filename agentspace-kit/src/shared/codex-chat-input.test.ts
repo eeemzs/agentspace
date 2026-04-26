@@ -4,6 +4,7 @@ import {
   normalizeAgentspaceOperationInputForCompatibility,
   normalizeAgentspaceToolInputForCompatibility,
   normalizeCodexChatMessageCreateInput,
+  normalizeCodexChatThreadCreateInput,
 } from './codex-chat-input.js'
 
 describe('codex-chat input compatibility helper', () => {
@@ -72,6 +73,37 @@ describe('codex-chat input compatibility helper', () => {
     })
     expect(normalized.options).toMatchObject({
       limit: 25,
+    })
+  })
+
+  it('maps legacy thread create projectId to scopeId and preserves scopeLabel', () => {
+    const normalized = normalizeCodexChatThreadCreateInput({
+      data: {
+        projectId: 'project-1',
+        externalThreadId: 'thread-ext-1',
+        scopeLabel: 'project:project-1',
+      },
+    })
+
+    expect(normalized.data?.projectId).toBeUndefined()
+    expect(normalized.data).toMatchObject({
+      scopeId: 'project-1',
+      externalThreadId: 'thread-ext-1',
+      scopeLabel: 'project:project-1',
+    })
+  })
+
+  it('injects thread create scopeId from top-level project context', () => {
+    const normalized = normalizeAgentspaceOperationInputForCompatibility('codex-chat-thread.create', {
+      projectId: 'project-1',
+      data: {
+        externalThreadId: 'thread-ext-1',
+      },
+    })
+
+    expect(normalized.data).toMatchObject({
+      scopeId: 'project-1',
+      externalThreadId: 'thread-ext-1',
     })
   })
 })
