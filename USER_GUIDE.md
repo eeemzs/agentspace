@@ -16,11 +16,72 @@ Owner oldugu baslica capability aileleri:
 5. artifact
 6. memory-item
 7. activity-item
+8. discussion-topic
+9. collab-session
+10. agent-profile
 
 Kisa kural:
 
 1. planlama `projectman`
 2. durable context `agentspace`
+
+## 1.1 Discuss ve collab owner modeli
+
+`discuss` ve `collab`, Agentspace'in repo-first coordination yuzeyleridir.
+`aops-cli discuss ...` ve `aops-cli collab ...` komutlari operator sugar'dir;
+semantic truth bu domain modelindedir.
+
+Canonical source:
+
+1. `.aops/agentspace/discussions/topics/**`
+2. `.aops/agentspace/collabs/sessions/**`
+3. `.aops/agentspace/agent-profiles/**`
+
+Skill routing:
+
+| Ihtiyac | Hosted skill | CLI help |
+|---------|--------------|----------|
+| discuss/collab operator playbook | `aops-cli-collab` | `aops-cli discuss --help`, `aops-cli collab --help` |
+| CLI guard/sync/hosted mirror | `aops-cli-core` | `aops-cli --help`, `aops-cli sync --help` |
+| memory/project/prompt/resource/artifact | PR2 `aops-cli-agentspace` | `aops-cli mem --help`, `aops-cli project --help`, `aops-cli skill --help` |
+
+Discuss modeli:
+
+1. Topic transcript append-only repo-first dosyalarda tutulur.
+2. Agent sirasi ve lifecycle state structured `status`/`wait` ciktilarindan
+   okunur; serbest metinden stop state cikarilmaz.
+3. `follow-up` devam topic'i, `fork` alternatif topic'i acmak icindir; parent
+   topic mutate edilmez.
+4. `conclude`, consensus/disagreement/open-questions output scaffold'larini
+   olusturur; PM veya Docman hidden mutation yapmaz.
+
+Session-bound discuss:
+
+1. `discuss start --session <collab-session-id>`, aktif collab session altinda
+   topic yaratir ve topic frontmatter'ina `sessionLocalId/sessionPath` yazar.
+2. Session-bound `turn`, `wait`, ve `conclude` komutlari `--session` guard'i
+   ister; standalone topic'ler `--session` reddeder.
+3. `discuss conclude --session`, aktif collab ledger'a idempotent
+   `kind=decision` event yazar; collab session'i kapatmaz.
+4. `collab close`, aktif bound discussion topic varken default-block eder.
+5. `discuss follow-up --session` ve `collab start --from-discuss
+   --bind-discuss-back` opt-in baglama/devam yuzeyleridir; yeni PM/Docman hidden
+   mutation yazmaz.
+
+Collab modeli:
+
+1. Collab session append-only coordination ledger'idir; ikinci task sistemi
+   degildir.
+2. Planning truth `projectman` tarafindadir; objection once PM issue, sonra
+   collab event olarak yazilir.
+3. Timeline, channel, state ve projection-state dosyalari derived/read-only
+   projection'dir; canonical kaynak `events/*.md`, `chat/messages/*.md` ve
+   `chat/acks/**` dosyalaridir.
+4. Presence degerleri `live`, `deferred`, `reviewing`, `released`tir.
+   `released` agent-local loop cikisidir; session terminal state degildir.
+5. `collab report --target docman --apply`, explicit Docman write istisnasidir;
+   bunun disinda collab loop'lari otomatik server sync veya Docman mutation
+   yapmaz.
 
 ## 2. En onemli entity'ler
 
