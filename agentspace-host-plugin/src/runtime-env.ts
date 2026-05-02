@@ -4,6 +4,14 @@ import path from 'node:path'
 import { normalizeNonEmpty } from '@aopslab/domain-kit-agentspace/shared'
 
 const ENV_ASSIGNMENT_PATTERN = /^(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$/
+const AGENTSPACE_HOST_REPO_ENV_KEYS = [
+  'AGENTSPACE_REPO_URL',
+  'AGENTSPACE_SQLITE_URL',
+  'AGENTSPACE_PG_URL',
+  'AOPS_REPO_URL',
+  'AOPS_SQLITE_URL',
+  'AOPS_PG_URL',
+] as const
 
 let cachedDotEnvValues: Map<string, string> | null = null
 
@@ -79,4 +87,42 @@ export function assertRuntimeEnv(requiredKeys: string[]): void {
   const missing = resolveMissingRuntimeEnvKeys(requiredKeys)
   if (missing.length === 0) return
   throw new Error(`runtime_env_missing:${missing[0]}`)
+}
+
+function looksLikeSqliteRepoUrl(value: string): boolean {
+  const normalized = value.trim().toLowerCase()
+  return (
+    normalized.startsWith('file:') ||
+    normalized.startsWith('sqlite:') ||
+    normalized.includes(':sqlite:') ||
+    normalized.endsWith('.sqlite') ||
+    normalized.endsWith('.sqlite3') ||
+    normalized.endsWith('.db')
+  )
+}
+
+function resolveEffectiveAgentspaceRepoEnv(): { key: string; value: string } | null {
+  const dotEnvValues = getDotEnvValues()
+  for (const key of AGENTSPACE_HOST_REPO_ENV_KEYS) {
+    const envValue = normalizeNonEmpty(process.env[key])
+    if (envValue) return { key, value: envValue }
+    const dotEnvValue = normalizeNonEmpty(dotEnvValues.get(key))
+    if (dotEnvValue) return { key, value: dotEnvValue }
+  }
+  return null
+}
+
+export function assertIntegratedHostStorageEnv(): void {
+  const effective = resolveEffectiveAgentspaceRepoEnv()
+  if (!effective) return
+
+  if (effective.key.endsWith('_SQLITE_URL') || looksLikeSqliteRepoUrl(effective.value)) {
+    throw new Error(
+      [
+        'agentspace_host_runtime_storage_unbound:',
+        `effective repo source ${effective.key} resolves to SQLite.`,
+        'Set AGENTSPACE_REPO_URL/AGENTSPACE_PG_URL or AOPS_REPO_URL/AOPS_PG_URL to PostgreSQL before starting AOPS server.',
+      ].join(''),
+    )
+  }
 }

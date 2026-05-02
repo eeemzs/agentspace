@@ -3,6 +3,26 @@ import { describe, expect, it, vi } from 'vitest'
 import { createAgentspacePlugin } from './plugin.js'
 import type { DomainRequest, DomainRouteManifestEntry } from './types.js'
 
+const HOST_STORAGE_ENV_KEYS = [
+  'AOPS_REPO_URL',
+  'AOPS_SQLITE_URL',
+  'AOPS_PG_URL',
+  'AGENTSPACE_REPO_URL',
+  'AGENTSPACE_SQLITE_URL',
+  'AGENTSPACE_PG_URL',
+] as const
+
+function snapshotEnv(keys: readonly string[]): Record<string, string | undefined> {
+  return Object.fromEntries(keys.map((key) => [key, process.env[key]]))
+}
+
+function restoreEnv(snapshot: Record<string, string | undefined>): void {
+  for (const [key, value] of Object.entries(snapshot)) {
+    if (value === undefined) delete process.env[key]
+    else process.env[key] = value
+  }
+}
+
 function findRouteByOperation(
   routes: DomainRouteManifestEntry[],
   operationId: string,
@@ -63,6 +83,32 @@ describe('agentspace host-plugin lifecycle guards', () => {
       setupAttempts: 1,
       setupLastError: 'runtime_env_missing:AOPS_TEST_REQUIRED_ENV_KEY_MISSING',
     })
+  })
+
+  it('rejects SQLite repo override in integrated host setup', async () => {
+    const envSnapshot = snapshotEnv(HOST_STORAGE_ENV_KEYS)
+    process.env.AOPS_PG_URL = 'postgres://localhost/aops'
+    delete process.env.AOPS_REPO_URL
+    delete process.env.AOPS_SQLITE_URL
+    delete process.env.AGENTSPACE_REPO_URL
+    process.env.AGENTSPACE_SQLITE_URL = 'file:///tmp/agentspace.aops.sqlite'
+    delete process.env.AGENTSPACE_PG_URL
+
+    try {
+      const plugin = createAgentspacePlugin()
+      if (!plugin.setup) throw new Error('setup_hook_missing')
+
+      await expect(plugin.setup()).rejects.toThrow(/agentspace_host_runtime_storage_unbound/)
+      const health = await plugin.health?.()
+
+      expect(health?.details).toMatchObject({
+        setupStatus: 'failed',
+        setupAttempts: 1,
+        setupLastError: expect.stringContaining('agentspace_host_runtime_storage_unbound'),
+      })
+    } finally {
+      restoreEnv(envSnapshot)
+    }
   })
 
   it('injects project from request context when payload does not include project context', async () => {

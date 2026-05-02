@@ -31,7 +31,11 @@ import {
   type AgentspaceResolvedPluginOptions,
   type AgentspaceRunner,
 } from './plugin-config.js'
-import { assertRuntimeEnv, resolveMissingRuntimeEnvKeys } from './runtime-env.js'
+import {
+  assertIntegratedHostStorageEnv,
+  assertRuntimeEnv,
+  resolveMissingRuntimeEnvKeys,
+} from './runtime-env.js'
 
 export type {
   AgentspacePluginOptions,
@@ -144,6 +148,7 @@ function ensureRuntimeEnvReady(
   if (!enforceRuntimeEnv) return
   if (state.runtimeEnvVerifiedAt) return
   assertRuntimeEnv(requiredRuntimeEnv)
+  assertIntegratedHostStorageEnv()
   state.runtimeEnvVerifiedAt = new Date().toISOString()
 }
 
