@@ -69,8 +69,13 @@ function buildEnvConfigurations(normalizedEnv: NormalizedAgentspaceEnv): Record<
   const defaultLogLevel = process.env.NODE_ENV === 'development' ? 'debug' : e.LOG_LEVEL ?? 'info'
   const repoUrl = resolveRepoUrl({
     explicit: e.AGENTSPACE_REPO_URL,
-    fallback: e.AGENTSPACE_SQLITE_URL ?? e.AGENTSPACE_PG_URL ?? e.AOPS_REPO_URL ?? e.AOPS_SQLITE_URL ?? e.AOPS_PG_URL,
-    label: 'AGENTSPACE_REPO_URL (or AGENTSPACE_SQLITE_URL or AGENTSPACE_PG_URL or AOPS_REPO_URL or AOPS_SQLITE_URL or AOPS_PG_URL)',
+    // Resolution order tightened (Codex turn-5 sweep #4 + operator
+    // "no fallback" directive): prefer Agentspace/AOPS PG over their
+    // SQLITE counterparts so legacy env states do not silently land on
+    // sqlite. Hosted plugin runtime guard remains the primary
+    // fail-closed surface; this kit-level chain is the standalone path.
+    fallback: e.AGENTSPACE_PG_URL ?? e.AGENTSPACE_SQLITE_URL ?? e.AOPS_REPO_URL ?? e.AOPS_PG_URL ?? e.AOPS_SQLITE_URL,
+    label: 'AGENTSPACE_REPO_URL (or AGENTSPACE_PG_URL or AGENTSPACE_SQLITE_URL or AOPS_REPO_URL or AOPS_PG_URL or AOPS_SQLITE_URL)',
   })
 
   return {
