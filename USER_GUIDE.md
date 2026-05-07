@@ -524,16 +524,16 @@ Kurallar:
 1. Handoff: commit veya canonical hosted version, validation run, open issue/feedback, ve peer'in keep listening / specific event review / released state'inden hangisinde olacagini named.
 2. Handoff event'i bir chat ping ile esle ki hem event hem chat listener closeout state'i gorsun.
 
-### 9.2 Work-end closeout sequence
+### 9.2 Operator-approved work-end closeout sequence
 
-Bu sequence sadece tracked work window genuinely sona eriyorsa kullan. Mid-session checkpoint, active review slice, veya carry-forward icin calistirma.
+Bu sequence sadece operator acikca closeout isterse veya onaylarsa ve tracked work window genuinely sona eriyorsa kullan. Mid-session checkpoint, active review slice, carry-forward, veya normal turn sonu icin calistirma; bu durumlarda resume/handoff/checkpoint memory yaz ve PM/collab window'u acik birak.
 
 Required checkpoint'lar:
 
 1. Implementation artifact'i finalize et: local source change'leri commit et veya canonical hosted version'i publish et, sonra agreed validation'i calistir.
 2. Peer handoff event'ini ve paired chat ping'i yaz (yukaridaki §9.1).
-3. Active PM subject icin durable planning memory yaz veya refresh et eger sonraki agent task veya sprint'ten devam edecekse. Sonraki checkpoint `pm board closeout` kullaniyorsa, onun closeout memory'si board-level closeout memory gereksinimini karsilar.
-4. Collab close'dan once Projectman state'i transition et. Active sprint completed isaretlenecekse `aops-cli pm sprint set-status --id <sprint-id> --status completed --apply --json` calistir veya sprint status change'in neden atlandigini kaydet. Sonra board closeout:
+3. Active PM subject icin durable planning memory yaz veya refresh et eger sonraki agent task veya sprint'ten devam edecekse. Operator-approved closeout yapiliyorsa, `pm board closeout` tarafindan yazilan closeout memory board-level closeout memory gereksinimini karsilar.
+4. Collab close'dan once Projectman state'i transition et. Active sprint completed isaretlenecekse `aops-cli pm sprint set-status --id <sprint-id> --status completed --apply --json` calistir veya sprint status change'in neden atlandigini kaydet. Sonra, yalniz operator-approved closeout icinde board closeout:
 
    ```bash
    aops-cli pm board closeout --board <board-slug> \
@@ -542,17 +542,17 @@ Required checkpoint'lar:
    ```
 
    Bu komut atomic board-window close: closeout memory yazar, active kanban task'i Done'a (progress=100) tasir, active board ref'leri temizler.
-5. Projectman state transition edildikten sonra collab session'i kapat: `aops-cli collab close --session <session-id> --enforce-reconcile --text "<closeout>" --apply --json`.
-6. §9.3 post-collab memory closeout'u yaz: session uid, material PM record'lari, ve residual carry-forward'i link.
+5. Projectman state transition edildikten sonra, yalniz operator-approved closeout icinde collab session'i kapat: `aops-cli collab close --session <session-id> --enforce-reconcile --text "<closeout>" --apply --json`.
+6. §9.3 post-collab memory closeout'u yalniz operator-approved closeout icinde yaz: session uid, material PM record'lari, ve residual carry-forward'i link.
 
 Kurallar:
 
 1. Collab komutlari Projectman state'i mutate etmez; task, sprint, board, issue, feedback lifecycle change'leri icin explicit `aops-cli pm` komutlari kullan.
-2. Board kickoff veya active board window kullanildiysa true work-end'de `pm board closeout`'u atlamayin.
+2. Board kickoff veya active board window kullanildiysa `pm board closeout` yalniz operator closeout istediginde/onayladiginda calisir; normal checkpoint'te atlama degil, acik window'u koruma davranisidir.
 
 ### 9.3 Post-collab memory closeout
 
-`collab close`'dan sonra durable takeaway'i ve closed session/resolved issue'lara link'i yakalayan bir memory record yaz. Session ledger close oldugunda archaeology'e doner; memory bridge'dir gelecek agent'lar durable decision'dan resume etmesi icin (timeline'i full okumak yerine).
+Operator-approved `collab close`'dan sonra durable takeaway'i ve closed session/resolved issue'lara link'i yakalayan bir memory record yaz. Session ledger close oldugunda archaeology'e doner; memory bridge'dir gelecek agent'lar durable decision'dan resume etmesi icin (timeline'i full okumak yerine). Normal checkpoint icin `--mode resume` veya PM handoff kullan; `--mode closeout` kullanma.
 
 ```bash
 aops-cli mem write \
@@ -571,8 +571,8 @@ Kurallar:
 
 1. Collab session uid'sini `--source-ref` ile referansla; gelecek agent'lar timeline yerine durable decision'dan resume edebilsin.
 2. Material issue id'lerini `--issue-id` ile link'le; memory finished collab'dan residual PM work'e kopru olur.
-3. Canonical post-collab summary icin `--mode closeout` + `--durability durable` kullan. `--durability sticky` sadece tum gelecek session'lara uygulanmasi gereken kurallar icin; session-specific takeaway'ler degil.
-4. Closeout memory'i `collab close --text "<closeout>"` ile esle. Closeout text memory id'sini named, memory session uid'sini named. Iki yonlu link kasitli.
+3. Canonical operator-approved post-collab summary icin `--mode closeout` + `--durability durable` kullan. `--durability sticky` sadece tum gelecek session'lara uygulanmasi gereken kurallar icin; session-specific takeaway'ler degil.
+4. Closeout memory'i operator-approved `collab close --text "<closeout>"` ile esle. Closeout text memory id'sini named, memory session uid'sini named. Iki yonlu link kasitli.
 
 ## 10. PM integration
 
@@ -631,7 +631,7 @@ Aileler halinde grupland:
 
 13. Session uid ve material decision/issue'lara reference yapan memory record olmadan collab session'i kapatmak. Timeline tek basina archaeology durable summary olmadan.
 14. Review item'lari sadece collab event olarak track etmek; actionable item'lar `pm issue`'da da olmali ki progress session ledger disinda survive etsin.
-15. Board kickoff veya active board window kullanildiktan sonra true work-end'de `pm board closeout`'u atlamak.
+15. Operator closeout istemeden `pm board closeout` veya `collab close` calistirmak. Operator closeout istediyse bu kapanis kaydini atlamak da lifecycle drift'i yapar.
 16. Discuss/collab plan veya slice artifact'ini default olarak repo `docs/**`, `.codex-tmp/**`, ya da non-AOPS folder'a tasimak. Discuss output, collab event/resource, ya da explicit Agentspace artifact/resource ref olarak tut, operator dis-doc istemediyse.
 
 ### Raporlama anti-patterns
