@@ -4,9 +4,11 @@ Agentspace domain for dm, kit, host-plugin, tooling, cli, and tests.
 
 ## User Guide
 
-- Domain kullanim rehberi: `./USER_GUIDE.md`
-- Hosted AOPS tarafindaki ortak domain/operator rehberi:
-  `/Volumes/d/dev-js2/apps/aops/apps/aops-cli/USER_GUIDE.md`
+- Domain kullanim rehberi hosted Docman canonical kayittir.
+- Mirror copy consuming repo icinde okunur:
+  `.aops/docman/domain-guides/agentspace-user-guide.md`
+- Mirror yenileme:
+  `aops-cli doc mirror pull --project-slug aops --group-uid domain-guides --document-slug agentspace-user-guide --out-dir ./.aops/docman --apply --json`
 
 ## Packages
 
