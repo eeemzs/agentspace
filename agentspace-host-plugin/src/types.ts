@@ -31,6 +31,7 @@ export type DomainRouteManifestEntry = {
   pattern: string
   operation: string
   summary?: string
+  inputJsonSchema?: Record<string, unknown>
   buildInput?: (request: DomainRequest, params: Record<string, string>) => Record<string, unknown>
 }
 

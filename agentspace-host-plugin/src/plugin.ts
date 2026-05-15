@@ -98,15 +98,31 @@ const INVALID_REFERENCE_MESSAGE_PATTERNS = [
 const INVALID_REFERENCE_FAILURE_MESSAGE =
   'Referenced project or owner scope record was not found for the supplied ids.'
 
+function resolveOperationInputJsonSchema(operationId: string): Record<string, unknown> | undefined {
+  try {
+    const refs = getAgentspaceOperationIoSchemaRefs(operationId)
+    const schema = refs.inputRef ? getAgentspaceContractSchema(refs.inputRef) : null
+    return schema && typeof schema === 'object' && !Array.isArray(schema)
+      ? (schema as Record<string, unknown>)
+      : undefined
+  } catch {
+    return undefined
+  }
+}
+
 function buildRoutes(refresh: boolean): DomainRouteManifestEntry[] {
-  return buildAgentspaceHostRouteProjection({ refresh }).map((route) => ({
-    id: route.id,
-    method: route.method,
-    pattern: route.pattern,
-    operation: route.operation,
-    summary: route.summary,
-    buildInput: (request, params) => buildInputForOperation(route.operation as AgentspaceTypedOperationId, request, params),
-  }))
+  return buildAgentspaceHostRouteProjection({ refresh }).map((route) => {
+    const inputJsonSchema = resolveOperationInputJsonSchema(route.operation)
+    return {
+      id: route.id,
+      method: route.method,
+      pattern: route.pattern,
+      operation: route.operation,
+      summary: route.summary,
+      ...(inputJsonSchema ? { inputJsonSchema } : {}),
+      buildInput: (request, params) => buildInputForOperation(route.operation as AgentspaceTypedOperationId, request, params),
+    }
+  })
 }
 
 function buildRequiredArgsByOperationId(refresh: boolean): Map<AgentspaceTypedOperationId, AgentspaceRequiredArg> {
