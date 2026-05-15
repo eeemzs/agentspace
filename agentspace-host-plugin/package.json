@@ -24,6 +24,7 @@
   ],
   "dependencies": {
     "@aopslab/domain-kit-agentspace": "workspace:*",
+    "@aopslab/xf-validation": "workspace:*",
     "ajv": "catalog:"
   },
   "publishConfig": {

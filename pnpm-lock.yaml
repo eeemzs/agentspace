@@ -55,11 +55,23 @@ catalogs:
       specifier: ^0.31.8
       version: 0.31.9
     drizzle-orm:
-      specifier: 0.45.1
+      specifier: ^0.45.1
       version: 0.45.1
     effect:
       specifier: ^3.19.15
       version: 3.19.19
+    pino:
+      specifier: ^10.3.1
+      version: 10.3.1
+    pino-loki:
+      specifier: ^3.0.0
+      version: 3.0.0
+    pino-pretty:
+      specifier: ^13.1.3
+      version: 13.1.3
+    tslib:
+      specifier: ^2.3.0
+      version: 2.8.1
     tsx:
       specifier: ^4.21.0
       version: 4.21.0
@@ -142,6 +154,85 @@ importers:
         specifier: 'catalog:'
         version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(jiti@2.6.1)(lightningcss@1.31.1)(tsx@4.21.0)
 
+  ../../xf-packages/xf-core:
+    dependencies:
+      '@aopslab/xf-logger':
+        specifier: workspace:*
+        version: link:../xf-logger
+      effect:
+        specifier: 'catalog:'
+        version: 3.19.19
+      tslib:
+        specifier: 'catalog:'
+        version: 2.8.1
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 25.3.5
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
+
+  ../../xf-packages/xf-i18n:
+    dependencies:
+      '@aopslab/xf-core':
+        specifier: workspace:*
+        version: link:../xf-core
+      tslib:
+        specifier: 'catalog:'
+        version: 2.8.1
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 25.3.5
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
+
+  ../../xf-packages/xf-logger:
+    dependencies:
+      pino:
+        specifier: 'catalog:'
+        version: 10.3.1
+      pino-loki:
+        specifier: 'catalog:'
+        version: 3.0.0
+      pino-pretty:
+        specifier: 'catalog:'
+        version: 13.1.3
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 25.3.5
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
+
+  ../../xf-packages/xf-validation:
+    dependencies:
+      '@aopslab/xf-core':
+        specifier: workspace:*
+        version: link:../xf-core
+      '@aopslab/xf-i18n':
+        specifier: workspace:*
+        version: link:../xf-i18n
+      effect:
+        specifier: 'catalog:'
+        version: 3.19.19
+      tslib:
+        specifier: 'catalog:'
+        version: 2.8.1
+      zod:
+        specifier: 'catalog:'
+        version: 4.3.6
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 25.3.5
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
+
   agentspace-cli:
     dependencies:
       '@aopslab/domain-host-plugin-agentspace':
@@ -200,6 +291,9 @@ importers:
       '@aopslab/domain-kit-agentspace':
         specifier: workspace:*
         version: link:../agentspace-kit
+      '@aopslab/xf-validation':
+        specifier: workspace:*
+        version: link:../../../xf-packages/xf-validation
       ajv:
         specifier: 'catalog:'
         version: 8.18.0

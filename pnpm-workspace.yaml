@@ -7,6 +7,10 @@ packages:
   - "agentspace-core"
   - "agentspace-ops"
   - "agentspace-host-plugin"
+  - "../../xf-packages/xf-validation"
+  - "../../xf-packages/xf-core"
+  - "../../xf-packages/xf-i18n"
+  - "../../xf-packages/xf-logger"
 
 catalogMode: strict
 
@@ -24,6 +28,9 @@ catalog:
   "@aopslab/xf-logger": ^0.1.60
   "@aopslab/xf-validation": ^0.1.77
   "@changesets/cli": ^2.29.8
+  "pino": ^10.3.1
+  "pino-pretty": ^13.1.3
+  "pino-loki": ^3.0.0
   "@types/node": ^25.2.0
   "@types/pg": ^8.15.6
   "dotenv": ^17.2.3
