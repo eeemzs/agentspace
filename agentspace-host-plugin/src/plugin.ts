@@ -1,9 +1,12 @@
+import { buildOperationInputJsonSchema } from '@aopslab/xf-validation'
+
 import type { DomainPlugin, DomainRequest, DomainRouteManifestEntry } from './types.js'
 import { Ajv, type AnySchema, type ErrorObject, type ValidateFunction } from 'ajv'
 import {
   buildAgentspaceHostRouteProjection,
   getAgentspaceContractSchema,
   getAgentspaceOperationIoSchemaRefs,
+  getAgentspaceToolInputSchema,
   listAgentspaceOperationSpecs,
   mapErrorToFriendly,
   parseAgentspaceToolInput,
@@ -98,21 +101,11 @@ const INVALID_REFERENCE_MESSAGE_PATTERNS = [
 const INVALID_REFERENCE_FAILURE_MESSAGE =
   'Referenced project or owner scope record was not found for the supplied ids.'
 
-function resolveOperationInputJsonSchema(operationId: string): Record<string, unknown> | undefined {
-  try {
-    const refs = getAgentspaceOperationIoSchemaRefs(operationId)
-    const schema = refs.inputRef ? getAgentspaceContractSchema(refs.inputRef) : null
-    return schema && typeof schema === 'object' && !Array.isArray(schema)
-      ? (schema as Record<string, unknown>)
-      : undefined
-  } catch {
-    return undefined
-  }
-}
-
 function buildRoutes(refresh: boolean): DomainRouteManifestEntry[] {
   return buildAgentspaceHostRouteProjection({ refresh }).map((route) => {
-    const inputJsonSchema = resolveOperationInputJsonSchema(route.operation)
+    const inputJsonSchema = buildOperationInputJsonSchema(
+      getAgentspaceToolInputSchema(route.operation as AgentspaceTypedOperationId),
+    )
     return {
       id: route.id,
       method: route.method,

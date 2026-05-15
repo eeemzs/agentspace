@@ -1,3 +1,5 @@
+import { z } from 'zod'
+
 import type { AgentspaceOperationKind, AgentspaceOperationSchemaRef } from './types.js'
 import { normalizeAgentspaceOperationId } from './definition.js'
 import { AGENTSPACE_OPERATION_CATALOG_ROWS } from './catalog.data.js'
@@ -313,6 +315,22 @@ export function resolveAgentspaceSchemaRefName(schema: unknown): string | null {
 
 export function getAgentspaceOperationIoSchemaRefs(operationId: string): { inputRef: string; outputRef: string } {
   return buildDefaultSchemaRefs(normalizeAgentspaceOperationId(operationId))
+}
+
+/**
+ * Return a Zod schema for the operation's input contract. agentspace authors
+ * its tool inputs as native JSON Schemas (driven by Ajv); we wrap each one in
+ * `z.unknown().meta(jsonSchema)` so consumers stay on the same Zod-shaped
+ * accessor pattern as the rest of the kits (`getXToolInputSchema(op)`), and
+ * `z.toJSONSchema(...)` round-trips the original JSON Schema verbatim.
+ */
+export function getAgentspaceToolInputSchema(operationId: string): z.ZodType<unknown> | undefined {
+  const normalizedOperationId = normalizeAgentspaceOperationId(operationId)
+  const refs = buildDefaultSchemaRefs(normalizedOperationId)
+  if (!refs.inputRef) return undefined
+  const jsonSchema = getAgentspaceContractSchema(refs.inputRef)
+  if (!jsonSchema) return undefined
+  return z.unknown().meta(jsonSchema as Record<string, unknown>)
 }
 
 export function getAgentspaceContractSchema(ref: string): JsonSchema | null {
