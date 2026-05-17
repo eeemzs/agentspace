@@ -26,6 +26,50 @@ function normalizeNonEmpty(value: unknown): string | undefined {
   return normalized.length > 0 ? normalized : undefined
 }
 
+function normalizeStringList(value: unknown): string[] {
+  if (!Array.isArray(value)) return []
+  const seen = new Set<string>()
+  const result: string[] = []
+  for (const entry of value) {
+    const normalized = normalizeNonEmpty(entry)?.toLowerCase()
+    if (!normalized || seen.has(normalized)) continue
+    seen.add(normalized)
+    result.push(normalized)
+  }
+  return result
+}
+
+function splitTagFilter(filter: PromptListFilter): { filter: PromptListFilter; tags: string[] } {
+  const tags = normalizeStringList((filter as Record<string, unknown>).tags)
+  if (tags.length === 0) return { filter, tags }
+  const nextFilter = { ...(filter as Record<string, unknown>) }
+  delete nextFilter.tags
+  return { filter: nextFilter as PromptListFilter, tags }
+}
+
+function matchesTags(prompt: IbmPrompt, tags: string[]): boolean {
+  if (tags.length === 0) return true
+  const actual = new Set(normalizeStringList((prompt as Record<string, unknown>).tags))
+  return tags.every((tag) => actual.has(tag))
+}
+
+function stripPaginationOptions<T>(options?: DbQueryOptions<T>): DbQueryOptions<T> | undefined {
+  if (!options) return undefined
+  const next = { ...(options as Record<string, unknown>) }
+  delete next.limit
+  delete next.offset
+  return Object.keys(next).length > 0 ? next as DbQueryOptions<T> : undefined
+}
+
+function applyPagination<T>(items: T[], options?: DbQueryOptions<T>): T[] {
+  const offset = Number((options as Record<string, unknown> | undefined)?.offset)
+  const limit = Number((options as Record<string, unknown> | undefined)?.limit)
+  const safeOffset = Number.isFinite(offset) && offset > 0 ? Math.trunc(offset) : 0
+  const safeLimit = Number.isFinite(limit) && limit >= 0 ? Math.trunc(limit) : undefined
+  const offsetItems = safeOffset > 0 ? items.slice(safeOffset) : items
+  return safeLimit !== undefined ? offsetItems.slice(0, safeLimit) : offsetItems
+}
+
 function normalizePromptListFilter(filter: PromptListFilter = {}): PromptListFilter {
   const normalizedProjectId = normalizeNonEmpty((filter as Record<string, unknown>).projectId)
   const normalizedScopeId = normalizeNonEmpty(filter.scopeId)
@@ -92,15 +136,21 @@ export class PromptService implements IPromptServicePort {
   ): Effect.Effect<IbmPrompt[], PromptServiceError> {
     const stage = 'PromptService::listPrompts'
     const normalizedFilter = normalizePromptListFilter(filter)
+    const tagFiltered = splitTagFilter(normalizedFilter)
+    const queryOptions = tagFiltered.tags.length > 0 ? stripPaginationOptions(options) : options
     return pipe(
-      validateInput(normalizedFilter, 'filter', { stage }),
-      Effect.flatMap((value) => listRecordsByScopeResolution(this.promptRepository as any, this.scopeRepository, value, options, {
+      validateInput(tagFiltered.filter, 'filter', { stage }),
+      Effect.flatMap((value) => listRecordsByScopeResolution(this.promptRepository as any, this.scopeRepository, value, queryOptions, {
         stage,
         defaultResolution: 'cascade',
         dedupeKey: (item) => String(item?.name ?? '').trim().toLowerCase() || undefined,
       }).pipe(
         Effect.mapError(mapDbError({ stage, operation: 'find', factory: XfErrorFactory.notFound }))
       )),
+      Effect.map((rows) => {
+        const filteredRows = rows.filter((row) => matchesTags(row, tagFiltered.tags))
+        return tagFiltered.tags.length > 0 ? applyPagination(filteredRows, options) : filteredRows
+      }),
       Effect.tapError((e) => Effect.sync(() => {
         const info = effectErrorInfo(e)
         this.logger?.error({ error: info.unwrapped, stage }, 'Error in listPrompts')
