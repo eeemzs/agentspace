@@ -172,6 +172,34 @@ const PROJECT_PATH_UPSERT_INPUT_SCHEMA: JsonSchema = {
   },
 }
 
+const RESOURCE_CREATE_INPUT_SCHEMA: JsonSchema = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['data'],
+  properties: {
+    data: {
+      type: 'object',
+      additionalProperties: true,
+      required: ['scopeId', 'name', 'resourceType'],
+      properties: {
+        scopeId: { type: 'string', minLength: 1 },
+        name: { type: 'string', minLength: 1 },
+        resourceType: {
+          type: 'string',
+          enum: ['document', 'rule', 'spec', 'link', 'reference', 'template', 'dataset', 'code', 'skill'],
+        },
+        description: { type: 'string' },
+        uri: { type: 'string', minLength: 1 },
+        tags: { type: 'array', items: { type: 'string', minLength: 1 } },
+        refType: { type: 'string', minLength: 1 },
+        refId: { type: 'string', minLength: 1 },
+        createdBy: { type: 'string', minLength: 1 },
+        updatedBy: { type: 'string', minLength: 1 },
+        meta: { type: 'object', additionalProperties: true },
+      },
+    },
+  },
+}
 
 const NON_EMPTY_STRING_SCHEMA: JsonSchema = { type: 'string', minLength: 1 }
 const STRING_ARRAY_SCHEMA: JsonSchema = {
@@ -401,6 +429,8 @@ const INPUT_SCHEMA_OVERRIDES_BY_OPERATION_ID = new Map<string, JsonSchema>([
   [normalizeAgentspaceOperationId('project.create'), PROJECT_CREATE_INPUT_SCHEMA],
   [normalizeAgentspaceOperationId('project-path.create'), PROJECT_PATH_UPSERT_INPUT_SCHEMA],
   [normalizeAgentspaceOperationId('project-path.upsert-project-path'), PROJECT_PATH_UPSERT_INPUT_SCHEMA],
+  [normalizeAgentspaceOperationId('resource.create'), RESOURCE_CREATE_INPUT_SCHEMA],
+  [normalizeAgentspaceOperationId('resource.create-resource'), RESOURCE_CREATE_INPUT_SCHEMA],
 ])
 
 function inferOperationKind(operationId: string): AgentspaceOperationKind {
