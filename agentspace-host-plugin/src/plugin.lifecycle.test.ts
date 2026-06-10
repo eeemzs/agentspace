@@ -12,6 +12,25 @@ const HOST_STORAGE_ENV_KEYS = [
   'AGENTSPACE_PG_URL',
 ] as const
 
+const CHAT_OPERATION_IDS = [
+  'chat-room.create',
+  'chat-room.get-by-id',
+  'chat-room.list',
+  'chat-room.update',
+  'chat-room.archive',
+  'chat-room.open-dm',
+  'chat-room.export-manifest',
+  'chat-member.add',
+  'chat-member.update',
+  'chat-member.remove',
+  'chat-binding.add',
+  'chat-binding.remove',
+  'chat-message.send',
+  'chat-message.list',
+  'chat.catchup',
+  'chat.mark-read',
+] as const
+
 function snapshotEnv(keys: readonly string[]): Record<string, string | undefined> {
   return Object.fromEntries(keys.map((key) => [key, process.env[key]]))
 }
@@ -313,6 +332,137 @@ describe('agentspace host-plugin lifecycle guards', () => {
     })
     expect(payload.options).toMatchObject({
       limit: 25,
+    })
+  })
+
+  it('projects chat routes with cleaned input schemas', () => {
+    const plugin = createAgentspacePlugin({ runner: vi.fn(async () => ({ ok: true })) })
+    const projected = new Set(plugin.manifest.routes.map((route) => route.operation))
+
+    for (const operationId of CHAT_OPERATION_IDS) {
+      expect(projected.has(operationId)).toBe(true)
+    }
+
+    const sendRoute = findRouteByOperation(plugin.manifest.routes, 'chat-message.send')
+    const sendData = (sendRoute.inputJsonSchema as any)?.properties?.data?.properties ?? {}
+    expect(sendRoute).toMatchObject({ method: 'POST', pattern: '/chat-messages' })
+    expect(sendData.updatedBy).toBeUndefined()
+
+    const createRoute = findRouteByOperation(plugin.manifest.routes, 'chat-room.create')
+    const createData = (createRoute.inputJsonSchema as any)?.properties?.data?.properties ?? {}
+    expect(createRoute).toMatchObject({ method: 'POST', pattern: '/chat-rooms' })
+    expect(createData.lastMessageAt).toBeUndefined()
+    expect(createData.lastSeq).toBeUndefined()
+
+    const memberRoute = findRouteByOperation(plugin.manifest.routes, 'chat-member.add')
+    const memberData = (memberRoute.inputJsonSchema as any)?.properties?.data?.properties ?? {}
+    expect(memberData.joinedAt).toBeUndefined()
+    expect(memberData.leftAt).toBeUndefined()
+  })
+
+  it('strictly validates chat inputs before runner dispatch', async () => {
+    const runner = vi.fn(async () => ({ ok: true }))
+    const plugin = createAgentspacePlugin({ runner })
+    const route = findRouteByOperation(plugin.manifest.routes, 'chat-message.send')
+
+    const response = await plugin.execute({
+      request: createDomainRequest({
+        method: route.method,
+        body: {
+          data: {
+            scopeId: 'project-1',
+            roomId: 'room-1',
+            authorAgentId: 'codex',
+            text: 'hello',
+            updatedBy: 'operator',
+          },
+        },
+        context: { tenantId: 'tenant-1', projectId: 'project-1' },
+      }),
+      match: { route, params: {} },
+    })
+
+    expect(runner).toHaveBeenCalledTimes(0)
+    expect(response).toMatchObject({
+      status: 400,
+      data: {
+        ok: false,
+        errorCode: 'agentspace_operation_failed.invalid_input',
+        operation: 'chat-message.send',
+      },
+    })
+    expect((response as { data: { message: string } }).data.message).toContain(
+      'tool_input_schema_invalid:agentspace.chat-message.send',
+    )
+  })
+
+  it('passes cleaned chat inputs to the runner', async () => {
+    const runner = vi.fn(async () => ({ ok: true }))
+    const plugin = createAgentspacePlugin({ runner })
+    const route = findRouteByOperation(plugin.manifest.routes, 'chat-message.send')
+
+    const response = await plugin.execute({
+      request: createDomainRequest({
+        method: route.method,
+        body: {
+          data: {
+            scopeId: 'project-1',
+            roomId: 'room-1',
+            authorAgentId: 'codex',
+            text: 'hello',
+          },
+        },
+        context: { tenantId: 'tenant-1', projectId: 'project-1' },
+      }),
+      match: { route, params: {} },
+    })
+
+    expect(response).toEqual({ ok: true })
+    expect(runner).toHaveBeenCalledTimes(1)
+    expect(runner).toHaveBeenCalledWith(
+      'chat-message.send',
+      expect.objectContaining({
+        data: expect.objectContaining({
+          scopeId: 'project-1',
+          roomId: 'room-1',
+          authorAgentId: 'codex',
+          text: 'hello',
+        }),
+      }),
+    )
+  })
+
+  it('sanitizes unsafe chat runtime failures', async () => {
+    const runner = vi.fn(async () => {
+      throw new Error('failed query: insert into "chat_messages" values ($1) params: [secret]')
+    })
+    const plugin = createAgentspacePlugin({ runner })
+    const route = findRouteByOperation(plugin.manifest.routes, 'chat-message.send')
+
+    const response = await plugin.execute({
+      request: createDomainRequest({
+        method: route.method,
+        body: {
+          data: {
+            scopeId: 'project-1',
+            roomId: 'room-1',
+            authorAgentId: 'codex',
+            text: 'hello',
+          },
+        },
+        context: { tenantId: 'tenant-1', projectId: 'project-1' },
+      }),
+      match: { route, params: {} },
+    })
+
+    expect(response).toMatchObject({
+      status: 503,
+      data: {
+        ok: false,
+        errorCode: 'agentspace_operation_failed.service_unavailable',
+        operation: 'chat-message.send',
+        message: 'Runtime operation failed. Check server logs for details.',
+      },
     })
   })
 

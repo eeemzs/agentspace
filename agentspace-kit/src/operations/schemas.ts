@@ -172,12 +172,228 @@ const PROJECT_PATH_UPSERT_INPUT_SCHEMA: JsonSchema = {
   },
 }
 
+
+const NON_EMPTY_STRING_SCHEMA: JsonSchema = { type: 'string', minLength: 1 }
+const STRING_ARRAY_SCHEMA: JsonSchema = {
+  type: 'array',
+  items: NON_EMPTY_STRING_SCHEMA,
+}
+const STRING_RECORD_SCHEMA: JsonSchema = {
+  type: 'object',
+  additionalProperties: NON_EMPTY_STRING_SCHEMA,
+}
+const DB_OPTIONS_SCHEMA: JsonSchema = {
+  type: 'object',
+  additionalProperties: true,
+}
+const CHAT_ROOM_STATUS_SCHEMA: JsonSchema = { type: 'string', enum: ['active', 'archived'] }
+const CHAT_MEMBER_STATUS_SCHEMA: JsonSchema = { type: 'string', enum: ['active', 'left'] }
+const CHAT_MESSAGE_KIND_SCHEMA: JsonSchema = { type: 'string', enum: ['message'] }
+
+function objectSchema(properties: Record<string, JsonSchema>, required: string[] = []): JsonSchema {
+  return {
+    type: 'object',
+    additionalProperties: false,
+    properties,
+    ...(required.length > 0 ? { required } : {}),
+  }
+}
+
+function dataEnvelope(dataSchema: JsonSchema): JsonSchema {
+  return objectSchema({ data: dataSchema }, ['data'])
+}
+
+function patchEnvelope(patchSchema: JsonSchema): JsonSchema {
+  return objectSchema({
+    id: NON_EMPTY_STRING_SCHEMA,
+    patch: patchSchema,
+  }, ['id', 'patch'])
+}
+
+function idEnvelope(extraProperties: Record<string, JsonSchema> = {}): JsonSchema {
+  return objectSchema({
+    id: NON_EMPTY_STRING_SCHEMA,
+    ...extraProperties,
+  }, ['id'])
+}
+
+const CHAT_MEMBER_CREATE_DATA_SCHEMA: JsonSchema = objectSchema({
+  scopeId: NON_EMPTY_STRING_SCHEMA,
+  roomId: NON_EMPTY_STRING_SCHEMA,
+  agentId: NON_EMPTY_STRING_SCHEMA,
+  roleKey: NON_EMPTY_STRING_SCHEMA,
+  brief: { type: 'string' },
+  status: CHAT_MEMBER_STATUS_SCHEMA,
+  lastReadSeq: { type: 'integer', minimum: 0 },
+  createdBy: NON_EMPTY_STRING_SCHEMA,
+  updatedBy: NON_EMPTY_STRING_SCHEMA,
+}, ['scopeId', 'roomId', 'agentId'])
+
+const CHAT_ROOM_INITIAL_MEMBER_SCHEMA: JsonSchema = objectSchema({
+  scopeId: NON_EMPTY_STRING_SCHEMA,
+  roomId: NON_EMPTY_STRING_SCHEMA,
+  agentId: NON_EMPTY_STRING_SCHEMA,
+  roleKey: NON_EMPTY_STRING_SCHEMA,
+  brief: { type: 'string' },
+  status: CHAT_MEMBER_STATUS_SCHEMA,
+  lastReadSeq: { type: 'integer', minimum: 0 },
+  createdBy: NON_EMPTY_STRING_SCHEMA,
+  updatedBy: NON_EMPTY_STRING_SCHEMA,
+}, ['agentId'])
+
+const CHAT_BINDING_CREATE_DATA_SCHEMA: JsonSchema = objectSchema({
+  scopeId: NON_EMPTY_STRING_SCHEMA,
+  roomId: NON_EMPTY_STRING_SCHEMA,
+  bindingType: NON_EMPTY_STRING_SCHEMA,
+  refId: NON_EMPTY_STRING_SCHEMA,
+  uri: NON_EMPTY_STRING_SCHEMA,
+  title: { type: 'string' },
+  note: { type: 'string' },
+  createdBy: NON_EMPTY_STRING_SCHEMA,
+  updatedBy: NON_EMPTY_STRING_SCHEMA,
+}, ['scopeId', 'roomId', 'bindingType'])
+
+const CHAT_ROOM_INITIAL_BINDING_SCHEMA: JsonSchema = objectSchema({
+  scopeId: NON_EMPTY_STRING_SCHEMA,
+  roomId: NON_EMPTY_STRING_SCHEMA,
+  bindingType: NON_EMPTY_STRING_SCHEMA,
+  refId: NON_EMPTY_STRING_SCHEMA,
+  uri: NON_EMPTY_STRING_SCHEMA,
+  title: { type: 'string' },
+  note: { type: 'string' },
+  createdBy: NON_EMPTY_STRING_SCHEMA,
+  updatedBy: NON_EMPTY_STRING_SCHEMA,
+}, ['bindingType'])
+
+const CHAT_ROOM_CREATE_DATA_SCHEMA: JsonSchema = {
+  ...objectSchema({
+    scopeId: NON_EMPTY_STRING_SCHEMA,
+    projectId: NON_EMPTY_STRING_SCHEMA,
+    slug: NON_EMPTY_STRING_SCHEMA,
+    title: NON_EMPTY_STRING_SCHEMA,
+    kind: { type: 'string', enum: ['group'] },
+    purpose: { type: 'string' },
+    guidanceMarkdown: { type: 'string' },
+    status: CHAT_ROOM_STATUS_SCHEMA,
+    createdBy: NON_EMPTY_STRING_SCHEMA,
+    updatedBy: NON_EMPTY_STRING_SCHEMA,
+    members: { type: 'array', minItems: 1, items: CHAT_ROOM_INITIAL_MEMBER_SCHEMA },
+    bindings: { type: 'array', items: CHAT_ROOM_INITIAL_BINDING_SCHEMA },
+  }, ['scopeId', 'slug', 'title']),
+  anyOf: [
+    { required: ['createdBy'] },
+    { required: ['members'] },
+  ],
+}
+
+const CHAT_ROOM_CREATE_INPUT_SCHEMA: JsonSchema = dataEnvelope(CHAT_ROOM_CREATE_DATA_SCHEMA)
+
+const CHAT_ROOM_UPDATE_INPUT_SCHEMA: JsonSchema = patchEnvelope(objectSchema({
+  title: NON_EMPTY_STRING_SCHEMA,
+  purpose: { type: 'string' },
+  guidanceMarkdown: { type: 'string' },
+  updatedBy: NON_EMPTY_STRING_SCHEMA,
+}))
+
+const CHAT_ROOM_OPEN_DM_INPUT_SCHEMA: JsonSchema = dataEnvelope(objectSchema({
+  scopeId: NON_EMPTY_STRING_SCHEMA,
+  agentIds: {
+    type: 'array',
+    minItems: 2,
+    maxItems: 2,
+    items: NON_EMPTY_STRING_SCHEMA,
+  },
+  projectId: NON_EMPTY_STRING_SCHEMA,
+  title: NON_EMPTY_STRING_SCHEMA,
+  purpose: { type: 'string' },
+  guidanceMarkdown: { type: 'string' },
+  roles: STRING_RECORD_SCHEMA,
+  createdBy: NON_EMPTY_STRING_SCHEMA,
+  updatedBy: NON_EMPTY_STRING_SCHEMA,
+}, ['scopeId', 'agentIds']))
+
+const CHAT_ROOM_EXPORT_MANIFEST_INPUT_SCHEMA: JsonSchema = dataEnvelope(objectSchema({
+  roomId: NON_EMPTY_STRING_SCHEMA,
+  includeMessages: { type: 'boolean' },
+}, ['roomId']))
+
+const CHAT_MEMBER_UPDATE_INPUT_SCHEMA: JsonSchema = patchEnvelope(objectSchema({
+  roleKey: NON_EMPTY_STRING_SCHEMA,
+  brief: { type: 'string' },
+  status: CHAT_MEMBER_STATUS_SCHEMA,
+  lastReadSeq: { type: 'integer', minimum: 0 },
+  updatedBy: NON_EMPTY_STRING_SCHEMA,
+}))
+
+const CHAT_MEMBER_REMOVE_INPUT_SCHEMA: JsonSchema = dataEnvelope({
+  ...objectSchema({
+    memberId: NON_EMPTY_STRING_SCHEMA,
+    roomId: NON_EMPTY_STRING_SCHEMA,
+    agentId: NON_EMPTY_STRING_SCHEMA,
+    updatedBy: NON_EMPTY_STRING_SCHEMA,
+  }),
+  anyOf: [
+    { required: ['memberId'] },
+    { required: ['roomId', 'agentId'] },
+  ],
+})
+
+const CHAT_MESSAGE_SEND_INPUT_SCHEMA: JsonSchema = dataEnvelope(objectSchema({
+  scopeId: NON_EMPTY_STRING_SCHEMA,
+  roomId: NON_EMPTY_STRING_SCHEMA,
+  authorAgentId: NON_EMPTY_STRING_SCHEMA,
+  kind: CHAT_MESSAGE_KIND_SCHEMA,
+  text: { type: 'string', minLength: 1 },
+  mentions: STRING_ARRAY_SCHEMA,
+  replyToSeq: { type: 'integer', minimum: 1 },
+  idempotencyKey: NON_EMPTY_STRING_SCHEMA,
+  createdBy: NON_EMPTY_STRING_SCHEMA,
+}, ['scopeId', 'roomId', 'authorAgentId', 'text']))
+
+const CHAT_MESSAGE_LIST_INPUT_SCHEMA: JsonSchema = objectSchema({
+  filter: objectSchema({
+    roomId: NON_EMPTY_STRING_SCHEMA,
+    scopeId: NON_EMPTY_STRING_SCHEMA,
+    authorAgentId: NON_EMPTY_STRING_SCHEMA,
+    kind: CHAT_MESSAGE_KIND_SCHEMA,
+    idempotencyKey: NON_EMPTY_STRING_SCHEMA,
+    afterSeq: { type: 'integer', minimum: 0 },
+  }),
+  options: DB_OPTIONS_SCHEMA,
+})
+
+const CHAT_CATCHUP_INPUT_SCHEMA: JsonSchema = dataEnvelope(objectSchema({
+  roomId: NON_EMPTY_STRING_SCHEMA,
+  agentId: NON_EMPTY_STRING_SCHEMA,
+  limit: { type: 'integer', minimum: 1 },
+}, ['agentId']))
+
+const CHAT_MARK_READ_INPUT_SCHEMA: JsonSchema = dataEnvelope(objectSchema({
+  roomId: NON_EMPTY_STRING_SCHEMA,
+  agentId: NON_EMPTY_STRING_SCHEMA,
+  seq: { type: 'integer', minimum: 0 },
+  updatedBy: NON_EMPTY_STRING_SCHEMA,
+}, ['roomId', 'agentId']))
+
 const OBJECT_ARG_NAMES = new Set(['data', 'filter', 'criteria', 'options', 'opts', 'patch'])
 const ARRAY_ARG_NAMES = new Set(['ids', 'tags', 'roles'])
 const INTEGER_ARG_NAMES = new Set(['seq', 'limit', 'offset', 'tokenInput', 'tokenOutput', 'tokenTotal'])
 
 const inputSchemaByOperationId = new Map<string, JsonSchema>()
 const INPUT_SCHEMA_OVERRIDES_BY_OPERATION_ID = new Map<string, JsonSchema>([
+  [normalizeAgentspaceOperationId('chat-room.create'), CHAT_ROOM_CREATE_INPUT_SCHEMA],
+  [normalizeAgentspaceOperationId('chat-room.update'), CHAT_ROOM_UPDATE_INPUT_SCHEMA],
+  [normalizeAgentspaceOperationId('chat-room.archive'), idEnvelope({ updatedBy: NON_EMPTY_STRING_SCHEMA })],
+  [normalizeAgentspaceOperationId('chat-room.open-dm'), CHAT_ROOM_OPEN_DM_INPUT_SCHEMA],
+  [normalizeAgentspaceOperationId('chat-room.export-manifest'), CHAT_ROOM_EXPORT_MANIFEST_INPUT_SCHEMA],
+  [normalizeAgentspaceOperationId('chat-member.add'), dataEnvelope(CHAT_MEMBER_CREATE_DATA_SCHEMA)],
+  [normalizeAgentspaceOperationId('chat-member.update'), CHAT_MEMBER_UPDATE_INPUT_SCHEMA],
+  [normalizeAgentspaceOperationId('chat-member.remove'), CHAT_MEMBER_REMOVE_INPUT_SCHEMA],
+  [normalizeAgentspaceOperationId('chat-binding.add'), dataEnvelope(CHAT_BINDING_CREATE_DATA_SCHEMA)],
+  [normalizeAgentspaceOperationId('chat-message.send'), CHAT_MESSAGE_SEND_INPUT_SCHEMA],
+  [normalizeAgentspaceOperationId('chat-message.list'), CHAT_MESSAGE_LIST_INPUT_SCHEMA],
+  [normalizeAgentspaceOperationId('chat.catchup'), CHAT_CATCHUP_INPUT_SCHEMA],
+  [normalizeAgentspaceOperationId('chat.mark-read'), CHAT_MARK_READ_INPUT_SCHEMA],
   [normalizeAgentspaceOperationId('codex-chat-message.add-message'), CODEX_CHAT_MESSAGE_CREATE_INPUT_SCHEMA],
   [normalizeAgentspaceOperationId('codex-chat-message.create'), CODEX_CHAT_MESSAGE_CREATE_INPUT_SCHEMA],
   [normalizeAgentspaceOperationId('codex-chat-thread.add-thread'), CODEX_CHAT_THREAD_CREATE_INPUT_SCHEMA],

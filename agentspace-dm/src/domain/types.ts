@@ -85,6 +85,18 @@ export type CodexChatSandboxMode = (typeof CODEX_CHAT_SANDBOX_MODES)[number]
 export const CODEX_CHAT_REASONING_EFFORTS = ['none', 'minimal', 'low', 'medium', 'high', 'xhigh'] as const
 export type CodexChatReasoningEffort = (typeof CODEX_CHAT_REASONING_EFFORTS)[number]
 
+export const CHAT_ROOM_KINDS = ['group', 'dm'] as const
+export type ChatRoomKind = (typeof CHAT_ROOM_KINDS)[number]
+
+export const CHAT_ROOM_STATUSES = ['active', 'archived'] as const
+export type ChatRoomStatus = (typeof CHAT_ROOM_STATUSES)[number]
+
+export const CHAT_ROOM_MEMBER_STATUSES = ['active', 'left'] as const
+export type ChatRoomMemberStatus = (typeof CHAT_ROOM_MEMBER_STATUSES)[number]
+
+export const CHAT_MESSAGE_KINDS = ['message', 'system'] as const
+export type ChatMessageKind = (typeof CHAT_MESSAGE_KINDS)[number]
+
 export type ActorRef = 'manual' | `agent:${string}` | `user:${string}`
 
 export function buildActorRef(type: 'manual' | 'agent' | 'user', id?: string): ActorRef {

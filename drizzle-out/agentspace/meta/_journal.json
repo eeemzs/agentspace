@@ -36,6 +36,13 @@
       "when": 1779494400000,
       "tag": "0004_memory_decision_retention",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1781107115557,
+      "tag": "0005_chat_rooms_v1",
+      "breakpoints": true
     }
   ]
 }

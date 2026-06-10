@@ -510,6 +510,270 @@ export const AGENTSPACE_OPERATION_CATALOG_ROWS = [
     ]
   },
   {
+    "toolId": "aops-chat-room-create",
+    "operationId": "chat-room.create",
+    "summary": "Create an agent chat room with initial members and optional bindings.",
+    "serviceKey": "chatService",
+    "serviceEntity": "chat-room",
+    "methodName": "createRoom",
+    "kind": "create",
+    "args": [
+      {
+        "name": "data",
+        "optional": false
+      }
+    ]
+  },
+  {
+    "toolId": "aops-chat-room-get-by-id",
+    "operationId": "chat-room.get-by-id",
+    "summary": "Get an agent chat room by id.",
+    "serviceKey": "chatService",
+    "serviceEntity": "chat-room",
+    "methodName": "getRoomById",
+    "kind": "get",
+    "args": [
+      {
+        "name": "id",
+        "optional": false
+      },
+      {
+        "name": "options",
+        "optional": true
+      }
+    ]
+  },
+  {
+    "toolId": "aops-chat-room-list",
+    "operationId": "chat-room.list",
+    "summary": "List agent chat rooms.",
+    "serviceKey": "chatService",
+    "serviceEntity": "chat-room",
+    "methodName": "listRooms",
+    "kind": "list",
+    "args": [
+      {
+        "name": "filter",
+        "optional": true
+      },
+      {
+        "name": "options",
+        "optional": true
+      }
+    ]
+  },
+  {
+    "toolId": "aops-chat-room-update",
+    "operationId": "chat-room.update",
+    "summary": "Update safe mutable chat room fields.",
+    "serviceKey": "chatService",
+    "serviceEntity": "chat-room",
+    "methodName": "updateRoom",
+    "kind": "update",
+    "args": [
+      {
+        "name": "id",
+        "optional": false
+      },
+      {
+        "name": "patch",
+        "optional": false
+      }
+    ]
+  },
+  {
+    "toolId": "aops-chat-room-archive",
+    "operationId": "chat-room.archive",
+    "summary": "Archive an agent chat room.",
+    "serviceKey": "chatService",
+    "serviceEntity": "chat-room",
+    "methodName": "archiveRoom",
+    "kind": "update",
+    "args": [
+      {
+        "name": "id",
+        "optional": false
+      },
+      {
+        "name": "updatedBy",
+        "optional": true
+      }
+    ]
+  },
+  {
+    "toolId": "aops-chat-room-open-dm",
+    "operationId": "chat-room.open-dm",
+    "summary": "Open or create a deterministic direct-message room for two agents.",
+    "serviceKey": "chatService",
+    "serviceEntity": "chat-room",
+    "methodName": "openDm",
+    "kind": "create",
+    "args": [
+      {
+        "name": "data",
+        "optional": false
+      }
+    ]
+  },
+  {
+    "toolId": "aops-chat-room-export-manifest",
+    "operationId": "chat-room.export-manifest",
+    "summary": "Export a room manifest with members, bindings, and optional messages.",
+    "serviceKey": "chatService",
+    "serviceEntity": "chat-room",
+    "methodName": "exportManifest",
+    "kind": "custom",
+    "args": [
+      {
+        "name": "data",
+        "optional": false
+      }
+    ]
+  },
+  {
+    "toolId": "aops-chat-member-add",
+    "operationId": "chat-member.add",
+    "summary": "Add or reactivate an agent chat room member.",
+    "serviceKey": "chatService",
+    "serviceEntity": "chat-member",
+    "methodName": "addMember",
+    "kind": "create",
+    "args": [
+      {
+        "name": "data",
+        "optional": false
+      }
+    ]
+  },
+  {
+    "toolId": "aops-chat-member-update",
+    "operationId": "chat-member.update",
+    "summary": "Update chat room member fields.",
+    "serviceKey": "chatService",
+    "serviceEntity": "chat-member",
+    "methodName": "updateMember",
+    "kind": "update",
+    "args": [
+      {
+        "name": "id",
+        "optional": false
+      },
+      {
+        "name": "patch",
+        "optional": false
+      }
+    ]
+  },
+  {
+    "toolId": "aops-chat-member-remove",
+    "operationId": "chat-member.remove",
+    "summary": "Mark a chat room member as left.",
+    "serviceKey": "chatService",
+    "serviceEntity": "chat-member",
+    "methodName": "removeMember",
+    "kind": "delete",
+    "args": [
+      {
+        "name": "data",
+        "optional": false
+      }
+    ]
+  },
+  {
+    "toolId": "aops-chat-binding-add",
+    "operationId": "chat-binding.add",
+    "summary": "Add a reference binding to a chat room.",
+    "serviceKey": "chatService",
+    "serviceEntity": "chat-binding",
+    "methodName": "addBinding",
+    "kind": "create",
+    "args": [
+      {
+        "name": "data",
+        "optional": false
+      }
+    ]
+  },
+  {
+    "toolId": "aops-chat-binding-remove",
+    "operationId": "chat-binding.remove",
+    "summary": "Remove a chat room reference binding.",
+    "serviceKey": "chatService",
+    "serviceEntity": "chat-binding",
+    "methodName": "removeBinding",
+    "kind": "delete",
+    "args": [
+      {
+        "name": "id",
+        "optional": false
+      }
+    ]
+  },
+  {
+    "toolId": "aops-chat-message-send",
+    "operationId": "chat-message.send",
+    "summary": "Send an append-only message to a chat room.",
+    "serviceKey": "chatService",
+    "serviceEntity": "chat-message",
+    "methodName": "sendMessage",
+    "kind": "create",
+    "args": [
+      {
+        "name": "data",
+        "optional": false
+      }
+    ]
+  },
+  {
+    "toolId": "aops-chat-message-list",
+    "operationId": "chat-message.list",
+    "summary": "List chat room messages.",
+    "serviceKey": "chatService",
+    "serviceEntity": "chat-message",
+    "methodName": "listMessages",
+    "kind": "list",
+    "args": [
+      {
+        "name": "filter",
+        "optional": true
+      },
+      {
+        "name": "options",
+        "optional": true
+      }
+    ]
+  },
+  {
+    "toolId": "aops-chat-catchup",
+    "operationId": "chat.catchup",
+    "summary": "Read unread chat messages for an agent.",
+    "serviceKey": "chatService",
+    "serviceEntity": "chat",
+    "methodName": "catchup",
+    "kind": "custom",
+    "args": [
+      {
+        "name": "data",
+        "optional": false
+      }
+    ]
+  },
+  {
+    "toolId": "aops-chat-mark-read",
+    "operationId": "chat.mark-read",
+    "summary": "Advance an agent read cursor in a chat room.",
+    "serviceKey": "chatService",
+    "serviceEntity": "chat",
+    "methodName": "markRead",
+    "kind": "update",
+    "args": [
+      {
+        "name": "data",
+        "optional": false
+      }
+    ]
+  },
+  {
     "toolId": "aops-codex-chat-message-add-message",
     "operationId": "codex-chat-message.add-message",
     "summary": "Add message codex-chat-message.",

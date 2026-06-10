@@ -24,6 +24,7 @@ export {
   CodexChatMessageService, type CodexChatMessageServiceOptions,
   CodexChatSettingService, type CodexChatSettingServiceOptions,
   CodexChatThreadService, type CodexChatThreadServiceOptions,
+  ChatService, type ChatServiceOptions,
   ExperienceItemService, type ExperienceItemServiceOptions,
   MemoryItemService, type MemoryItemServiceOptions,
   TagService, type TagServiceOptions,
