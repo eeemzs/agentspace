@@ -118,6 +118,10 @@ function chatEffect<T>(effect: Effect.Effect<T, unknown, unknown>): Effect.Effec
   return effect as unknown as Effect.Effect<T, ChatServiceError>
 }
 
+function archivedRoomError(roomId: string): Error {
+  return new Error(`agentspace.conflict:chat_room_archived:${roomId}`)
+}
+
 export interface ChatServiceDependencies {}
 
 export interface ChatServiceOptions extends ChatWriteDeps {
@@ -723,6 +727,16 @@ export class ChatService implements IChatServicePort {
                     : Effect.fail(XfErrorFactory.notFound({ stage, identifier: `${input.roomId}:${input.authorAgentId}` }))
                 ),
                 Effect.flatMap(() =>
+                  chatRoomRepository.findById(input.roomId).pipe(
+                    Effect.mapError(mapDbError({ stage, operation: 'chatRoomRepository.findById', factory: XfErrorFactory.notFound })),
+                    Effect.flatMap((room) =>
+                      room.status === 'active'
+                        ? Effect.succeed(room)
+                        : chatEffect(Effect.fail(archivedRoomError(input.roomId)))
+                    )
+                  )
+                ),
+                Effect.flatMap(() =>
                   chatRoomRepository.allocateNextSeq(input.roomId, {
                     lastMessageAt: new Date(),
                     updatedBy: input.createdBy,
@@ -732,7 +746,7 @@ export class ChatService implements IChatServicePort {
                 ),
                 Effect.flatMap((room) => {
                   if (room.status !== 'active') {
-                    return chatEffect(Effect.fail(XfErrorFactory.upsertFailed({ stage, operation: 'sendMessage.archivedRoom' })))
+                    return chatEffect(Effect.fail(archivedRoomError(input.roomId)))
                   }
                   const payload: IbmChatMessageInsert = {
                     ...input,

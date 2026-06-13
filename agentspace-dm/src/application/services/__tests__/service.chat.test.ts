@@ -203,6 +203,28 @@ describe('ChatService', () => {
     expect(messageRepo.rows).toHaveLength(1)
   })
 
+  it('rejects archived-room sends before sequence allocation', async () => {
+    const { service, roomRepo, messageRepo } = makeService({
+      rooms: [{ id: 'room-1', scopeId: 'project-1', slug: 'chat', title: 'Chat', kind: 'group', status: 'archived', lastSeq: 19 }],
+      members: [{ id: 'member-1', scopeId: 'project-1', roomId: 'room-1', agentId: 'codex', roleKey: 'implementer', status: 'active', lastReadSeq: 0, joinedAt: new Date() }],
+    })
+
+    await expect(
+      Effect.runPromise(
+        service.sendMessage({
+          scopeId: 'project-1',
+          roomId: 'room-1',
+          authorAgentId: 'codex',
+          text: 'after closeout',
+        })
+      )
+    ).rejects.toThrow(/agentspace\.conflict:chat_room_archived:room-1/)
+
+    expect(roomRepo.allocateNextSeq).not.toHaveBeenCalled()
+    expect(roomRepo.rows[0].lastSeq).toBe(19)
+    expect(messageRepo.rows).toHaveLength(0)
+  })
+
   it('catches up after lastReadSeq and marks the room read', async () => {
     const { service, memberRepo, messageRepo } = makeService({
       rooms: [

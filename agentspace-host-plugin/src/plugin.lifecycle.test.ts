@@ -466,6 +466,40 @@ describe('agentspace host-plugin lifecycle guards', () => {
     })
   })
 
+  it('maps archived chat room sends to conflict instead of runtime failure', async () => {
+    const runner = vi.fn(async () => {
+      throw new Error('agentspace.conflict:chat_room_archived:room-1')
+    })
+    const plugin = createAgentspacePlugin({ runner })
+    const route = findRouteByOperation(plugin.manifest.routes, 'chat-message.send')
+
+    const response = await plugin.execute({
+      request: createDomainRequest({
+        method: route.method,
+        body: {
+          data: {
+            scopeId: 'project-1',
+            roomId: 'room-1',
+            authorAgentId: 'codex',
+            text: 'hello',
+          },
+        },
+        context: { tenantId: 'tenant-1', projectId: 'project-1' },
+      }),
+      match: { route, params: {} },
+    })
+
+    expect(response).toMatchObject({
+      status: 409,
+      data: {
+        ok: false,
+        errorCode: 'agentspace_operation_failed.conflict',
+        operation: 'chat-message.send',
+        message: 'agentspace.conflict:chat_room_archived:room-1',
+      },
+    })
+  })
+
   it('does not inject removed legacy scope aliases into scope-owned create payloads', async () => {
     const runner = vi.fn(async () => ({ ok: true }))
     const plugin = createAgentspacePlugin({ runner })
