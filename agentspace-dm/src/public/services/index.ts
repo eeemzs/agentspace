@@ -27,6 +27,7 @@ export {
   ChatService, type ChatServiceOptions,
   ExperienceItemService, type ExperienceItemServiceOptions,
   MemoryItemService, type MemoryItemServiceOptions,
+  MissionService, type MissionServiceOptions,
   TagService, type TagServiceOptions,
   ProjectMemberService, type ProjectMemberServiceOptions,
   ProjectPathService, type ProjectPathServiceOptions,

@@ -8,6 +8,7 @@ export const agentSessionTableSqlite = sqliteTable(
     id: text().primaryKey().$defaultFn(() => randomUUID()),
     tenantId: text().notNull(),
     scopeId: text().notNull(),
+    missionId: text(),
     sessionId: text().notNull(),
     agent: text().notNull(),
     profile: text(),
@@ -21,6 +22,7 @@ export const agentSessionTableSqlite = sqliteTable(
   (t) => [
     index('agent_session_idx_tenant').on(t.tenantId),
     index('agent_session_idx_scope').on(t.tenantId, t.scopeId),
+    index('agent_session_idx_mission').on(t.tenantId, t.missionId),
     index('agent_session_idx_scope_started').on(t.tenantId, t.scopeId, t.startedAt),
   ]
 )

@@ -13,6 +13,7 @@ export const ibmAgentSessionKeys = [
   'createdAt',
   'updatedAt',
   'scopeId',
+  'missionId',
   'sessionId',
   'agent',
   'profile',

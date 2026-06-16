@@ -18,6 +18,7 @@ export * from '../codexChatSetting/drizzle/drizzle.schema.codexChatSetting.sqlit
 export * from '../codexChatThread/drizzle/drizzle.schema.codexChatThread.sqlite.js'
 export * from '../experienceItem/drizzle/drizzle.schema.experienceItem.sqlite.js'
 export * from '../memoryItem/drizzle/drizzle.schema.memoryItem.sqlite.js'
+export * from '../mission/drizzle/drizzle.schema.mission.sqlite.js'
 export * from '../project/drizzle/drizzle.schema.project.sqlite.js'
 export * from '../projectPath/drizzle/drizzle.schema.projectPath.sqlite.js'
 export * from '../projectMember/drizzle/drizzle.schema.projectMember.sqlite.js'

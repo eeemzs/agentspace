@@ -403,6 +403,82 @@ const CHAT_MARK_READ_INPUT_SCHEMA: JsonSchema = dataEnvelope(objectSchema({
   updatedBy: NON_EMPTY_STRING_SCHEMA,
 }, ['roomId', 'agentId']))
 
+const MISSION_STATUS_SCHEMA: JsonSchema = { type: 'string', enum: ['draft', 'active', 'completed', 'archived'] }
+const MISSION_REF_SCHEMA: JsonSchema = objectSchema({
+  refType: NON_EMPTY_STRING_SCHEMA,
+  refId: NON_EMPTY_STRING_SCHEMA,
+  uri: NON_EMPTY_STRING_SCHEMA,
+  title: { type: 'string' },
+  note: { type: 'string' },
+})
+
+const MISSION_CREATE_DATA_SCHEMA: JsonSchema = objectSchema({
+  scopeId: NON_EMPTY_STRING_SCHEMA,
+  slug: NON_EMPTY_STRING_SCHEMA,
+  status: MISSION_STATUS_SCHEMA,
+  objective: { type: 'string', minLength: 1 },
+  taskDefinition: { type: 'string' },
+  successCriteria: STRING_ARRAY_SCHEMA,
+  constraints: STRING_ARRAY_SCHEMA,
+  policy: { type: 'object', additionalProperties: true },
+  roles: { type: 'object', additionalProperties: true },
+  references: { type: 'array', items: MISSION_REF_SCHEMA },
+  visionDocRef: MISSION_REF_SCHEMA,
+  activeImplementationPlanRef: MISSION_REF_SCHEMA,
+  lineage: objectSchema({ parentMissionId: NON_EMPTY_STRING_SCHEMA }),
+  sourceTemplateRef: MISSION_REF_SCHEMA,
+  bodyMarkdown: { type: 'string' },
+  createdBy: NON_EMPTY_STRING_SCHEMA,
+  updatedBy: NON_EMPTY_STRING_SCHEMA,
+  meta: { type: 'object', additionalProperties: true },
+}, ['scopeId', 'objective'])
+
+const MISSION_PATCH_SCHEMA: JsonSchema = objectSchema({
+  scopeId: NON_EMPTY_STRING_SCHEMA,
+  slug: NON_EMPTY_STRING_SCHEMA,
+  status: MISSION_STATUS_SCHEMA,
+  objective: { type: 'string', minLength: 1 },
+  taskDefinition: { type: 'string' },
+  successCriteria: STRING_ARRAY_SCHEMA,
+  constraints: STRING_ARRAY_SCHEMA,
+  policy: { type: 'object', additionalProperties: true },
+  roles: { type: 'object', additionalProperties: true },
+  references: { type: 'array', items: MISSION_REF_SCHEMA },
+  visionDocRef: MISSION_REF_SCHEMA,
+  activeImplementationPlanRef: MISSION_REF_SCHEMA,
+  lineage: objectSchema({ parentMissionId: NON_EMPTY_STRING_SCHEMA }),
+  sourceTemplateRef: MISSION_REF_SCHEMA,
+  bodyMarkdown: { type: 'string' },
+  createdBy: NON_EMPTY_STRING_SCHEMA,
+  updatedBy: NON_EMPTY_STRING_SCHEMA,
+  meta: { type: 'object', additionalProperties: true },
+})
+
+const MISSION_CREATE_INPUT_SCHEMA: JsonSchema = dataEnvelope(MISSION_CREATE_DATA_SCHEMA)
+const MISSION_UPDATE_INPUT_SCHEMA: JsonSchema = patchEnvelope(MISSION_PATCH_SCHEMA)
+const MISSION_RESUME_INPUT_SCHEMA: JsonSchema = objectSchema({
+  id: NON_EMPTY_STRING_SCHEMA,
+  options: objectSchema({
+    depth: { type: 'string', enum: ['light', 'standard'] },
+    limit: { type: 'integer', minimum: 1 },
+  }),
+}, ['id'])
+
+const AGENT_SESSION_STATUS_SCHEMA: JsonSchema = { type: 'string', enum: ['active', 'ended', 'failed'] }
+const AGENT_SESSION_CREATE_DATA_SCHEMA: JsonSchema = objectSchema({
+  scopeId: NON_EMPTY_STRING_SCHEMA,
+  missionId: NON_EMPTY_STRING_SCHEMA,
+  sessionId: NON_EMPTY_STRING_SCHEMA,
+  agent: NON_EMPTY_STRING_SCHEMA,
+  profile: NON_EMPTY_STRING_SCHEMA,
+  model: NON_EMPTY_STRING_SCHEMA,
+  status: AGENT_SESSION_STATUS_SCHEMA,
+  startedAt: NON_EMPTY_STRING_SCHEMA,
+  endedAt: NON_EMPTY_STRING_SCHEMA,
+}, ['scopeId', 'sessionId', 'agent'])
+
+const AGENT_SESSION_CREATE_INPUT_SCHEMA: JsonSchema = dataEnvelope(AGENT_SESSION_CREATE_DATA_SCHEMA)
+
 const OBJECT_ARG_NAMES = new Set(['data', 'filter', 'criteria', 'options', 'opts', 'patch'])
 const ARRAY_ARG_NAMES = new Set(['ids', 'tags', 'roles'])
 const INTEGER_ARG_NAMES = new Set(['seq', 'limit', 'offset', 'tokenInput', 'tokenOutput', 'tokenTotal'])
@@ -426,6 +502,11 @@ const INPUT_SCHEMA_OVERRIDES_BY_OPERATION_ID = new Map<string, JsonSchema>([
   [normalizeAgentspaceOperationId('codex-chat-message.create'), CODEX_CHAT_MESSAGE_CREATE_INPUT_SCHEMA],
   [normalizeAgentspaceOperationId('codex-chat-thread.add-thread'), CODEX_CHAT_THREAD_CREATE_INPUT_SCHEMA],
   [normalizeAgentspaceOperationId('codex-chat-thread.create'), CODEX_CHAT_THREAD_CREATE_INPUT_SCHEMA],
+  [normalizeAgentspaceOperationId('agent-session.create'), AGENT_SESSION_CREATE_INPUT_SCHEMA],
+  [normalizeAgentspaceOperationId('agent-session.start-agent-session'), AGENT_SESSION_CREATE_INPUT_SCHEMA],
+  [normalizeAgentspaceOperationId('mission.create'), MISSION_CREATE_INPUT_SCHEMA],
+  [normalizeAgentspaceOperationId('mission.update'), MISSION_UPDATE_INPUT_SCHEMA],
+  [normalizeAgentspaceOperationId('mission.resume'), MISSION_RESUME_INPUT_SCHEMA],
   [normalizeAgentspaceOperationId('project.create'), PROJECT_CREATE_INPUT_SCHEMA],
   [normalizeAgentspaceOperationId('project-path.create'), PROJECT_PATH_UPSERT_INPUT_SCHEMA],
   [normalizeAgentspaceOperationId('project-path.upsert-project-path'), PROJECT_PATH_UPSERT_INPUT_SCHEMA],

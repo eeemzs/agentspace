@@ -32,6 +32,7 @@ export type {
   IRepositoryPortChatRoomMember,
   IRepositoryPortExperienceItem,
   IRepositoryPortMemoryItem,
+  IRepositoryPortMission,
   IRepositoryPortTag,
   IRepositoryPortProjectMember,
   IRepositoryPortProjectPath,

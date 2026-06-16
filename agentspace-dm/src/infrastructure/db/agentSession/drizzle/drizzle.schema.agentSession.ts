@@ -7,6 +7,7 @@ export const agentSessionTable = pgTable(
     id: uuid().primaryKey().defaultRandom(),
     tenantId: text().notNull(),
     scopeId: uuid().notNull(),
+    missionId: uuid(),
     sessionId: text().notNull(),
     agent: text().notNull(),
     profile: text(),
@@ -20,6 +21,7 @@ export const agentSessionTable = pgTable(
   (t) => [
     index('agent_session_idx_tenant').on(t.tenantId),
     index('agent_session_idx_scope').on(t.tenantId, t.scopeId),
+    index('agent_session_idx_mission').on(t.tenantId, t.missionId),
     index('agent_session_idx_scope_started').on(t.tenantId, t.scopeId, t.startedAt),
   ]
 )

@@ -42,6 +42,9 @@ export type SkillVersionStatus = (typeof SKILL_VERSION_STATUSES)[number]
 export const AGENT_SESSION_STATUSES = ['active', 'ended', 'failed'] as const
 export type AgentSessionStatus = (typeof AGENT_SESSION_STATUSES)[number]
 
+export const MISSION_STATUSES = ['draft', 'active', 'completed', 'archived'] as const
+export type MissionStatus = (typeof MISSION_STATUSES)[number]
+
 export const ARTIFACT_TYPES = ['file', 'diff', 'log', 'report', 'doc', 'image', 'dataset', 'other'] as const
 export type ArtifactType = (typeof ARTIFACT_TYPES)[number]
 

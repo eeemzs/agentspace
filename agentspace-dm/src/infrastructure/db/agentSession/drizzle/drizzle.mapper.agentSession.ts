@@ -4,6 +4,8 @@ import { IdbAgentSessionDrizzle, AgentSessionColumnsDrizzle } from './drizzle.sc
 
 const conversions: FieldConversionLookup<IbmAgentSession, AgentSessionColumnsDrizzle> = {
   id: { toDomain: uuidToString, toDb: stringToUuid },
+  scopeId: { toDomain: uuidToString, toDb: stringToUuid },
+  missionId: { toDomain: uuidToString, toDb: stringToUuid },
   //==> field-conversions
   // customField: { toDomain: (v) => v, toDb: (v) => v },
   //<==//

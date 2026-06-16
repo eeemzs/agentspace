@@ -1635,6 +1635,103 @@ export const AGENTSPACE_OPERATION_CATALOG_ROWS = [
     ]
   },
   {
+    "toolId": "aops-mission-create",
+    "operationId": "mission.create",
+    "summary": "Create an Agentspace mission record.",
+    "serviceKey": "missionService",
+    "serviceEntity": "mission",
+    "methodName": "createMission",
+    "kind": "create",
+    "args": [
+      {
+        "name": "data",
+        "optional": false
+      }
+    ],
+    "examples": [
+      "{\"data\":{\"scopeId\":\"<projectId>\",\"slug\":\"mission-slug\",\"objective\":\"Deliver PR1 mission support\",\"taskDefinition\":\"Implement mission + session binding\",\"successCriteria\":[\"mission.create works\",\"mission.resume returns schemaVersion 1\"],\"policy\":{\"method\":\"build-review-chat\"}}}"
+    ]
+  },
+  {
+    "toolId": "aops-mission-get",
+    "operationId": "mission.get",
+    "summary": "Get an Agentspace mission by id.",
+    "serviceKey": "missionService",
+    "serviceEntity": "mission",
+    "methodName": "getById",
+    "kind": "get",
+    "args": [
+      {
+        "name": "id",
+        "optional": false
+      },
+      {
+        "name": "options",
+        "optional": true
+      }
+    ]
+  },
+  {
+    "toolId": "aops-mission-list",
+    "operationId": "mission.list",
+    "summary": "List Agentspace missions.",
+    "serviceKey": "missionService",
+    "serviceEntity": "mission",
+    "methodName": "listMissions",
+    "kind": "list",
+    "args": [
+      {
+        "name": "filter",
+        "optional": true
+      },
+      {
+        "name": "options",
+        "optional": true
+      }
+    ]
+  },
+  {
+    "toolId": "aops-mission-update",
+    "operationId": "mission.update",
+    "summary": "Update an Agentspace mission.",
+    "serviceKey": "missionService",
+    "serviceEntity": "mission",
+    "methodName": "updateMission",
+    "kind": "update",
+    "args": [
+      {
+        "name": "id",
+        "optional": false
+      },
+      {
+        "name": "patch",
+        "optional": false
+      }
+    ]
+  },
+  {
+    "toolId": "aops-mission-resume",
+    "operationId": "mission.resume",
+    "summary": "Build a deterministic mission-anchored resume pack skeleton.",
+    "serviceKey": "missionService",
+    "serviceEntity": "mission",
+    "methodName": "buildResumePack",
+    "kind": "custom",
+    "args": [
+      {
+        "name": "id",
+        "optional": false
+      },
+      {
+        "name": "options",
+        "optional": true
+      }
+    ],
+    "examples": [
+      "{\"id\":\"<missionId>\",\"options\":{\"depth\":\"light\",\"limit\":8}}"
+    ]
+  },
+  {
     "toolId": "aops-experience-item-add-experience-item",
     "operationId": "experience-item.add-experience-item",
     "summary": "Add experience item experience-item.",

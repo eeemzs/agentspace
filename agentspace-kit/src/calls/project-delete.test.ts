@@ -32,6 +32,7 @@ describe('hardDeleteAgentspaceProjectCascade', () => {
     const resourceRepository = successRepo()
     const experienceItemRepository = successRepo()
     const memoryItemRepository = successRepo()
+    const missionRepository = successRepo()
     const agentSessionRepository = successRepo()
     const agentRunRepository = successRepo()
     const codexChatThreadRepository = successRepo()
@@ -54,6 +55,7 @@ describe('hardDeleteAgentspaceProjectCascade', () => {
         getResourceRepository: async () => resourceRepository as any,
         getExperienceItemRepository: async () => experienceItemRepository as any,
         getMemoryItemRepository: async () => memoryItemRepository as any,
+        getMissionRepository: async () => missionRepository as any,
         getCodexChatThreadRepository: async () => codexChatThreadRepository as any,
         getCodexChatMessageRepository: async () => codexChatMessageRepository as any,
       } as any,
@@ -90,6 +92,7 @@ describe('hardDeleteAgentspaceProjectCascade', () => {
         getResourceRepository: async () => successRepo() as any,
         getExperienceItemRepository: async () => successRepo() as any,
         getMemoryItemRepository: async () => successRepo() as any,
+        getMissionRepository: async () => successRepo() as any,
         getCodexChatThreadRepository: async () => successRepo() as any,
         getCodexChatMessageRepository: async () => successRepo() as any,
       } as any,
@@ -110,6 +113,7 @@ describe('hardDeleteAgentspaceProjectCascade', () => {
       resources: 0,
       experienceItems: 0,
       memoryItems: 0,
+      missions: 0,
       codexChatThreads: 0,
       codexChatMessages: 0,
     })

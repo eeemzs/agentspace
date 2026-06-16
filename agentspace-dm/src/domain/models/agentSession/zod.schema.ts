@@ -7,6 +7,7 @@ export const agentSessionZodSchema = z
   .object({
     ...IbmZodSchema.shape,
     scopeId: z.string(),
+    missionId: z.string().optional(),
     sessionId: z.string(),
     agent: z.string(),
     profile: z.string().optional(),

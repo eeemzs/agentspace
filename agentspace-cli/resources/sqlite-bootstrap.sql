@@ -59,6 +59,7 @@ CREATE TABLE `agent-sessions` (
 	`id` text PRIMARY KEY NOT NULL,
 	`tenantId` text NOT NULL,
 	`scopeId` text NOT NULL,
+	`missionId` text,
 	`sessionId` text NOT NULL,
 	`agent` text NOT NULL,
 	`profile` text,
@@ -72,6 +73,7 @@ CREATE TABLE `agent-sessions` (
 --> statement-breakpoint
 CREATE INDEX `agent_session_idx_tenant` ON `agent-sessions` (`tenantId`);--> statement-breakpoint
 CREATE INDEX `agent_session_idx_scope` ON `agent-sessions` (`tenantId`,`scopeId`);--> statement-breakpoint
+CREATE INDEX `agent_session_idx_mission` ON `agent-sessions` (`tenantId`,`missionId`);--> statement-breakpoint
 CREATE INDEX `agent_session_idx_scope_started` ON `agent-sessions` (`tenantId`,`scopeId`,`startedAt`);--> statement-breakpoint
 CREATE TABLE `artifacts` (
 	`id` text PRIMARY KEY NOT NULL,
@@ -340,6 +342,35 @@ CREATE INDEX `project_member_idx_tenant` ON `project-members` (`tenantId`);--> s
 CREATE INDEX `project_member_idx_scope` ON `project-members` (`tenantId`,`scopeId`);--> statement-breakpoint
 CREATE INDEX `project_member_idx_project` ON `project-members` (`tenantId`,`projectId`);--> statement-breakpoint
 CREATE INDEX `project_member_idx_user` ON `project-members` (`tenantId`,`userId`);--> statement-breakpoint
+CREATE TABLE `missions` (
+	`id` text PRIMARY KEY NOT NULL,
+	`tenantId` text NOT NULL,
+	`scopeId` text NOT NULL,
+	`slug` text,
+	`status` text NOT NULL,
+	`objective` text NOT NULL,
+	`taskDefinition` text,
+	`successCriteria` text,
+	`constraints` text,
+	`policy` text,
+	`roles` text,
+	`references` text,
+	`visionDocRef` text,
+	`activeImplementationPlanRef` text,
+	`lineage` text,
+	`sourceTemplateRef` text,
+	`bodyMarkdown` text,
+	`meta` text,
+	`createdBy` text,
+	`updatedBy` text,
+	`createdAt` integer,
+	`updatedAt` integer
+);
+--> statement-breakpoint
+CREATE UNIQUE INDEX `mission_scope_slug_unique` ON `missions` (`tenantId`,`scopeId`,`slug`);--> statement-breakpoint
+CREATE INDEX `mission_idx_tenant` ON `missions` (`tenantId`);--> statement-breakpoint
+CREATE INDEX `mission_idx_scope` ON `missions` (`tenantId`,`scopeId`);--> statement-breakpoint
+CREATE INDEX `mission_idx_status` ON `missions` (`tenantId`,`scopeId`,`status`);--> statement-breakpoint
 CREATE TABLE `prompts` (
 	`id` text PRIMARY KEY NOT NULL,
 	`tenantId` text NOT NULL,

@@ -1,8 +1,8 @@
 ﻿import type { DefaultServiceProviderOptions, RegistryStats, ServiceCacheOptions, MetricsCollector, RetryOptions, CircuitBreaker, RepositoryEndpoint } from '@aopslab/xf-dm-kits'
 import type { RepositoryConfig } from '@aopslab/xf-db'
 import type { XfLogger } from '@aopslab/xf-logger'
-import type { IProjectServicePort, IProjectPathServicePort, IPromptServicePort, IPromptVersionServicePort, IResourceServicePort, ISkillServicePort, ISkillVersionServicePort, IKanbanBoardServicePort, IKanbanColumnServicePort, ISprintServicePort, ISprintItemServicePort, ITaskServicePort, ITaskCommentServicePort, IAgentSessionServicePort, IAgentRunServicePort, IAgentRunEventServicePort, IActivityItemServicePort, IArtifactServicePort, IArtifactLinkServicePort, ICodexChatMessageServicePort, ICodexChatSettingServicePort, ICodexChatThreadServicePort, IChatServicePort, IExperienceItemServicePort, IMemoryItemServicePort, ITagServicePort, IWorkflowDefinitionServicePort, IWorkflowInstanceServicePort, IWorkflowStepRunServicePort, IProjectMemberServicePort } from '@aopslab/domain-dm-agentspace/ports'
-import type { IRepositoryPortProject, IRepositoryPortProjectPath, IRepositoryPortPrompt, IRepositoryPortPromptVersion, IRepositoryPortResource, IRepositoryPortScope, IRepositoryPortSkill, IRepositoryPortSkillVersion, IRepositoryPortKanbanBoard, IRepositoryPortKanbanColumn, IRepositoryPortSprint, IRepositoryPortSprintItem, IRepositoryPortTask, IRepositoryPortTaskChecklistItem, IRepositoryPortTaskComment, IRepositoryPortTaskLabel, IRepositoryPortTaskLabelLink, IRepositoryPortTaskRelation, IRepositoryPortAgentSession, IRepositoryPortAgentRun, IRepositoryPortAgentRunEvent, IRepositoryPortActivityItem, IRepositoryPortArtifact, IRepositoryPortArtifactLink, IRepositoryPortCodexChatMessage, IRepositoryPortCodexChatSetting, IRepositoryPortCodexChatThread, IRepositoryPortChatMessage, IRepositoryPortChatRoom, IRepositoryPortChatRoomBinding, IRepositoryPortChatRoomMember, IRepositoryPortExperienceItem, IRepositoryPortMemoryItem, IRepositoryPortTag, IRepositoryPortWorkflowDefinition, IRepositoryPortWorkflowInstance, IRepositoryPortWorkflowStepRun, IRepositoryPortProjectMember } from '@aopslab/domain-dm-agentspace/repository-ports'
+import type { IProjectServicePort, IProjectPathServicePort, IPromptServicePort, IPromptVersionServicePort, IResourceServicePort, ISkillServicePort, ISkillVersionServicePort, IKanbanBoardServicePort, IKanbanColumnServicePort, ISprintServicePort, ISprintItemServicePort, ITaskServicePort, ITaskCommentServicePort, IAgentSessionServicePort, IAgentRunServicePort, IAgentRunEventServicePort, IActivityItemServicePort, IArtifactServicePort, IArtifactLinkServicePort, ICodexChatMessageServicePort, ICodexChatSettingServicePort, ICodexChatThreadServicePort, IChatServicePort, IExperienceItemServicePort, IMemoryItemServicePort, IMissionServicePort, ITagServicePort, IWorkflowDefinitionServicePort, IWorkflowInstanceServicePort, IWorkflowStepRunServicePort, IProjectMemberServicePort } from '@aopslab/domain-dm-agentspace/ports'
+import type { IRepositoryPortProject, IRepositoryPortProjectPath, IRepositoryPortPrompt, IRepositoryPortPromptVersion, IRepositoryPortResource, IRepositoryPortScope, IRepositoryPortSkill, IRepositoryPortSkillVersion, IRepositoryPortKanbanBoard, IRepositoryPortKanbanColumn, IRepositoryPortSprint, IRepositoryPortSprintItem, IRepositoryPortTask, IRepositoryPortTaskChecklistItem, IRepositoryPortTaskComment, IRepositoryPortTaskLabel, IRepositoryPortTaskLabelLink, IRepositoryPortTaskRelation, IRepositoryPortAgentSession, IRepositoryPortAgentRun, IRepositoryPortAgentRunEvent, IRepositoryPortActivityItem, IRepositoryPortArtifact, IRepositoryPortArtifactLink, IRepositoryPortCodexChatMessage, IRepositoryPortCodexChatSetting, IRepositoryPortCodexChatThread, IRepositoryPortChatMessage, IRepositoryPortChatRoom, IRepositoryPortChatRoomBinding, IRepositoryPortChatRoomMember, IRepositoryPortExperienceItem, IRepositoryPortMemoryItem, IRepositoryPortMission, IRepositoryPortTag, IRepositoryPortWorkflowDefinition, IRepositoryPortWorkflowInstance, IRepositoryPortWorkflowStepRun, IRepositoryPortProjectMember } from '@aopslab/domain-dm-agentspace/repository-ports'
 
 export interface AgentspaceKitContext {
   tenantId: string
@@ -48,6 +48,7 @@ export interface AgentspaceKitStaticConfig {
   chatMessageRepository: RepositoryEndpoint
   experienceItemRepository: RepositoryEndpoint
   memoryItemRepository: RepositoryEndpoint
+  missionRepository: RepositoryEndpoint
   tagRepository: RepositoryEndpoint
   workflowDefinitionRepository: RepositoryEndpoint
   workflowInstanceRepository: RepositoryEndpoint
@@ -92,6 +93,7 @@ export interface AgentspaceKitServiceProviderOptions extends DefaultServiceProvi
   chatMessageRepositoryConfig: RepositoryConfig
   experienceItemRepositoryConfig: RepositoryConfig
   memoryItemRepositoryConfig: RepositoryConfig
+  missionRepositoryConfig: RepositoryConfig
   tagRepositoryConfig: RepositoryConfig
   workflowDefinitionRepositoryConfig: RepositoryConfig
   workflowInstanceRepositoryConfig: RepositoryConfig
@@ -125,6 +127,7 @@ export interface AgentspaceKitServices {
   chatService: IChatServicePort
   experienceItemService: IExperienceItemServicePort
   memoryItemService: IMemoryItemServicePort
+  missionService: IMissionServicePort
   tagService: ITagServicePort
   workflowDefinitionService: IWorkflowDefinitionServicePort
   workflowInstanceService: IWorkflowInstanceServicePort
@@ -166,6 +169,7 @@ export interface AgentspaceKitRepositories {
   chatMessageRepository: IRepositoryPortChatMessage
   experienceItemRepository: IRepositoryPortExperienceItem
   memoryItemRepository: IRepositoryPortMemoryItem
+  missionRepository: IRepositoryPortMission
   tagRepository: IRepositoryPortTag
   workflowDefinitionRepository: IRepositoryPortWorkflowDefinition
   workflowInstanceRepository: IRepositoryPortWorkflowInstance
@@ -229,6 +233,8 @@ export interface AgentspaceKitProvider {
   createExperienceItemService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['experienceItemService']>
   getMemoryItemService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['memoryItemService']>
   createMemoryItemService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['memoryItemService']>
+  getMissionService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['missionService']>
+  createMissionService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['missionService']>
   getTagService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['tagService']>
   createTagService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['tagService']>
   getWorkflowDefinitionService(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitServices['workflowDefinitionService']>
@@ -271,6 +277,7 @@ export interface AgentspaceKitProvider {
   getChatMessageRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['chatMessageRepository']>
   getExperienceItemRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['experienceItemRepository']>
   getMemoryItemRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['memoryItemRepository']>
+  getMissionRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['missionRepository']>
   getTagRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['tagRepository']>
   getWorkflowDefinitionRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['workflowDefinitionRepository']>
   getWorkflowInstanceRepository(overrides?: Partial<AgentspaceKitContext>): Promise<AgentspaceKitRepositories['workflowInstanceRepository']>
@@ -304,6 +311,7 @@ export interface AgentspaceKitProvider {
   clearChatServiceCache(cacheKey?: string): void
   clearExperienceItemServiceCache(cacheKey?: string): void
   clearMemoryItemServiceCache(cacheKey?: string): void
+  clearMissionServiceCache(cacheKey?: string): void
   clearTagServiceCache(cacheKey?: string): void
   clearWorkflowDefinitionServiceCache(cacheKey?: string): void
   clearWorkflowInstanceServiceCache(cacheKey?: string): void
