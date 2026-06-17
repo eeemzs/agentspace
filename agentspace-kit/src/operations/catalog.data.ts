@@ -793,6 +793,25 @@ export const AGENTSPACE_OPERATION_CATALOG_ROWS = [
     ]
   },
   {
+    "toolId": "aops-playbook-list",
+    "operationId": "playbook.list",
+    "summary": "List hosted read-only projections for playbooks stored as memory rules or constraints.",
+    "serviceKey": "memoryItemService",
+    "serviceEntity": "playbook",
+    "methodName": "listMemoryItems",
+    "kind": "list",
+    "args": [
+      {
+        "name": "filter",
+        "optional": true
+      },
+      {
+        "name": "options",
+        "optional": true
+      }
+    ]
+  },
+  {
     "toolId": "aops-codex-chat-message-add-message",
     "operationId": "codex-chat-message.add-message",
     "summary": "Add message codex-chat-message.",

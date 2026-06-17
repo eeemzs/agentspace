@@ -75,6 +75,17 @@ const OPERATION_DOCS_OVERRIDES = new Map<string, AgentspaceDomainCapabilityOpera
     },
   ],
   [
+    normalizeAgentspaceOperationId('playbook.list'),
+    {
+      summary: 'List hosted read-only playbook projections backed by Agentspace memory rules and constraints.',
+      notes: [
+        'This is a read projection over Agentspace memory items with kind=rule|constraint and playbook tags/meta.',
+        'Playbook authoring authority remains Agentspace memory; v1 does not introduce a dedicated playbook table.',
+        'Experience can be promoted into playbooks through the CLI promote flow, then synced as ordinary memory items.',
+      ],
+    },
+  ],
+  [
     normalizeAgentspaceOperationId('skill-version.import-skill-package'),
     {
       summary: 'Import a canonical filesystem skill package into skill and skill-version records.',

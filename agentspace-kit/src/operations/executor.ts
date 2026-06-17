@@ -18,6 +18,7 @@ import type { AgentspaceOperationContract } from './contract.js'
 import { getAgentspaceOperationContractById, getAgentspaceOperationContractByToolId } from './contract.js'
 import type { AgentspaceOperationInput, AgentspaceOperationOutput, AgentspaceTypedOperationId } from './io-types.js'
 import { parseAgentspaceToolInput } from './tool-input.js'
+import { toPlaybookProjections } from './playbook-projection.js'
 
 type ToolInput = Record<string, unknown>
 type AgentspaceKitInstance = ReturnType<typeof createAgentspaceKitWithEnv>['kit']
@@ -287,6 +288,22 @@ async function runDiscussionTopicListProjection(payload: ToolInput): Promise<unk
   return toRecordArray(rows).map(toDiscussionTopicProjection)
 }
 
+async function runPlaybookListProjection(payload: ToolInput): Promise<unknown> {
+  const services = await getServices()
+  const requestedFilter = toRecord(payload.filter)
+  const serviceFilter = { ...requestedFilter }
+  delete serviceFilter.id
+  delete serviceFilter.scope
+  delete serviceFilter.area
+  delete serviceFilter.reviewState
+  delete serviceFilter.tag
+  delete serviceFilter.kind
+  const options = normalizeArgValue('options', payload.options)
+  const effect = services.memoryItemService.listMemoryItems(serviceFilter as never, options as never)
+  const rows = await Effect.runPromise(effect as Effect.Effect<unknown, unknown>)
+  return toPlaybookProjections(toRecordArray(rows), requestedFilter)
+}
+
 async function runResolvedOperation(operation: AgentspaceOperationContract, input: unknown): Promise<unknown> {
   const payload = parseAgentspaceToolInput(
     operation.operationId as AgentspaceTypedOperationId,
@@ -295,6 +312,10 @@ async function runResolvedOperation(operation: AgentspaceOperationContract, inpu
 
   if (operation.operationId === 'discussion-topic.list') {
     return runDiscussionTopicListProjection(payload)
+  }
+
+  if (operation.operationId === 'playbook.list') {
+    return runPlaybookListProjection(payload)
   }
 
   if (operation.serviceKey === '__calls__') {
