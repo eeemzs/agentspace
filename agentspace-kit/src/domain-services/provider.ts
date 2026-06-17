@@ -639,6 +639,7 @@ memoryItemService: async (ctx, _deps, repos, logger) => {
 missionService: async (ctx, _deps, repos, logger) => {
       return new MissionService({
         missionRepository: repos.missionRepository,
+        memoryItemRepository: repos.memoryItemRepository,
         scopeRepository: repos.scopeRepository,
         logger,
         locale: ctx.locale,

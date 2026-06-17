@@ -6,7 +6,7 @@ import { getParent, XfLogger } from '@aopslab/xf-logger'
 import { RedisConfig } from '@aopslab/xf-db-redis'
 import { RepositoryConfig } from '@aopslab/xf-db'
 import type { IMissionServicePort } from '../ports/inbound/index.js'
-import type { IRepositoryPortMission, IRepositoryPortScope } from '../ports/repository-ports/index.js'
+import type { IRepositoryPortMemoryItem, IRepositoryPortMission, IRepositoryPortScope } from '../ports/repository-ports/index.js'
 import { MissionService, type MissionServiceOptions } from '../services/index.js'
 import { MissionServiceError } from '../errors/MissionServiceError.js'
 import { RepositoryFactoryMission } from './RepositoryFactoryMission.js'
@@ -22,6 +22,7 @@ export interface MissionServiceFactoryConfig {
 
 export interface MissionServiceFactoryOverrides {
   missionRepository?: IRepositoryPortMission
+  memoryItemRepository?: IRepositoryPortMemoryItem
   scopeRepository?: IRepositoryPortScope
 }
 
@@ -141,6 +142,7 @@ export class ServiceBuilderMission {
 
       const serviceOptions: MissionServiceOptions = {
         missionRepository,
+        memoryItemRepository: self.overrides.memoryItemRepository,
         scopeRepository,
         logger,
       };

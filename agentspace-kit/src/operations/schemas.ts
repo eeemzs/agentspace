@@ -83,6 +83,18 @@ const GENERIC_FLEXIBLE_FIELD_SCHEMA: JsonSchema = {
   ],
 }
 
+const JSON_VALUE_SCHEMA: JsonSchema = {
+  anyOf: [
+    { type: 'string' },
+    { type: 'number' },
+    { type: 'integer' },
+    { type: 'boolean' },
+    { type: 'null' },
+    { type: 'object', additionalProperties: true },
+    { type: 'array', items: {} },
+  ],
+}
+
 const CODEX_CHAT_MESSAGE_CREATE_INPUT_SCHEMA: JsonSchema = {
   type: 'object',
   additionalProperties: false,
@@ -464,6 +476,40 @@ const MISSION_RESUME_INPUT_SCHEMA: JsonSchema = objectSchema({
   }),
 }, ['id'])
 
+const MEMORY_ITEM_KIND_SCHEMA: JsonSchema = {
+  type: 'string',
+  enum: ['kickoff', 'resume', 'closeout', 'checkpoint', 'decision', 'constraint', 'rule', 'note'],
+}
+const MEMORY_ITEM_DURABILITY_SCHEMA: JsonSchema = { type: 'string', enum: ['short', 'durable', 'sticky'] }
+const MEMORY_ITEM_DATA_SCHEMA: JsonSchema = objectSchema({
+  scopeId: NON_EMPTY_STRING_SCHEMA,
+  kind: MEMORY_ITEM_KIND_SCHEMA,
+  durability: MEMORY_ITEM_DURABILITY_SCHEMA,
+  content: { type: 'string', minLength: 1 },
+  tags: STRING_ARRAY_SCHEMA,
+  importance: { type: 'integer', minimum: 0 },
+  sourceType: NON_EMPTY_STRING_SCHEMA,
+  sourceId: NON_EMPTY_STRING_SCHEMA,
+  meta: JSON_VALUE_SCHEMA,
+  createdAt: NON_EMPTY_STRING_SCHEMA,
+  updatedAt: NON_EMPTY_STRING_SCHEMA,
+}, ['scopeId', 'kind', 'durability', 'content'])
+const MEMORY_ITEM_PATCH_SCHEMA: JsonSchema = objectSchema({
+  scopeId: NON_EMPTY_STRING_SCHEMA,
+  kind: MEMORY_ITEM_KIND_SCHEMA,
+  durability: MEMORY_ITEM_DURABILITY_SCHEMA,
+  content: { type: 'string', minLength: 1 },
+  tags: STRING_ARRAY_SCHEMA,
+  importance: { type: 'integer', minimum: 0 },
+  sourceType: NON_EMPTY_STRING_SCHEMA,
+  sourceId: NON_EMPTY_STRING_SCHEMA,
+  meta: JSON_VALUE_SCHEMA,
+  createdAt: NON_EMPTY_STRING_SCHEMA,
+  updatedAt: NON_EMPTY_STRING_SCHEMA,
+})
+const MEMORY_ITEM_CREATE_INPUT_SCHEMA: JsonSchema = dataEnvelope(MEMORY_ITEM_DATA_SCHEMA)
+const MEMORY_ITEM_UPDATE_INPUT_SCHEMA: JsonSchema = patchEnvelope(MEMORY_ITEM_PATCH_SCHEMA)
+
 const AGENT_SESSION_STATUS_SCHEMA: JsonSchema = { type: 'string', enum: ['active', 'ended', 'failed'] }
 const AGENT_SESSION_CREATE_DATA_SCHEMA: JsonSchema = objectSchema({
   scopeId: NON_EMPTY_STRING_SCHEMA,
@@ -507,6 +553,9 @@ const INPUT_SCHEMA_OVERRIDES_BY_OPERATION_ID = new Map<string, JsonSchema>([
   [normalizeAgentspaceOperationId('mission.create'), MISSION_CREATE_INPUT_SCHEMA],
   [normalizeAgentspaceOperationId('mission.update'), MISSION_UPDATE_INPUT_SCHEMA],
   [normalizeAgentspaceOperationId('mission.resume'), MISSION_RESUME_INPUT_SCHEMA],
+  [normalizeAgentspaceOperationId('memory-item.add-memory-item'), MEMORY_ITEM_CREATE_INPUT_SCHEMA],
+  [normalizeAgentspaceOperationId('memory-item.create'), MEMORY_ITEM_CREATE_INPUT_SCHEMA],
+  [normalizeAgentspaceOperationId('memory-item.update-memory-item'), MEMORY_ITEM_UPDATE_INPUT_SCHEMA],
   [normalizeAgentspaceOperationId('project.create'), PROJECT_CREATE_INPUT_SCHEMA],
   [normalizeAgentspaceOperationId('project-path.create'), PROJECT_PATH_UPSERT_INPUT_SCHEMA],
   [normalizeAgentspaceOperationId('project-path.upsert-project-path'), PROJECT_PATH_UPSERT_INPUT_SCHEMA],

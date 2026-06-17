@@ -17,6 +17,29 @@ export type MissionResumePackOptions = {
   limit?: number
 }
 
+export type MissionResumeCheckpointSummary = {
+  id?: string
+  kind?: string
+  checkpointAs?: string
+  current: boolean
+  superseded: boolean
+  supersedes?: string
+  summary?: string
+  position?: string
+  doneWork?: string[]
+  nextSteps?: string[]
+  sourceRefs?: unknown[]
+  anchors?: unknown
+  createdAt?: string
+  updatedAt?: string
+}
+
+export type MissionResumeCheckpointProjection = {
+  current?: MissionResumeCheckpointSummary
+  recent: MissionResumeCheckpointSummary[]
+  total: number
+}
+
 export type MissionResumePack = {
   schemaVersion: 1
   generatedAt: string
@@ -36,6 +59,7 @@ export type MissionResumePack = {
     progress?: Record<string, unknown>
   }
   memory: unknown[]
+  checkpoints: MissionResumeCheckpointProjection
   reviews: unknown[]
   issues: unknown[]
   chat: {

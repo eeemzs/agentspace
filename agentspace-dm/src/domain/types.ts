@@ -55,6 +55,7 @@ export const MEMORY_ITEM_KINDS = [
   'kickoff',
   'resume',
   'closeout',
+  'checkpoint',
   'decision',
   'constraint',
   'rule',
