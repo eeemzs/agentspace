@@ -774,6 +774,25 @@ export const AGENTSPACE_OPERATION_CATALOG_ROWS = [
     ]
   },
   {
+    "toolId": "aops-discussion-topic-list",
+    "operationId": "discussion-topic.list",
+    "summary": "List hosted read-only projections for repo-first discussion topics.",
+    "serviceKey": "memoryItemService",
+    "serviceEntity": "discussion-topic",
+    "methodName": "listMemoryItems",
+    "kind": "list",
+    "args": [
+      {
+        "name": "filter",
+        "optional": true
+      },
+      {
+        "name": "options",
+        "optional": true
+      }
+    ]
+  },
+  {
     "toolId": "aops-codex-chat-message-add-message",
     "operationId": "codex-chat-message.add-message",
     "summary": "Add message codex-chat-message.",

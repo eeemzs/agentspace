@@ -9,6 +9,7 @@ import type { AgentspaceKitServices } from '../domain-services/types.js'
 import { clearAgentspaceKitEnvConfigCache, getAgentspaceKitEnvConfig } from '../config/config.js'
 import { hardDeleteAgentspaceProjectCascade } from '../calls/project-delete.js'
 import {
+  normalizeNonEmpty,
   resolveProjectContextValue,
   toMissingRequiredArgToken,
   toRecord,
@@ -92,6 +93,10 @@ function parseStringArray(value: unknown): string[] | undefined {
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value) && !(value instanceof Date)
+}
+
+function toRecordArray(value: unknown): Record<string, unknown>[] {
+  return Array.isArray(value) ? value.filter(isPlainObject) : []
 }
 
 function normalizeNestedValue(value: unknown, keyName?: string): unknown {
@@ -238,11 +243,59 @@ async function runSpecialOperation(operation: AgentspaceOperationContract, paylo
   return hardDeleteAgentspaceProjectCascade({ kit, projectId })
 }
 
+function toDiscussionTopicProjection(row: unknown): Record<string, unknown> {
+  const item = toRecord(row)
+  const meta = toRecord(item.meta)
+  const projection = toRecord(meta.projection)
+  const topic = toRecord(meta.topic)
+  const turns = toRecordArray(meta.turns)
+  const outputs = toRecordArray(meta.outputs)
+  const id = normalizeNonEmpty(topic.id) ?? normalizeNonEmpty(topic.localId) ?? normalizeNonEmpty(item.sourceId) ?? normalizeNonEmpty(item.id)
+  const updatedAt = normalizeNonEmpty(topic.updatedAt) ?? normalizeNonEmpty(item.updatedAt)
+  const createdAt = normalizeNonEmpty(topic.createdAt) ?? normalizeNonEmpty(item.createdAt)
+
+  return {
+    ...topic,
+    id,
+    localId: normalizeNonEmpty(topic.localId) ?? id,
+    remoteId: normalizeNonEmpty(item.id),
+    projectionId: normalizeNonEmpty(item.id),
+    sourceMemoryItemId: normalizeNonEmpty(item.id),
+    sourceType: normalizeNonEmpty(item.sourceType),
+    sourceId: normalizeNonEmpty(item.sourceId),
+    sourcePath: normalizeNonEmpty(projection.sourcePath),
+    projection,
+    content: normalizeNonEmpty(item.content),
+    turns,
+    outputs,
+    turnCount: turns.length || (typeof topic.turnCount === 'number' ? topic.turnCount : undefined),
+    outputCount: outputs.length || (typeof topic.outputCount === 'number' ? topic.outputCount : undefined),
+    createdAt,
+    updatedAt,
+  }
+}
+
+async function runDiscussionTopicListProjection(payload: ToolInput): Promise<unknown> {
+  const services = await getServices()
+  const filter = {
+    ...toRecord(payload.filter),
+    sourceType: 'agentspace.discussion-topic',
+  }
+  const options = normalizeArgValue('options', payload.options)
+  const effect = services.memoryItemService.listMemoryItems(filter as never, options as never)
+  const rows = await Effect.runPromise(effect as Effect.Effect<unknown, unknown>)
+  return toRecordArray(rows).map(toDiscussionTopicProjection)
+}
+
 async function runResolvedOperation(operation: AgentspaceOperationContract, input: unknown): Promise<unknown> {
   const payload = parseAgentspaceToolInput(
     operation.operationId as AgentspaceTypedOperationId,
     toRecord(input),
   ) as ToolInput
+
+  if (operation.operationId === 'discussion-topic.list') {
+    return runDiscussionTopicListProjection(payload)
+  }
 
   if (operation.serviceKey === '__calls__') {
     return runSpecialOperation(operation, payload)

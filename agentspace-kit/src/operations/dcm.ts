@@ -64,6 +64,17 @@ export type BuildAgentspaceDomainCapabilityManifestOptions = {
 
 const OPERATION_DOCS_OVERRIDES = new Map<string, AgentspaceDomainCapabilityOperationDocs>([
   [
+    normalizeAgentspaceOperationId('discussion-topic.list'),
+    {
+      summary: 'List hosted read-only projections for repo-first discussion topics.',
+      notes: [
+        'This is a read projection over Agentspace memory items with sourceType=agentspace.discussion-topic.',
+        'Discuss authoring authority remains repo-first; use aops-cli discuss for topic/turn/output writes.',
+        'Repo-first sync push creates or updates these projection records.',
+      ],
+    },
+  ],
+  [
     normalizeAgentspaceOperationId('skill-version.import-skill-package'),
     {
       summary: 'Import a canonical filesystem skill package into skill and skill-version records.',
