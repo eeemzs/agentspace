@@ -73,6 +73,7 @@ export interface IMissionServicePort {
   create(data: IbmMissionInsert): Effect.Effect<IbmMission, MissionServiceError>
   createMission(data: MissionCreateInput): Effect.Effect<IbmMission, MissionServiceError>
   updateMission(id: string, patch: Partial<IbmMissionInsert>): Effect.Effect<IbmMission, MissionServiceError>
+  removeMission(id: string): Effect.Effect<void, MissionServiceError>
   listMissions(filter?: MissionListFilter, options?: DbQueryOptions<IbmMission>): Effect.Effect<IbmMission[], MissionServiceError>
   buildResumePack(id: string, options?: MissionResumePackOptions): Effect.Effect<MissionResumePack, MissionServiceError>
 }

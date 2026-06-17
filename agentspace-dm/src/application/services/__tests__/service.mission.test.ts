@@ -139,4 +139,17 @@ describe('MissionService resume checkpoints', () => {
     expect(JSON.stringify(pack.checkpoints)).not.toContain('Not a checkpoint')
     expect(JSON.stringify(pack.checkpoints)).not.toContain('Milestone checkpoint')
   })
+
+  it('removes missions through the repository delete path', async () => {
+    const missionRepository = {
+      deleteById: vi.fn(() => Effect.succeed(1)),
+    }
+    const service = new MissionService({
+      missionRepository: missionRepository as any,
+    })
+
+    await Effect.runPromise(service.removeMission('mission-1'))
+
+    expect(missionRepository.deleteById).toHaveBeenCalledWith('mission-1')
+  })
 })

@@ -260,6 +260,23 @@ export class MissionService implements IMissionServicePort {
     )
   }
 
+  removeMission(id: string): Effect.Effect<void, MissionServiceError> {
+    const stage = 'MissionService::removeMission'
+    return pipe(
+      validateInput(id, 'id', { stage }),
+      Effect.flatMap((missionId) =>
+        this.missionRepository.deleteById(missionId).pipe(
+          Effect.mapError(mapDbError({ stage, operation: 'deleteById', factory: XfErrorFactory.upsertFailed })),
+          Effect.asVoid,
+        )
+      ),
+      Effect.tapError((e) => Effect.sync(() => {
+        const info = effectErrorInfo(e)
+        this.logger?.error({ error: info.unwrapped, stage }, 'Error in removeMission')
+      }))
+    )
+  }
+
   listMissions(
     filter: MissionListFilter = {},
     options?: DbQueryOptions<IbmMission>

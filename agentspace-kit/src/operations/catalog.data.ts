@@ -1748,6 +1748,21 @@ export const AGENTSPACE_OPERATION_CATALOG_ROWS = [
     ]
   },
   {
+    "toolId": "aops-mission-delete",
+    "operationId": "mission.delete",
+    "summary": "Delete an Agentspace mission.",
+    "serviceKey": "missionService",
+    "serviceEntity": "mission",
+    "methodName": "removeMission",
+    "kind": "delete",
+    "args": [
+      {
+        "name": "id",
+        "optional": false
+      }
+    ]
+  },
+  {
     "toolId": "aops-mission-resume",
     "operationId": "mission.resume",
     "summary": "Build a deterministic mission-anchored resume pack skeleton.",
