@@ -1,5 +1,6 @@
 ﻿// Public service exports
 export {
+  AgentProfileService, type AgentProfileServiceOptions,
   ActivityItemService, type ActivityItemServiceOptions,
   ProjectService, type ProjectServiceOptions,
   PromptService, type PromptServiceOptions,

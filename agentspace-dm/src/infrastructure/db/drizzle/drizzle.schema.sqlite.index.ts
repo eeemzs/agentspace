@@ -3,6 +3,7 @@
 // DrizzleKit supports loading a schema from a file path; by exporting all tables from here,
 // the repo-level `drizzle.aops.config.ts` can reference one file instead of listing dozens.
 
+export * from '../agentProfile/drizzle/drizzle.schema.agentProfile.sqlite.js'
 export * from '../agentRun/drizzle/drizzle.schema.agentRun.sqlite.js'
 export * from '../agentRunEvent/drizzle/drizzle.schema.agentRunEvent.sqlite.js'
 export * from '../activityItem/drizzle/drizzle.schema.activityItem.sqlite.js'

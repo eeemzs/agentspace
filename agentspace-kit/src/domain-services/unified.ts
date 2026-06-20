@@ -28,6 +28,8 @@ export function createAgentspaceKit(options: CreateAgentspaceKitOptions) {
     getStaticConfig(): AgentspaceKitStaticConfig {
       return options.staticConfig
     },
+    getAgentProfileService: provider.getAgentProfileService,
+    createAgentProfileService: provider.createAgentProfileService,
     getProjectService: provider.getProjectService,
     createProjectService: provider.createProjectService,
     getProjectPathService: provider.getProjectPathService,
@@ -92,6 +94,7 @@ export function createAgentspaceKit(options: CreateAgentspaceKitOptions) {
     createWorkflowInstanceService: provider.createWorkflowInstanceService,
     getWorkflowStepRunService: provider.getWorkflowStepRunService,
     createWorkflowStepRunService: provider.createWorkflowStepRunService,
+    getAgentProfileRepository: provider.getAgentProfileRepository,
     getProjectRepository: provider.getProjectRepository,
     getProjectPathRepository: provider.getProjectPathRepository,
     getScopeRepository: provider.getScopeRepository,
@@ -132,6 +135,7 @@ export function createAgentspaceKit(options: CreateAgentspaceKitOptions) {
     getAll: provider.getAll,
     createAll: provider.createAll,
     clearServiceCache: provider.clearServiceCache,
+    clearAgentProfileServiceCache: provider.clearAgentProfileServiceCache,
     clearProjectServiceCache: provider.clearProjectServiceCache,
     clearProjectPathServiceCache: provider.clearProjectPathServiceCache,
     clearProjectMemberServiceCache: provider.clearProjectMemberServiceCache,
@@ -173,6 +177,7 @@ export function createAgentspaceKit(options: CreateAgentspaceKitOptions) {
         getStaticConfig(): AgentspaceKitStaticConfig {
           return options.staticConfig
         },
+        getAgentProfileService: (o?: Partial<AgentspaceKitContext>) => provider.getAgentProfileService({ ...overrides, ...o }),
         getProjectService: (o?: Partial<AgentspaceKitContext>) => provider.getProjectService({ ...overrides, ...o }),
         getProjectPathService: (o?: Partial<AgentspaceKitContext>) => provider.getProjectPathService({ ...overrides, ...o }),
         getProjectMemberService: (o?: Partial<AgentspaceKitContext>) => provider.getProjectMemberService({ ...overrides, ...o }),
@@ -205,6 +210,7 @@ export function createAgentspaceKit(options: CreateAgentspaceKitOptions) {
         getWorkflowDefinitionService: (o?: Partial<AgentspaceKitContext>) => provider.getWorkflowDefinitionService({ ...overrides, ...o }),
         getWorkflowInstanceService: (o?: Partial<AgentspaceKitContext>) => provider.getWorkflowInstanceService({ ...overrides, ...o }),
         getWorkflowStepRunService: (o?: Partial<AgentspaceKitContext>) => provider.getWorkflowStepRunService({ ...overrides, ...o }),
+        getAgentProfileRepository: (o?: Partial<AgentspaceKitContext>) => provider.getAgentProfileRepository({ ...overrides, ...o }),
         getProjectRepository: (o?: Partial<AgentspaceKitContext>) => provider.getProjectRepository({ ...overrides, ...o }),
         getProjectPathRepository: (o?: Partial<AgentspaceKitContext>) => provider.getProjectPathRepository({ ...overrides, ...o }),
         getScopeRepository: (o?: Partial<AgentspaceKitContext>) => provider.getScopeRepository({ ...overrides, ...o }),
@@ -245,6 +251,7 @@ export function createAgentspaceKit(options: CreateAgentspaceKitOptions) {
         getAll: (o?: Partial<AgentspaceKitContext>) => provider.getAll({ ...overrides, ...o }),
         createAll: (o?: Partial<AgentspaceKitContext>) => provider.createAll({ ...overrides, ...o }),
         clearServiceCache: (cacheKey?: string) => provider.clearServiceCache(cacheKey),
+        clearAgentProfileServiceCache: (cacheKey?: string) => provider.clearAgentProfileServiceCache(cacheKey),
         clearProjectServiceCache: (cacheKey?: string) => provider.clearProjectServiceCache(cacheKey),
         clearProjectPathServiceCache: (cacheKey?: string) => provider.clearProjectPathServiceCache(cacheKey),
         clearProjectMemberServiceCache: (cacheKey?: string) => provider.clearProjectMemberServiceCache(cacheKey),
@@ -291,6 +298,7 @@ export function buildAgentspaceKitStaticConfig(envConfig: AgentspaceKitEnvConfig
 
   return {
     logLevel: envConfig.logLevel,
+    agentProfileRepository: { repositoryType: repoType, url: repoUrl },
     projectRepository: { repositoryType: repoType, url: repoUrl },
     projectPathRepository: { repositoryType: repoType, url: repoUrl },
     scopeRepository: { repositoryType: repoType, url: repoUrl },

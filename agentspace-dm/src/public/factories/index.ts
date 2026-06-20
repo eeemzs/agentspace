@@ -1,5 +1,8 @@
 ﻿// Public factory exports
 export {
+  RepositoryFactoryAgentProfile,
+  ServiceBuilderAgentProfile,
+  ServiceFactoryAgentProfile,
   RepositoryFactoryProject,
   RepositoryFactoryPrompt,
   RepositoryFactoryPromptVersion,
@@ -111,6 +114,8 @@ export {
 } from '../../application/factories/index.js';
 
 export type {
+  AgentProfileServiceFactoryConfig,
+  AgentProfileServiceFactoryOverrides,
   ProjectServiceFactoryConfig,
   ProjectServiceFactoryOverrides,
   PromptServiceFactoryConfig,

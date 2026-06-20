@@ -1,5 +1,6 @@
 ﻿// Public repository ports
 export type {
+  IRepositoryPortAgentProfile,
   IRepositoryPortActivityItem,
   IRepositoryPortProject,
   IRepositoryPortPrompt,

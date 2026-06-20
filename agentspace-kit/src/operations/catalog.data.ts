@@ -15,6 +15,93 @@ export type AgentspaceOperationCatalogRow = {
 
 export const AGENTSPACE_OPERATION_CATALOG_ROWS = [
   {
+    "toolId": "aops-agent-profile-create",
+    "operationId": "agent-profile.create",
+    "summary": "Create agent-profile.",
+    "serviceKey": "agentProfileService",
+    "serviceEntity": "agent-profile",
+    "methodName": "createProfile",
+    "kind": "create",
+    "args": [
+      {
+        "name": "data",
+        "optional": false
+      }
+    ]
+  },
+  {
+    "toolId": "aops-agent-profile-delete",
+    "operationId": "agent-profile.delete",
+    "summary": "Delete agent-profile.",
+    "serviceKey": "agentProfileService",
+    "serviceEntity": "agent-profile",
+    "methodName": "deleteProfile",
+    "kind": "delete",
+    "args": [
+      {
+        "name": "id",
+        "optional": false
+      }
+    ]
+  },
+  {
+    "toolId": "aops-agent-profile-get-by-id",
+    "operationId": "agent-profile.get-by-id",
+    "summary": "Get by id agent-profile.",
+    "serviceKey": "agentProfileService",
+    "serviceEntity": "agent-profile",
+    "methodName": "getProfileById",
+    "kind": "get",
+    "args": [
+      {
+        "name": "id",
+        "optional": false
+      },
+      {
+        "name": "options",
+        "optional": true
+      }
+    ]
+  },
+  {
+    "toolId": "aops-agent-profile-list",
+    "operationId": "agent-profile.list",
+    "summary": "List agent-profile.",
+    "serviceKey": "agentProfileService",
+    "serviceEntity": "agent-profile",
+    "methodName": "listProfiles",
+    "kind": "list",
+    "args": [
+      {
+        "name": "filter",
+        "optional": true
+      },
+      {
+        "name": "options",
+        "optional": true
+      }
+    ]
+  },
+  {
+    "toolId": "aops-agent-profile-update",
+    "operationId": "agent-profile.update",
+    "summary": "Update agent-profile.",
+    "serviceKey": "agentProfileService",
+    "serviceEntity": "agent-profile",
+    "methodName": "updateProfile",
+    "kind": "update",
+    "args": [
+      {
+        "name": "id",
+        "optional": false
+      },
+      {
+        "name": "patch",
+        "optional": false
+      }
+    ]
+  },
+  {
     "toolId": "aops-agent-run-attach-run-to-task",
     "operationId": "agent-run.attach-run-to-task",
     "summary": "Attach run to task agent-run.",

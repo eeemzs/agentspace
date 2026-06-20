@@ -1,4 +1,7 @@
 ﻿// Application factory exports
+export * from './ServiceAgentProfileFactory.js';
+export * from './ServiceAgentProfileBuilder.js';
+export * from './RepositoryFactoryAgentProfile.js';
 export * from './ServiceActivityItemFactory.js';
 export * from './ServiceActivityItemBuilder.js';
 export * from './ServiceProjectFactory.js';
