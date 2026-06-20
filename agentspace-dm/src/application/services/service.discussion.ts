@@ -154,6 +154,10 @@ function concludeBlockedError(topicId: string, reason: string): Error {
   return new Error(`agentspace.conflict:discussion_conclude_blocked:${topicId}:${reason}`)
 }
 
+function abandonBlockedError(topicId: string, status: string): Error {
+  return new Error(`agentspace.conflict:discussion_abandon_blocked:${topicId}:${status}`)
+}
+
 function outputTbdError(topicId: string, outputKind: string): Error {
   return new Error(`agentspace.conflict:discussion_output_tbd:${topicId}:${outputKind}`)
 }
@@ -511,6 +515,37 @@ export class DiscussionService implements IDiscussionServicePort {
         Effect.sync(() => {
           const info = effectErrorInfo(e)
           this.logger?.error({ error: info.unwrapped, stage }, 'Error in conclude')
+        })
+      )
+    )
+  }
+
+  abandon(topicId: string, reason?: string): Effect.Effect<IbmDiscussionTopic, DiscussionServiceError> {
+    const stage = 'DiscussionService::abandon'
+    return pipe(
+      validateInput(topicId, 'topicId', { stage }),
+      Effect.flatMap((id) =>
+        this.runWriteEffect(({ discussionTopicRepository }) =>
+          this.requireTopic(discussionTopicRepository, id, stage).pipe(
+            Effect.flatMap((topic) => {
+              // GUARD: only an active topic can be abandoned.
+              if (topic.status !== 'active') {
+                return discussionEffect(Effect.fail(abandonBlockedError(id, String(topic.status))))
+              }
+              const patch: Partial<IbmDiscussionTopic> = { status: 'abandoned' as DiscussionTopicStatus }
+              const abandonReason = normalizeNonEmpty(reason)
+              if (abandonReason !== undefined) patch.abandonReason = abandonReason
+              return discussionTopicRepository.patchById(id, patch).pipe(
+                Effect.mapError(mapDbError({ stage, operation: 'discussionTopicRepository.patchById(abandon)', factory: XfErrorFactory.upsertFailed }))
+              )
+            })
+          )
+        )
+      ),
+      Effect.tapError((e) =>
+        Effect.sync(() => {
+          const info = effectErrorInfo(e)
+          this.logger?.error({ error: info.unwrapped, stage }, 'Error in abandon')
         })
       )
     )

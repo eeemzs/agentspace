@@ -859,6 +859,26 @@ export const AGENTSPACE_OPERATION_CATALOG_ROWS = [
     ]
   },
   {
+    "toolId": "aops-discussion-topic-abandon",
+    "operationId": "discussion-topic.abandon",
+    "summary": "Abandon a hosted discussion topic.",
+    "serviceKey": "discussionService",
+    "serviceEntity": "discussion-topic",
+    "methodName": "abandon",
+    "kind": "custom",
+    "sideEffect": "db",
+    "args": [
+      {
+        "name": "topicId",
+        "optional": false
+      },
+      {
+        "name": "reason",
+        "optional": true
+      }
+    ]
+  },
+  {
     "toolId": "aops-discussion-output-set",
     "operationId": "discussion-output.set",
     "summary": "Set a hosted discussion topic output.",

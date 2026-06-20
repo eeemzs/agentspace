@@ -376,4 +376,65 @@ describe('DiscussionService', () => {
     expect(status.canConclude).toBe(false)
     expect(status.reason).toMatch(/blocked_on_operator:turn=1/)
   })
+
+  it('abandon sets status abandoned and records the reason', async () => {
+    const { service, topicRepo } = makeService({ topics: [seedTopic({ lastSeq: 2 })] })
+
+    const abandoned = await Effect.runPromise(service.abandon('topic-1', 'superseded by fork'))
+
+    expect(abandoned.status).toBe('abandoned')
+    expect(abandoned.abandonReason).toBe('superseded by fork')
+    expect(topicRepo.rows[0].status).toBe('abandoned')
+    expect(topicRepo.rows[0].abandonReason).toBe('superseded by fork')
+  })
+
+  it('abandon on a non-active topic is rejected', async () => {
+    const { service } = makeService({ topics: [seedTopic({ status: 'concluded', lastSeq: 4 })] })
+
+    await expect(Effect.runPromise(service.abandon('topic-1'))).rejects.toThrow(
+      /discussion_abandon_blocked:topic-1:concluded/
+    )
+  })
+
+  it('createTopic persists lineage fields and getTopic reads them back', async () => {
+    const { service } = makeService()
+
+    const created = await Effect.runPromise(
+      service.createTopic({
+        scopeId: 'project-1',
+        slug: 'design-x-fork',
+        title: 'Design X (fork)',
+        question: 'Which design, revisited?',
+        initiatorAgentId: 'codex',
+        participants: ['codex', 'claude'],
+        parentTopicId: 'topic-parent',
+        lineageKind: 'fork',
+        referencedOutputs: ['output-1', 'output-2'],
+      })
+    )
+
+    expect(created.parentTopicId).toBe('topic-parent')
+    expect(created.lineageKind).toBe('fork')
+    expect(created.referencedOutputs).toEqual(['output-1', 'output-2'])
+
+    const detail = await Effect.runPromise(service.getTopic(created.id as string))
+    expect(detail.topic.parentTopicId).toBe('topic-parent')
+    expect(detail.topic.lineageKind).toBe('fork')
+    expect(detail.topic.referencedOutputs).toEqual(['output-1', 'output-2'])
+  })
+
+  it('listTopics filtered by parentTopicId returns only children of that parent', async () => {
+    const { service } = makeService({
+      topics: [
+        seedTopic({ id: 'parent-1', slug: 'parent', parentTopicId: undefined }),
+        seedTopic({ id: 'child-1', slug: 'child-a', parentTopicId: 'parent-1' }),
+        seedTopic({ id: 'child-2', slug: 'child-b', parentTopicId: 'parent-1' }),
+        seedTopic({ id: 'other-1', slug: 'other', parentTopicId: 'parent-2' }),
+      ],
+    })
+
+    const children = await Effect.runPromise(service.listTopics({ parentTopicId: 'parent-1' }))
+
+    expect(children.map((t) => t.id).sort()).toEqual(['child-1', 'child-2'])
+  })
 })

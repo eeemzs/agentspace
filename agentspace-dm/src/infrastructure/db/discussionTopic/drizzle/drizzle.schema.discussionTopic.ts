@@ -1,4 +1,4 @@
-import { index, integer, jsonb, pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core'
+import { AnyPgColumn, index, integer, jsonb, pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core'
 import { InferSelectModel } from 'drizzle-orm'
 import { projectTable } from '../../project/drizzle/drizzle.schema.project.js'
 
@@ -9,6 +9,12 @@ export const discussionTopicTable = pgTable(
     tenantId: text().notNull(),
     scopeId: uuid().notNull(),
     projectId: uuid().references(() => projectTable.id, { onDelete: 'set null' }),
+    parentTopicId: uuid().references((): AnyPgColumn => discussionTopicTable.id, { onDelete: 'set null' }),
+    lineageKind: text(),
+    referencedOutputs: jsonb().$type<string[]>(),
+    referencedTurnRefs: jsonb().$type<string[]>(),
+    referencedMemoryRefs: jsonb().$type<string[]>(),
+    abandonReason: text(),
     slug: text().notNull(),
     title: text().notNull(),
     question: text().notNull(),
@@ -38,6 +44,7 @@ export const discussionTopicTable = pgTable(
     index('discussion_topic_idx_scope_updated').on(t.tenantId, t.scopeId, t.updatedAt),
     index('discussion_topic_idx_project_updated').on(t.tenantId, t.projectId, t.updatedAt),
     index('discussion_topic_idx_scope_status').on(t.tenantId, t.scopeId, t.status),
+    index('discussion_topic_idx_tenant_parent').on(t.tenantId, t.parentTopicId),
   ]
 )
 

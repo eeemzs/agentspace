@@ -107,6 +107,9 @@ export type DiscussionTopicStatus = (typeof DISCUSSION_TOPIC_STATUSES)[number]
 export const DISCUSSION_BLOCKED_ON = ['operator'] as const
 export type DiscussionBlockedOn = (typeof DISCUSSION_BLOCKED_ON)[number]
 
+export const DISCUSSION_LINEAGE_KINDS = ['follow-up', 'fork'] as const
+export type DiscussionLineageKind = (typeof DISCUSSION_LINEAGE_KINDS)[number]
+
 export const DISCUSSION_TURN_KINDS = [
   'statement',
   'question',

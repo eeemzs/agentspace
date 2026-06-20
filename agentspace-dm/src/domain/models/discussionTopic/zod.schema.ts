@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { IbmZodSchema } from '@aopslab/xf-bm'
-import { DISCUSSION_BLOCKED_ON, DISCUSSION_TOPIC_STATUSES } from '../../types.js'
+import { DISCUSSION_BLOCKED_ON, DISCUSSION_LINEAGE_KINDS, DISCUSSION_TOPIC_STATUSES } from '../../types.js'
 import { IDiscussionTopicZodCtx } from './resources.js'
 
 export const discussionTopicRulesSchema = z
@@ -15,6 +15,12 @@ export const discussionTopicZodSchema = z.object({
   ...IbmZodSchema.shape,
   scopeId: z.string(),
   projectId: z.string().optional(),
+  parentTopicId: z.string().optional(),
+  lineageKind: z.enum(DISCUSSION_LINEAGE_KINDS).optional(),
+  referencedOutputs: z.array(z.string()).optional(),
+  referencedTurnRefs: z.array(z.string()).optional(),
+  referencedMemoryRefs: z.array(z.string()).optional(),
+  abandonReason: z.string().optional(),
   slug: z.string(),
   title: z.string(),
   question: z.string(),

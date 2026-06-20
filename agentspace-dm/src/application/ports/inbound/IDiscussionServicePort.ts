@@ -62,6 +62,7 @@ export interface IDiscussionServicePort {
   ): Effect.Effect<IbmDiscussionTopic[], DiscussionServiceError>
   addTurn(data: DiscussionTurnAddInput): Effect.Effect<IbmDiscussionTurn, DiscussionServiceError>
   conclude(topicId: string, updatedBy?: string): Effect.Effect<IbmDiscussionTopic, DiscussionServiceError>
+  abandon(topicId: string, reason?: string): Effect.Effect<IbmDiscussionTopic, DiscussionServiceError>
   setOutput(data: DiscussionOutputSetInput): Effect.Effect<IbmDiscussionOutput, DiscussionServiceError>
   status(topicId: string): Effect.Effect<DiscussionStatus, DiscussionServiceError>
 }
