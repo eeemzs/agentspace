@@ -774,12 +774,42 @@ export const AGENTSPACE_OPERATION_CATALOG_ROWS = [
     ]
   },
   {
+    "toolId": "aops-discussion-topic-create",
+    "operationId": "discussion-topic.create",
+    "summary": "Create a hosted discussion topic.",
+    "serviceKey": "discussionService",
+    "serviceEntity": "discussion-topic",
+    "methodName": "createTopic",
+    "kind": "create",
+    "args": [
+      {
+        "name": "data",
+        "optional": false
+      }
+    ]
+  },
+  {
+    "toolId": "aops-discussion-topic-get",
+    "operationId": "discussion-topic.get",
+    "summary": "Get a hosted discussion topic with turns and outputs.",
+    "serviceKey": "discussionService",
+    "serviceEntity": "discussion-topic",
+    "methodName": "getTopic",
+    "kind": "get",
+    "args": [
+      {
+        "name": "id",
+        "optional": false
+      }
+    ]
+  },
+  {
     "toolId": "aops-discussion-topic-list",
     "operationId": "discussion-topic.list",
-    "summary": "List hosted read-only projections for repo-first discussion topics.",
-    "serviceKey": "memoryItemService",
+    "summary": "List hosted discussion topics.",
+    "serviceKey": "discussionService",
     "serviceEntity": "discussion-topic",
-    "methodName": "listMemoryItems",
+    "methodName": "listTopics",
     "kind": "list",
     "args": [
       {
@@ -789,6 +819,70 @@ export const AGENTSPACE_OPERATION_CATALOG_ROWS = [
       {
         "name": "options",
         "optional": true
+      }
+    ]
+  },
+  {
+    "toolId": "aops-discussion-turn-add",
+    "operationId": "discussion-turn.add",
+    "summary": "Append a turn to a hosted discussion topic.",
+    "serviceKey": "discussionService",
+    "serviceEntity": "discussion-turn",
+    "methodName": "addTurn",
+    "kind": "create",
+    "args": [
+      {
+        "name": "data",
+        "optional": false
+      }
+    ]
+  },
+  {
+    "toolId": "aops-discussion-topic-conclude",
+    "operationId": "discussion-topic.conclude",
+    "summary": "Conclude a hosted discussion topic.",
+    "serviceKey": "discussionService",
+    "serviceEntity": "discussion-topic",
+    "methodName": "conclude",
+    "kind": "custom",
+    "args": [
+      {
+        "name": "topicId",
+        "optional": false
+      },
+      {
+        "name": "updatedBy",
+        "optional": true
+      }
+    ]
+  },
+  {
+    "toolId": "aops-discussion-output-set",
+    "operationId": "discussion-output.set",
+    "summary": "Set a hosted discussion topic output.",
+    "serviceKey": "discussionService",
+    "serviceEntity": "discussion-output",
+    "methodName": "setOutput",
+    "kind": "custom",
+    "args": [
+      {
+        "name": "data",
+        "optional": false
+      }
+    ]
+  },
+  {
+    "toolId": "aops-discussion-topic-status",
+    "operationId": "discussion-topic.status",
+    "summary": "Read hosted discussion topic status, next speaker, and conclude readiness.",
+    "serviceKey": "discussionService",
+    "serviceEntity": "discussion-topic",
+    "methodName": "status",
+    "kind": "custom",
+    "args": [
+      {
+        "name": "topicId",
+        "optional": false
       }
     ]
   },

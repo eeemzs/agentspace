@@ -5,12 +5,12 @@ import type { XfLogger } from '@aopslab/xf-logger'
 
 import type { AgentspaceKitProviderOptions, AgentspaceKitProvider, AgentspaceKitContext, AgentspaceKitStaticConfig, AgentspaceKitServiceProviderOptions, AgentspaceKitServices, AgentspaceKitRepositories, AgentspaceKitDomainServiceRegistryStats } from './types.js'
 
-import { RepositoryFactoryProject, RepositoryFactoryProjectPath, RepositoryFactoryScope, RepositoryFactoryProjectMember, RepositoryFactoryPrompt, RepositoryFactoryPromptVersion, RepositoryFactoryResource, RepositoryFactorySkill, RepositoryFactorySkillVersion, RepositoryFactoryKanbanBoard, RepositoryFactoryKanbanColumn, RepositoryFactorySprint, RepositoryFactorySprintItem, RepositoryFactoryTask, RepositoryFactoryTaskChecklistItem, RepositoryFactoryTaskComment, RepositoryFactoryTaskLabel, RepositoryFactoryTaskLabelLink, RepositoryFactoryTaskRelation, RepositoryFactoryAgentSession, RepositoryFactoryAgentRun, RepositoryFactoryAgentRunEvent, RepositoryFactoryActivityItem, RepositoryFactoryArtifact, RepositoryFactoryArtifactLink, RepositoryFactoryCodexChatThread, RepositoryFactoryCodexChatMessage, RepositoryFactoryCodexChatSetting, RepositoryFactoryChatRoom, RepositoryFactoryChatRoomMember, RepositoryFactoryChatRoomBinding, RepositoryFactoryChatMessage, RepositoryFactoryExperienceItem, RepositoryFactoryMemoryItem, RepositoryFactoryMission, RepositoryFactoryTag, RepositoryFactoryWorkflowDefinition, RepositoryFactoryWorkflowInstance, RepositoryFactoryWorkflowStepRun } from '@aopslab/domain-dm-agentspace/factories'
+import { RepositoryFactoryProject, RepositoryFactoryProjectPath, RepositoryFactoryScope, RepositoryFactoryProjectMember, RepositoryFactoryPrompt, RepositoryFactoryPromptVersion, RepositoryFactoryResource, RepositoryFactorySkill, RepositoryFactorySkillVersion, RepositoryFactoryKanbanBoard, RepositoryFactoryKanbanColumn, RepositoryFactorySprint, RepositoryFactorySprintItem, RepositoryFactoryTask, RepositoryFactoryTaskChecklistItem, RepositoryFactoryTaskComment, RepositoryFactoryTaskLabel, RepositoryFactoryTaskLabelLink, RepositoryFactoryTaskRelation, RepositoryFactoryAgentSession, RepositoryFactoryAgentRun, RepositoryFactoryAgentRunEvent, RepositoryFactoryActivityItem, RepositoryFactoryArtifact, RepositoryFactoryArtifactLink, RepositoryFactoryCodexChatThread, RepositoryFactoryCodexChatMessage, RepositoryFactoryCodexChatSetting, RepositoryFactoryChatRoom, RepositoryFactoryChatRoomMember, RepositoryFactoryChatRoomBinding, RepositoryFactoryChatMessage, RepositoryFactoryDiscussionTopic, RepositoryFactoryDiscussionTurn, RepositoryFactoryDiscussionOutput, RepositoryFactoryExperienceItem, RepositoryFactoryMemoryItem, RepositoryFactoryMission, RepositoryFactoryTag, RepositoryFactoryWorkflowDefinition, RepositoryFactoryWorkflowInstance, RepositoryFactoryWorkflowStepRun } from '@aopslab/domain-dm-agentspace/factories'
 import { createAgentspaceDrizzleUnitOfWork } from '@aopslab/domain-dm-agentspace/factories'
-import { ProjectService, ProjectPathService, ProjectMemberService, PromptService, PromptVersionService, ResourceService, SkillService, SkillVersionService, KanbanBoardService, KanbanColumnService, SprintService, SprintItemService, TaskService, TaskCommentService, AgentSessionService, AgentRunService, AgentRunEventService, ActivityItemService, ArtifactService, ArtifactLinkService, CodexChatThreadService, CodexChatMessageService, CodexChatSettingService, ChatService, ExperienceItemService, MemoryItemService, MissionService, TagService, WorkflowDefinitionService, WorkflowInstanceService, WorkflowStepRunService } from '@aopslab/domain-dm-agentspace/services'
+import { ProjectService, ProjectPathService, ProjectMemberService, PromptService, PromptVersionService, ResourceService, SkillService, SkillVersionService, KanbanBoardService, KanbanColumnService, SprintService, SprintItemService, TaskService, TaskCommentService, AgentSessionService, AgentRunService, AgentRunEventService, ActivityItemService, ArtifactService, ArtifactLinkService, CodexChatThreadService, CodexChatMessageService, CodexChatSettingService, ChatService, DiscussionService, ExperienceItemService, MemoryItemService, MissionService, TagService, WorkflowDefinitionService, WorkflowInstanceService, WorkflowStepRunService } from '@aopslab/domain-dm-agentspace/services'
 
 function computeConfigKey(name: string, cfg: AgentspaceKitServiceProviderOptions): string {
-  const sigs = [fingerprintRepositoryConfig(cfg.projectRepositoryConfig), fingerprintRepositoryConfig(cfg.projectPathRepositoryConfig), fingerprintRepositoryConfig(cfg.scopeRepositoryConfig), fingerprintRepositoryConfig(cfg.projectMemberRepositoryConfig), fingerprintRepositoryConfig(cfg.promptRepositoryConfig), fingerprintRepositoryConfig(cfg.promptVersionRepositoryConfig), fingerprintRepositoryConfig(cfg.resourceRepositoryConfig), fingerprintRepositoryConfig(cfg.skillRepositoryConfig), fingerprintRepositoryConfig(cfg.skillVersionRepositoryConfig), fingerprintRepositoryConfig(cfg.kanbanBoardRepositoryConfig), fingerprintRepositoryConfig(cfg.kanbanColumnRepositoryConfig), fingerprintRepositoryConfig(cfg.sprintRepositoryConfig), fingerprintRepositoryConfig(cfg.sprintItemRepositoryConfig), fingerprintRepositoryConfig(cfg.taskRepositoryConfig), fingerprintRepositoryConfig(cfg.taskChecklistItemRepositoryConfig), fingerprintRepositoryConfig(cfg.taskCommentRepositoryConfig), fingerprintRepositoryConfig(cfg.taskLabelRepositoryConfig), fingerprintRepositoryConfig(cfg.taskLabelLinkRepositoryConfig), fingerprintRepositoryConfig(cfg.taskRelationRepositoryConfig), fingerprintRepositoryConfig(cfg.agentSessionRepositoryConfig), fingerprintRepositoryConfig(cfg.agentRunRepositoryConfig), fingerprintRepositoryConfig(cfg.agentRunEventRepositoryConfig), fingerprintRepositoryConfig(cfg.activityItemRepositoryConfig), fingerprintRepositoryConfig(cfg.artifactRepositoryConfig), fingerprintRepositoryConfig(cfg.artifactLinkRepositoryConfig), fingerprintRepositoryConfig(cfg.codexChatThreadRepositoryConfig), fingerprintRepositoryConfig(cfg.codexChatMessageRepositoryConfig), fingerprintRepositoryConfig(cfg.codexChatSettingRepositoryConfig), fingerprintRepositoryConfig(cfg.chatRoomRepositoryConfig), fingerprintRepositoryConfig(cfg.chatRoomMemberRepositoryConfig), fingerprintRepositoryConfig(cfg.chatRoomBindingRepositoryConfig), fingerprintRepositoryConfig(cfg.chatMessageRepositoryConfig), fingerprintRepositoryConfig(cfg.experienceItemRepositoryConfig), fingerprintRepositoryConfig(cfg.memoryItemRepositoryConfig), fingerprintRepositoryConfig(cfg.missionRepositoryConfig), fingerprintRepositoryConfig(cfg.tagRepositoryConfig), fingerprintRepositoryConfig(cfg.workflowDefinitionRepositoryConfig), fingerprintRepositoryConfig(cfg.workflowInstanceRepositoryConfig), fingerprintRepositoryConfig(cfg.workflowStepRunRepositoryConfig)].filter(Boolean)
+  const sigs = [fingerprintRepositoryConfig(cfg.projectRepositoryConfig), fingerprintRepositoryConfig(cfg.projectPathRepositoryConfig), fingerprintRepositoryConfig(cfg.scopeRepositoryConfig), fingerprintRepositoryConfig(cfg.projectMemberRepositoryConfig), fingerprintRepositoryConfig(cfg.promptRepositoryConfig), fingerprintRepositoryConfig(cfg.promptVersionRepositoryConfig), fingerprintRepositoryConfig(cfg.resourceRepositoryConfig), fingerprintRepositoryConfig(cfg.skillRepositoryConfig), fingerprintRepositoryConfig(cfg.skillVersionRepositoryConfig), fingerprintRepositoryConfig(cfg.kanbanBoardRepositoryConfig), fingerprintRepositoryConfig(cfg.kanbanColumnRepositoryConfig), fingerprintRepositoryConfig(cfg.sprintRepositoryConfig), fingerprintRepositoryConfig(cfg.sprintItemRepositoryConfig), fingerprintRepositoryConfig(cfg.taskRepositoryConfig), fingerprintRepositoryConfig(cfg.taskChecklistItemRepositoryConfig), fingerprintRepositoryConfig(cfg.taskCommentRepositoryConfig), fingerprintRepositoryConfig(cfg.taskLabelRepositoryConfig), fingerprintRepositoryConfig(cfg.taskLabelLinkRepositoryConfig), fingerprintRepositoryConfig(cfg.taskRelationRepositoryConfig), fingerprintRepositoryConfig(cfg.agentSessionRepositoryConfig), fingerprintRepositoryConfig(cfg.agentRunRepositoryConfig), fingerprintRepositoryConfig(cfg.agentRunEventRepositoryConfig), fingerprintRepositoryConfig(cfg.activityItemRepositoryConfig), fingerprintRepositoryConfig(cfg.artifactRepositoryConfig), fingerprintRepositoryConfig(cfg.artifactLinkRepositoryConfig), fingerprintRepositoryConfig(cfg.codexChatThreadRepositoryConfig), fingerprintRepositoryConfig(cfg.codexChatMessageRepositoryConfig), fingerprintRepositoryConfig(cfg.codexChatSettingRepositoryConfig), fingerprintRepositoryConfig(cfg.chatRoomRepositoryConfig), fingerprintRepositoryConfig(cfg.chatRoomMemberRepositoryConfig), fingerprintRepositoryConfig(cfg.chatRoomBindingRepositoryConfig), fingerprintRepositoryConfig(cfg.chatMessageRepositoryConfig), fingerprintRepositoryConfig(cfg.discussionTopicRepositoryConfig), fingerprintRepositoryConfig(cfg.discussionTurnRepositoryConfig), fingerprintRepositoryConfig(cfg.discussionOutputRepositoryConfig), fingerprintRepositoryConfig(cfg.experienceItemRepositoryConfig), fingerprintRepositoryConfig(cfg.memoryItemRepositoryConfig), fingerprintRepositoryConfig(cfg.missionRepositoryConfig), fingerprintRepositoryConfig(cfg.tagRepositoryConfig), fingerprintRepositoryConfig(cfg.workflowDefinitionRepositoryConfig), fingerprintRepositoryConfig(cfg.workflowInstanceRepositoryConfig), fingerprintRepositoryConfig(cfg.workflowStepRunRepositoryConfig)].filter(Boolean)
   return [name, cfg.tenantId ?? '', ...sigs].join('|')
 }
 
@@ -53,6 +53,9 @@ function buildResolvedConfig(staticCfg: AgentspaceKitStaticConfig, ctx: Agentspa
     chatRoomMemberRepositoryConfig: buildRepositoryConfig(staticCfg.chatRoomMemberRepository, tenantId),
     chatRoomBindingRepositoryConfig: buildRepositoryConfig(staticCfg.chatRoomBindingRepository, tenantId),
     chatMessageRepositoryConfig: buildRepositoryConfig(staticCfg.chatMessageRepository, tenantId),
+    discussionTopicRepositoryConfig: buildRepositoryConfig(staticCfg.discussionTopicRepository, tenantId),
+    discussionTurnRepositoryConfig: buildRepositoryConfig(staticCfg.discussionTurnRepository, tenantId),
+    discussionOutputRepositoryConfig: buildRepositoryConfig(staticCfg.discussionOutputRepository, tenantId),
     experienceItemRepositoryConfig: buildRepositoryConfig(staticCfg.experienceItemRepository, tenantId),
     memoryItemRepositoryConfig: buildRepositoryConfig(staticCfg.memoryItemRepository, tenantId),
     missionRepositoryConfig: buildRepositoryConfig(staticCfg.missionRepository, tenantId),
@@ -341,6 +344,30 @@ chatMessageRepository: async (cfg, logger) => {
       })
       return await Effect.runPromise(eff)
     },
+discussionTopicRepository: async (cfg, logger) => {
+      const eff = RepositoryFactoryDiscussionTopic.create({
+        repositoryConfig: cfg.discussionTopicRepositoryConfig,
+        logger,
+        logLevel: cfg.logLevel,
+      })
+      return await Effect.runPromise(eff)
+    },
+discussionTurnRepository: async (cfg, logger) => {
+      const eff = RepositoryFactoryDiscussionTurn.create({
+        repositoryConfig: cfg.discussionTurnRepositoryConfig,
+        logger,
+        logLevel: cfg.logLevel,
+      })
+      return await Effect.runPromise(eff)
+    },
+discussionOutputRepository: async (cfg, logger) => {
+      const eff = RepositoryFactoryDiscussionOutput.create({
+        repositoryConfig: cfg.discussionOutputRepositoryConfig,
+        logger,
+        logLevel: cfg.logLevel,
+      })
+      return await Effect.runPromise(eff)
+    },
 experienceItemRepository: async (cfg, logger) => {
       const eff = RepositoryFactoryExperienceItem.create({
         repositoryConfig: cfg.experienceItemRepositoryConfig,
@@ -620,6 +647,18 @@ chatService: async (ctx, _deps, repos, logger) => {
         logger,
       })
     },
+discussionService: async (ctx, _deps, repos, logger) => {
+      return new DiscussionService({
+        discussionTopicRepository: repos.discussionTopicRepository,
+        discussionTurnRepository: repos.discussionTurnRepository,
+        discussionOutputRepository: repos.discussionOutputRepository,
+        scopeRepository: repos.scopeRepository,
+        unitOfWork: createAgentspaceDrizzleUnitOfWork(
+          buildRepositoryConfig(options.staticConfig.discussionTopicRepository, ctx.tenantId)
+        ),
+        logger,
+      })
+    },
 experienceItemService: async (ctx, _deps, repos, logger) => {
       return new ExperienceItemService({
         experienceItemRepository: repos.experienceItemRepository,
@@ -721,6 +760,7 @@ workflowStepRunService: async (ctx, _deps, repos, logger) => {
         codexChatMessageService: stats.services.codexChatMessageService,
         codexChatSettingService: stats.services.codexChatSettingService,
         chatService: stats.services.chatService,
+        discussionService: stats.services.discussionService,
         experienceItemService: stats.services.experienceItemService,
         memoryItemService: stats.services.memoryItemService,
         missionService: stats.services.missionService,
@@ -762,6 +802,9 @@ workflowStepRunService: async (ctx, _deps, repos, logger) => {
         chatRoomMemberRepository: !!stats.repositories.chatRoomMemberRepository,
         chatRoomBindingRepository: !!stats.repositories.chatRoomBindingRepository,
         chatMessageRepository: !!stats.repositories.chatMessageRepository,
+        discussionTopicRepository: !!stats.repositories.discussionTopicRepository,
+        discussionTurnRepository: !!stats.repositories.discussionTurnRepository,
+        discussionOutputRepository: !!stats.repositories.discussionOutputRepository,
         experienceItemRepository: !!stats.repositories.experienceItemRepository,
         memoryItemRepository: !!stats.repositories.memoryItemRepository,
         missionRepository: !!stats.repositories.missionRepository,
@@ -918,6 +961,12 @@ workflowStepRunService: async (ctx, _deps, repos, logger) => {
     async createChatService(overrides) {
       return gp.createService('chatService', overrides)
     },
+    async getDiscussionService(overrides) {
+      return gp.getService('discussionService', overrides)
+    },
+    async createDiscussionService(overrides) {
+      return gp.createService('discussionService', overrides)
+    },
     async getExperienceItemService(overrides) {
       return gp.getService('experienceItemService', overrides)
     },
@@ -1056,6 +1105,15 @@ workflowStepRunService: async (ctx, _deps, repos, logger) => {
     async getChatMessageRepository(overrides) {
       return gp.getRepository('chatMessageRepository', overrides)
     },
+    async getDiscussionTopicRepository(overrides) {
+      return gp.getRepository('discussionTopicRepository', overrides)
+    },
+    async getDiscussionTurnRepository(overrides) {
+      return gp.getRepository('discussionTurnRepository', overrides)
+    },
+    async getDiscussionOutputRepository(overrides) {
+      return gp.getRepository('discussionOutputRepository', overrides)
+    },
     async getExperienceItemRepository(overrides) {
       return gp.getRepository('experienceItemRepository', overrides)
     },
@@ -1157,6 +1215,9 @@ workflowStepRunService: async (ctx, _deps, repos, logger) => {
     },
     clearChatServiceCache(cacheKey?: string) {
       gp.clearServiceCache('chatService', cacheKey)
+    },
+    clearDiscussionServiceCache(cacheKey?: string) {
+      gp.clearServiceCache('discussionService', cacheKey)
     },
     clearExperienceItemServiceCache(cacheKey?: string) {
       gp.clearServiceCache('experienceItemService', cacheKey)
