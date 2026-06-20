@@ -234,7 +234,7 @@ describe('DiscussionService', () => {
     ).rejects.toThrow(/discussion_topic_not_active:topic-1:concluded/)
   })
 
-  it('blocks on an operator question and clears the block on an operator answer', async () => {
+  it('blocks on an operator question and clears the block ONLY on a correlated answer (replyToSeq === blockingTurnSeq)', async () => {
     const { service, topicRepo } = makeService({ topics: [seedTopic()] })
 
     const question = await Effect.runPromise(
@@ -250,9 +250,17 @@ describe('DiscussionService', () => {
       )
     ).rejects.toThrow(/discussion_blocked_on_operator:topic-1/)
 
-    // an operator-answering turn (kind=answer, addressedTo cleared) clears the block
+    // an UNCORRELATED answer (no replyToSeq) must NOT clear the block — it is rejected while blocked
+    await expect(
+      Effect.runPromise(
+        service.addTurn({ scopeId: 'project-1', topicId: 'topic-1', agentId: 'codex', kind: 'answer', text: 'unrelated answer' })
+      )
+    ).rejects.toThrow(/discussion_blocked_on_operator:topic-1/)
+    expect(topicRepo.rows[0].blockedOn).toBe('operator')
+
+    // an answer that replies to the blocking question (replyToSeq === blockingTurnSeq) clears the block
     const answer = await Effect.runPromise(
-      service.addTurn({ scopeId: 'project-1', topicId: 'topic-1', agentId: 'codex', kind: 'answer', text: 'operator said go' })
+      service.addTurn({ scopeId: 'project-1', topicId: 'topic-1', agentId: 'codex', kind: 'answer', text: 'operator said go', replyToSeq: question.seq })
     )
     expect(answer.seq).toBe(2)
     expect(topicRepo.rows[0].blockedOn).toBeNull()
@@ -336,6 +344,22 @@ describe('DiscussionService', () => {
     // 3 turns >= minTurns 2 and both participants have a final-stance
     expect(status.canConclude).toBe(true)
     // the question at seq 1 was never answered (no kind=answer after it)
+    expect(status.openQuestions.map((q) => q.seq)).toEqual([1])
+  })
+
+  it('openQuestions correlates answers to questions by replyToSeq, not arrival order', async () => {
+    const { service } = makeService({
+      topics: [seedTopic({ lastSeq: 3 })],
+      turns: [
+        { id: 't1', scopeId: 'project-1', topicId: 'topic-1', seq: 1, agentId: 'codex', kind: 'question', text: 'q1?' },
+        { id: 't2', scopeId: 'project-1', topicId: 'topic-1', seq: 2, agentId: 'claude', kind: 'question', text: 'q2?' },
+        // an answer that replies to q2 only — q1 must stay open despite a later answer existing
+        { id: 't3', scopeId: 'project-1', topicId: 'topic-1', seq: 3, agentId: 'codex', kind: 'answer', text: 'a2', replyToSeq: 2 },
+      ],
+    })
+
+    const status = await Effect.runPromise(service.status('topic-1'))
+    // q1 (seq 1) stays open (no answer replies to it); q2 (seq 2) is closed by the replyToSeq=2 answer
     expect(status.openQuestions.map((q) => q.seq)).toEqual([1])
   })
 

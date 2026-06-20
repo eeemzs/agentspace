@@ -73,7 +73,12 @@ function computeOpenQuestions(turns: readonly IbmDiscussionTurn[]): DiscussionOp
   for (const turn of ordered) {
     if (turn.kind !== 'question') continue
     const turnSeq = Number(turn.seq ?? 0)
-    const answered = ordered.some((other) => other.kind === 'answer' && Number(other.seq ?? 0) > turnSeq)
+    // A question is closed ONLY by an answer that explicitly replies to it
+    // (replyToSeq === question seq), not merely by a later answer to some other
+    // question (codex S1.2.1 RRR: reply correlation).
+    const answered = ordered.some(
+      (other) => other.kind === 'answer' && Number(other.replyToSeq ?? Number.NaN) === turnSeq
+    )
     if (!answered) {
       open.push({ seq: turnSeq, agentId: turn.agentId, text: turn.text })
     }
@@ -387,11 +392,19 @@ export class DiscussionService implements IDiscussionServicePort {
                     return discussionEffect(Effect.fail(topicNotActiveError(turnInput.topicId, String(topic.status))))
                   }
 
-                  const isOperatorAnswer =
-                    turnInput.kind === 'answer' && normalizeNonEmpty(turnInput.addressedTo) === undefined
+                  // An operator-block clears ONLY via an answer that explicitly replies to the
+                  // blocking question (replyToSeq === blockingTurnSeq) — not any addressedTo-less
+                  // answer (codex S1.2.1 RRR: reply correlation).
+                  const blockingSeq = topic.blockingTurnSeq != null ? Number(topic.blockingTurnSeq) : null
+                  const clearsOperatorBlock =
+                    topic.blockedOn === 'operator' &&
+                    turnInput.kind === 'answer' &&
+                    blockingSeq !== null &&
+                    Number(turnInput.replyToSeq ?? Number.NaN) === blockingSeq
 
-                  // Guard (e): blocked on operator rejects normal agent turns, except an operator-answering turn.
-                  if (topic.blockedOn === 'operator' && !isOperatorAnswer) {
+                  // Guard (e): while blocked on operator, reject every turn except the answer that
+                  // replies to the blocking question.
+                  if (topic.blockedOn === 'operator' && !clearsOperatorBlock) {
                     return discussionEffect(Effect.fail(blockedOnOperatorError(turnInput.topicId)))
                   }
 
@@ -426,8 +439,8 @@ export class DiscussionService implements IDiscussionServicePort {
                   if (turnInput.kind === 'question' && normalizeNonEmpty(turnInput.addressedTo) === 'operator') {
                     topicPatch.blockedOn = 'operator'
                     topicPatch.blockingTurnSeq = assignedSeq
-                  } else if (isOperatorAnswer && topic.blockedOn === 'operator') {
-                    // Guard (e): an operator-answering turn clears the block.
+                  } else if (clearsOperatorBlock) {
+                    // The answer that replies to the blocking question clears the block.
                     topicPatch.blockedOn = null as any
                     topicPatch.blockingTurnSeq = null as any
                   }
