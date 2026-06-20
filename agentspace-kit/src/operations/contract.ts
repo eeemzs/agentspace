@@ -53,6 +53,10 @@ function toSideEffect(kind: AgentspaceOperationKind): AgentspaceOperationSideEff
 
 function isWriteOperation(spec: AgentspaceOperationSpec): boolean {
   if (spec.kind === 'create' || spec.kind === 'update' || spec.kind === 'delete') return true
+  // Custom-verb operations that mutate persistent state must opt in by declaring
+  // sideEffect: 'db' so the gateway enforces apply/write-safety on them too
+  // (e.g. discussion-topic.conclude, discussion-output.set).
+  if (spec.sideEffect === 'db') return true
   return spec.operationId.endsWith('.push')
 }
 

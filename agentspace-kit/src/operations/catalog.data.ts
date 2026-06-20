@@ -1,4 +1,4 @@
-import type { AgentspaceOperationArgument, AgentspaceOperationKind } from './types.js'
+import type { AgentspaceOperationArgument, AgentspaceOperationEffect, AgentspaceOperationKind } from './types.js'
 
 export type AgentspaceOperationCatalogRow = {
   toolId: string
@@ -9,6 +9,7 @@ export type AgentspaceOperationCatalogRow = {
   serviceEntity: string
   methodName: string
   kind: AgentspaceOperationKind
+  sideEffect?: AgentspaceOperationEffect
   args: readonly AgentspaceOperationArgument[]
 }
 
@@ -845,6 +846,7 @@ export const AGENTSPACE_OPERATION_CATALOG_ROWS = [
     "serviceEntity": "discussion-topic",
     "methodName": "conclude",
     "kind": "custom",
+    "sideEffect": "db",
     "args": [
       {
         "name": "topicId",
@@ -864,6 +866,7 @@ export const AGENTSPACE_OPERATION_CATALOG_ROWS = [
     "serviceEntity": "discussion-output",
     "methodName": "setOutput",
     "kind": "custom",
+    "sideEffect": "db",
     "args": [
       {
         "name": "data",

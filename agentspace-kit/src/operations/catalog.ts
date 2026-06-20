@@ -56,6 +56,7 @@ function buildOperationsInternal(): AgentspaceOperationSpec[] {
       serviceEntity: row.serviceEntity,
       methodName: row.methodName,
       kind: row.kind,
+      ...('sideEffect' in row && row.sideEffect ? { sideEffect: row.sideEffect } : {}),
       args: cloneArgs(row.args),
       summary: row.summary,
       tags: [`resource:${row.serviceEntity}`, `action:${action}`],
