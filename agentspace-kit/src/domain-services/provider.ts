@@ -670,6 +670,10 @@ experienceItemService: async (ctx, _deps, repos, logger) => {
 memoryItemService: async (ctx, _deps, repos, logger) => {
       return new MemoryItemService({
         memoryItemRepository: repos.memoryItemRepository,
+        // Read-only sibling repo so memory-item.promote-from-experience can derive a
+        // memory item from an existing experience item server-side. Mirrors how
+        // missionService injects memoryItemRepository as a second repository.
+        experienceItemRepository: repos.experienceItemRepository,
         scopeRepository: repos.scopeRepository,
         logger,
         locale: ctx.locale,

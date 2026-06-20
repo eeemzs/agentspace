@@ -2,10 +2,11 @@
 import { pipe } from 'effect/Function'
 import { validateInput, XfErrorFactory, effectErrorInfo } from '@aopslab/xf-core'
 import { XfLogger } from '@aopslab/xf-logger'
-import type { IRepositoryPortMemoryItem, IRepositoryPortScope } from '../ports/repository-ports/index.js'
+import type { IRepositoryPortExperienceItem, IRepositoryPortMemoryItem, IRepositoryPortScope } from '../ports/repository-ports/index.js'
 import type {
   IMemoryItemServicePort,
   MemoryItemListFilter,
+  MemoryPromoteFromExperienceOptions,
   MemoryResumePack,
   MemoryResumePackItem,
   MemoryResumePackOptions,
@@ -15,7 +16,8 @@ import type {
   MemorySynopsisOptions,
 } from '../ports/inbound/index.js'
 import { MemoryItemServiceError } from '../errors/MemoryItemServiceError.js'
-import { IbmMemoryItem, IbmMemoryItemInsert, memoryItemZodSchemaInsert } from '../../domain/models/index.js'
+import { IbmExperienceItem, IbmMemoryItem, IbmMemoryItemInsert, memoryItemZodSchemaInsert } from '../../domain/models/index.js'
+import type { MemoryItemDurability, MemoryItemKind } from '../../domain/types.js'
 import { validateBmInputWithSchema } from './service.zod-validation.js'
 import { DbQueryOptions, mapDbError } from '@aopslab/xf-db'
 import { listRecordsByScopeResolution } from './service.scope-resolution.js'
@@ -24,6 +26,11 @@ export interface MemoryItemServiceDependencies {}
 
 export interface MemoryItemServiceOptions {
   memoryItemRepository: IRepositoryPortMemoryItem
+  // Read-only sibling repository injected so the service can derive a memory item
+  // server-side from an existing experience item (experience -> memory/playbook
+  // promotion). Mirrors how DiscussionService takes multiple repositories via its
+  // options + the kit provider wiring; the promote method only READS through it.
+  experienceItemRepository?: IRepositoryPortExperienceItem
   scopeRepository?: IRepositoryPortScope
   serviceDependencies?: Partial<MemoryItemServiceDependencies>
   logger?: XfLogger
@@ -68,6 +75,17 @@ function uniqueStrings(values: unknown[]): string[] {
 
 function toArray<T>(value: unknown): T[] {
   return Array.isArray(value) ? (value as T[]) : []
+}
+
+const PROMOTED_FROM_EXPERIENCE_SOURCE_TYPE = 'agentspace.experience-item'
+
+function compactRecord<T extends Record<string, unknown>>(record: T): T {
+  const result: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(record)) {
+    if (value === undefined) continue
+    result[key] = value
+  }
+  return result as T
 }
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
@@ -861,11 +879,13 @@ function normalizeMemoryItemQueryFilter(filter: MemoryItemListFilter): MemoryIte
 
 export class MemoryItemService implements IMemoryItemServicePort {
   private readonly memoryItemRepository: IRepositoryPortMemoryItem
+  private readonly experienceItemRepository?: IRepositoryPortExperienceItem
   private readonly scopeRepository?: IRepositoryPortScope
   private readonly logger?: XfLogger
 
   constructor(options: MemoryItemServiceOptions) {
     this.memoryItemRepository = options.memoryItemRepository
+    this.experienceItemRepository = options.experienceItemRepository
     this.scopeRepository = options.scopeRepository
     this.logger = options.logger?.child({ module: this.constructor.name })
   }
@@ -922,6 +942,151 @@ export class MemoryItemService implements IMemoryItemServicePort {
         this.logger?.error({ error: info.unwrapped, stage }, 'Error in addMemoryItem')
       }))
     )
+  }
+
+  /**
+   * Server-side experience -> memory/playbook promotion.
+   *
+   * Reads an existing experience item by id (READ-ONLY, through the injected
+   * experienceItemRepository) and derives a memory item from it. Two flavors:
+   *   - asPlaybook=false (durable-memory): a DURABLE memory item carrying the
+   *     experience title/problem/solution/content. The kind is a faithful durable
+   *     kind (default `note`; `decision` also accepted) with durability `durable`.
+   *   - asPlaybook=true (playbook): a memory item with kind `rule` (default) or
+   *     `constraint`, tagged + meta.playbook so playbook.list projects it.
+   * Both flavors set sourceType/sourceId + meta.promotedFromExperienceId linking
+   * the source experience. Returns the created memory item.
+   */
+  promoteFromExperience(
+    experienceId: string,
+    asPlaybook?: boolean,
+    overrides?: MemoryPromoteFromExperienceOptions,
+  ): Effect.Effect<IbmMemoryItem, MemoryItemServiceError> {
+    const stage = 'MemoryItemService::promoteFromExperience'
+    return pipe(
+      validateInput(experienceId, 'experienceId', { stage }),
+      Effect.flatMap((id) => {
+        const repository = this.experienceItemRepository
+        if (!repository) {
+          return Effect.fail(
+            XfErrorFactory.inputRequired({ field: 'experienceItemRepository', stage }),
+          ) as Effect.Effect<IbmMemoryItem, MemoryItemServiceError>
+        }
+        return repository.findById(id).pipe(
+          Effect.mapError(mapDbError({ stage, operation: 'experienceItemRepository.findById', factory: XfErrorFactory.notFound })),
+          Effect.flatMap((experience) =>
+            experience
+              ? Effect.succeed(experience as IbmExperienceItem)
+              : Effect.fail(XfErrorFactory.notFound({ stage, identifier: id })),
+          ),
+          Effect.flatMap((experience) =>
+            this.create(this.buildPromotedMemoryInsert(experience, id, asPlaybook === true, overrides)),
+          ),
+        )
+      }),
+      Effect.tapError((e) => Effect.sync(() => {
+        const info = effectErrorInfo(e)
+        this.logger?.error({ error: info.unwrapped, stage }, 'Error in promoteFromExperience')
+      })),
+    )
+  }
+
+  private buildPromotedMemoryInsert(
+    experience: IbmExperienceItem,
+    experienceId: string,
+    asPlaybook: boolean,
+    overrides?: MemoryPromoteFromExperienceOptions,
+  ): IbmMemoryItemInsert {
+    const title = normalizeNonEmpty(experience.title)
+    const problem = normalizeNonEmpty(experience.problem)
+    const solution = normalizeNonEmpty(experience.solution)
+    const overrideContent = normalizeNonEmpty(overrides?.content)
+    const experienceContent = normalizeNonEmpty(experience.content)
+    const composedContent = uniqueStrings([
+      title,
+      problem ? `Problem: ${problem}` : undefined,
+      solution ? `Solution: ${solution}` : undefined,
+    ]).join('\n')
+    const content = overrideContent || experienceContent || composedContent || (title ?? '')
+
+    const extraTags = uniqueStrings(toArray(overrides?.tags))
+    const experienceTags = uniqueStrings(toArray(experience.tags))
+    const sourceRefs = toArray(experience.sourceRefs)
+    const sessionContext = isPlainObject((experience.meta as Record<string, unknown> | undefined)?.experience)
+      ? ((experience.meta as Record<string, unknown>).experience as Record<string, unknown>).sessionContext
+      : undefined
+
+    if (asPlaybook) {
+      const kind: MemoryItemKind = overrides?.kind === 'constraint' ? 'constraint' : 'rule'
+      const durability: MemoryItemDurability = overrides?.durability === 'sticky' ? 'sticky' : 'durable'
+      const scope = normalizeNonEmpty(overrides?.playbookScope) === 'session' ? 'session' : 'project'
+      const area = normalizeNonEmpty(overrides?.playbookArea)
+      const playbookId = normalizeNonEmpty(overrides?.playbookId) ?? experienceId
+      const steps = uniqueStrings([
+        ...toArray(overrides?.steps),
+        ...toArray(experience.commands),
+      ])
+      const tags = uniqueStrings([
+        'playbook',
+        `playbook-scope:${scope}`,
+        area ? `playbook-area:${area}` : undefined,
+        'playbook-source:experience',
+        ...experienceTags,
+        ...extraTags,
+      ])
+      const playbookMeta = compactRecord({
+        id: playbookId,
+        title: title ?? playbookId,
+        scope,
+        area,
+        appliesWhen: normalizeNonEmpty(overrides?.appliesWhen),
+        steps: steps.length > 0 ? steps : undefined,
+        enforcement: normalizeNonEmpty(overrides?.enforcement),
+        reviewState: normalizeNonEmpty(overrides?.reviewState),
+        supersedes: normalizeNonEmpty(overrides?.supersedes),
+        promotedFromExperienceId: experienceId,
+        sessionContext,
+      })
+      return compactRecord({
+        scopeId: experience.scopeId,
+        kind,
+        durability,
+        content,
+        tags: tags.length > 0 ? tags : undefined,
+        sourceType: PROMOTED_FROM_EXPERIENCE_SOURCE_TYPE,
+        sourceId: experienceId,
+        meta: compactRecord({
+          promotedFromExperienceId: experienceId,
+          sourceRefs: sourceRefs.length > 0 ? sourceRefs : undefined,
+          playbook: playbookMeta,
+        }),
+      }) as IbmMemoryItemInsert
+    }
+
+    // durable-memory flavor: faithful durable kind (note | decision), durability durable.
+    const kind: MemoryItemKind = overrides?.kind === 'decision' ? 'decision' : 'note'
+    const durability: MemoryItemDurability = overrides?.durability === 'sticky' ? 'sticky' : 'durable'
+    const tags = uniqueStrings([...experienceTags, ...extraTags])
+    return compactRecord({
+      scopeId: experience.scopeId,
+      kind,
+      durability,
+      content,
+      tags: tags.length > 0 ? tags : undefined,
+      sourceType: PROMOTED_FROM_EXPERIENCE_SOURCE_TYPE,
+      sourceId: experienceId,
+      meta: compactRecord({
+        promotedFromExperienceId: experienceId,
+        experience: compactRecord({
+          title,
+          problem,
+          solution,
+          type: normalizeNonEmpty(experience.type),
+        }),
+        sourceRefs: sourceRefs.length > 0 ? sourceRefs : undefined,
+        sessionContext,
+      }),
+    }) as IbmMemoryItemInsert
   }
 
   updateMemoryItem(id: string, patch: Partial<IbmMemoryItem>): Effect.Effect<IbmMemoryItem, MemoryItemServiceError> {

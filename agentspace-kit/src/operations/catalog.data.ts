@@ -1790,6 +1790,34 @@ export const AGENTSPACE_OPERATION_CATALOG_ROWS = [
     ]
   },
   {
+    "toolId": "aops-memory-item-promote-from-experience",
+    "operationId": "memory-item.promote-from-experience",
+    "summary": "Promote an experience item into a durable memory item, or (asPlaybook) a playbook-projectable rule/constraint memory item.",
+    "serviceKey": "memoryItemService",
+    "serviceEntity": "memory-item",
+    "methodName": "promoteFromExperience",
+    "kind": "custom",
+    "sideEffect": "db",
+    "args": [
+      {
+        "name": "experienceId",
+        "optional": false
+      },
+      {
+        "name": "asPlaybook",
+        "optional": true
+      },
+      {
+        "name": "overrides",
+        "optional": true
+      }
+    ],
+    "examples": [
+      "{\"experienceId\":\"<experienceId>\"}",
+      "{\"experienceId\":\"<experienceId>\",\"asPlaybook\":true,\"overrides\":{\"playbookArea\":\"backend\",\"reviewState\":\"accepted\"}}"
+    ]
+  },
+  {
     "toolId": "aops-mission-create",
     "operationId": "mission.create",
     "summary": "Create an Agentspace mission record.",

@@ -97,10 +97,46 @@ export type MemoryItemListFilter = Partial<IbmMemoryItem> & {
   projectId?: string
 }
 
+export type MemoryPromoteFromExperienceOptions = {
+  /**
+   * Memory kind override. For the durable-memory flavor (asPlaybook=false) only
+   * `note` (default) or `decision` are honored. For the playbook flavor
+   * (asPlaybook=true) only `rule` (default) or `constraint` are honored.
+   */
+  kind?: string
+  /** durable (default) or sticky. */
+  durability?: string
+  /** Reviewed content override; defaults to the experience content. */
+  content?: string
+  /** Extra memory tags. */
+  tags?: string[]
+  /** Playbook flavor: stable playbook id (default: experience id). */
+  playbookId?: string
+  /** Playbook flavor: scope session | project (default: project). */
+  playbookScope?: string
+  /** Playbook flavor: area tag, such as backend or hexagen. */
+  playbookArea?: string
+  /** Playbook flavor: when this playbook should be applied. */
+  appliesWhen?: string
+  /** Playbook flavor: ordered steps (default: experience commands). */
+  steps?: string[]
+  /** Playbook flavor: advisory | soft-preflight | strict-opt-in. */
+  enforcement?: string
+  /** Playbook flavor: proposed | accepted | superseded | archived. */
+  reviewState?: string
+  /** Playbook flavor: older playbook id this one supersedes. */
+  supersedes?: string
+}
+
 export interface IMemoryItemServicePort {
   getById(id: string, options?: DbQueryOptions<IbmMemoryItem>): Effect.Effect<IbmMemoryItem | null, MemoryItemServiceError>
   create(data: IbmMemoryItemInsert): Effect.Effect<IbmMemoryItem, MemoryItemServiceError>
   addMemoryItem(data: IbmMemoryItemInsert): Effect.Effect<IbmMemoryItem, MemoryItemServiceError>
+  promoteFromExperience(
+    experienceId: string,
+    asPlaybook?: boolean,
+    overrides?: MemoryPromoteFromExperienceOptions,
+  ): Effect.Effect<IbmMemoryItem, MemoryItemServiceError>
   updateMemoryItem(id: string, patch: Partial<IbmMemoryItem>): Effect.Effect<IbmMemoryItem, MemoryItemServiceError>
   setMemoryImportance(id: string, importance: number | null): Effect.Effect<IbmMemoryItem, MemoryItemServiceError>
   listMemoryItems(filter?: MemoryItemListFilter, options?: DbQueryOptions<IbmMemoryItem>): Effect.Effect<IbmMemoryItem[], MemoryItemServiceError>

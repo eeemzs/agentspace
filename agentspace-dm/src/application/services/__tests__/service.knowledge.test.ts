@@ -444,6 +444,101 @@ describe('MemoryItemService', () => {
     expect(result.relatedMemory.map((entry) => entry.id)).not.toContain('mem-scope-noise')
   })
 
+  it('promotes an experience item into a durable memory item with source linkage', async () => {
+    const memoryRepo = makeRepo()
+    memoryRepo.create.mockImplementation((data) => Effect.succeed({ ...data, id: 'mem-1' }))
+    const experienceRepo = makeRepo()
+    experienceRepo.findById.mockImplementation((id) =>
+      Effect.succeed({
+        id,
+        scopeId: 'scope-project-1',
+        type: 'problem-solution',
+        title: 'Rebuild stale views',
+        problem: 'Views drift after manual edits.',
+        solution: 'Regenerate deterministic views from source records.',
+        content: 'Use source-of-truth records and regenerate derived views.',
+        commands: ['pnpm build'],
+        tags: ['cli'],
+        sourceRefs: [{ ref: 'pr-1' }],
+      }),
+    )
+
+    const service = new MemoryItemService({
+      memoryItemRepository: memoryRepo as any,
+      experienceItemRepository: experienceRepo as any,
+    })
+
+    const promoted = await Effect.runPromise(service.promoteFromExperience('exp-1'))
+
+    expect(experienceRepo.findById).toHaveBeenCalledWith('exp-1')
+    expect(memoryRepo.create).toHaveBeenCalledTimes(1)
+    const created = memoryRepo.create.mock.calls[0][0]
+    // durable-memory flavor: faithful durable kind + durability durable.
+    expect(created.kind).toBe('note')
+    expect(created.durability).toBe('durable')
+    expect(created.scopeId).toBe('scope-project-1')
+    expect(created.content).toBe('Use source-of-truth records and regenerate derived views.')
+    // source linkage back to the experience.
+    expect(created.sourceType).toBe('agentspace.experience-item')
+    expect(created.sourceId).toBe('exp-1')
+    expect(created.meta.promotedFromExperienceId).toBe('exp-1')
+    expect(created.meta.experience.title).toBe('Rebuild stale views')
+    expect(promoted.id).toBe('mem-1')
+  })
+
+  it('promotes an experience item asPlaybook into a playbook-projectable rule memory item', async () => {
+    const memoryRepo = makeRepo()
+    memoryRepo.create.mockImplementation((data) => Effect.succeed({ ...data, id: 'mem-2' }))
+    const experienceRepo = makeRepo()
+    experienceRepo.findById.mockImplementation((id) =>
+      Effect.succeed({
+        id,
+        scopeId: 'scope-project-1',
+        type: 'technique',
+        title: 'Verify-first build loop',
+        content: 'Always verify in code before asserting done.',
+        commands: ['pnpm test'],
+      }),
+    )
+
+    const service = new MemoryItemService({
+      memoryItemRepository: memoryRepo as any,
+      experienceItemRepository: experienceRepo as any,
+    })
+
+    await Effect.runPromise(
+      service.promoteFromExperience('exp-2', true, { playbookArea: 'backend', reviewState: 'accepted' }),
+    )
+
+    const created = memoryRepo.create.mock.calls[0][0]
+    // playbook flavor: kind=rule so playbook.list projects it.
+    expect(created.kind).toBe('rule')
+    expect(created.durability).toBe('durable')
+    expect(created.tags).toContain('playbook')
+    expect(created.tags).toContain('playbook-scope:project')
+    expect(created.tags).toContain('playbook-area:backend')
+    expect(created.meta.playbook.area).toBe('backend')
+    expect(created.meta.playbook.reviewState).toBe('accepted')
+    expect(created.meta.playbook.promotedFromExperienceId).toBe('exp-2')
+    expect(created.meta.playbook.steps).toContain('pnpm test')
+    expect(created.sourceType).toBe('agentspace.experience-item')
+    expect(created.sourceId).toBe('exp-2')
+  })
+
+  it('fails promoteFromExperience with a clear error when the experience does not exist', async () => {
+    const memoryRepo = makeRepo()
+    const experienceRepo = makeRepo()
+    experienceRepo.findById.mockImplementation(() => Effect.succeed(null))
+
+    const service = new MemoryItemService({
+      memoryItemRepository: memoryRepo as any,
+      experienceItemRepository: experienceRepo as any,
+    })
+
+    await expect(Effect.runPromise(service.promoteFromExperience('missing-exp'))).rejects.toBeTruthy()
+    expect(memoryRepo.create).not.toHaveBeenCalled()
+  })
+
   it('builds a standalone synopsis from memory truth only', async () => {
     const repo = makeRepo()
     repo.find.mockImplementation(() =>
