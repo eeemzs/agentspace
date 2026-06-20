@@ -101,6 +101,26 @@ export type ChatRoomMemberStatus = (typeof CHAT_ROOM_MEMBER_STATUSES)[number]
 export const CHAT_MESSAGE_KINDS = ['message', 'system'] as const
 export type ChatMessageKind = (typeof CHAT_MESSAGE_KINDS)[number]
 
+export const DISCUSSION_TOPIC_STATUSES = ['active', 'concluding', 'concluded', 'abandoned'] as const
+export type DiscussionTopicStatus = (typeof DISCUSSION_TOPIC_STATUSES)[number]
+
+export const DISCUSSION_BLOCKED_ON = ['operator'] as const
+export type DiscussionBlockedOn = (typeof DISCUSSION_BLOCKED_ON)[number]
+
+export const DISCUSSION_TURN_KINDS = [
+  'statement',
+  'question',
+  'answer',
+  'objection',
+  'concession',
+  'proposal',
+  'final-stance',
+] as const
+export type DiscussionTurnKind = (typeof DISCUSSION_TURN_KINDS)[number]
+
+export const DISCUSSION_TURN_ADDRESSED_TO = ['agent', 'operator'] as const
+export type DiscussionTurnAddressedTo = (typeof DISCUSSION_TURN_ADDRESSED_TO)[number]
+
 export type ActorRef = 'manual' | `agent:${string}` | `user:${string}`
 
 export function buildActorRef(type: 'manual' | 'agent' | 'user', id?: string): ActorRef {
