@@ -154,6 +154,85 @@ describe('agentspace host-plugin lifecycle guards', () => {
     expect(response).toEqual({ ok: true })
   })
 
+  it('defaults project create owner fields from request principal context', async () => {
+    const runner = vi.fn(async () => ({ ok: true }))
+    const plugin = createAgentspacePlugin({ runner })
+    const route = findRouteByOperation(plugin.manifest.routes, 'project.create')
+
+    const response = await plugin.execute({
+      request: createDomainRequest({
+        method: route.method,
+        body: {
+          data: {
+            name: 'Owned project',
+          },
+        },
+        context: {
+          tenantId: 'tenant-1',
+          principal: {
+            userId: 'user-1',
+          },
+        },
+      }),
+      match: { route, params: {} },
+    })
+
+    expect(response).toEqual({ ok: true })
+    expect(runner).toHaveBeenCalledTimes(1)
+    expect(runner).toHaveBeenCalledWith(
+      'project.create',
+      expect.objectContaining({
+        data: {
+          name: 'Owned project',
+          ownerId: 'user-1',
+          createdBy: 'user-1',
+          updatedBy: 'user-1',
+        },
+      }),
+    )
+  })
+
+  it('preserves explicit project create owner fields with request principal context', async () => {
+    const runner = vi.fn(async () => ({ ok: true }))
+    const plugin = createAgentspacePlugin({ runner })
+    const route = findRouteByOperation(plugin.manifest.routes, 'project.create')
+
+    const response = await plugin.execute({
+      request: createDomainRequest({
+        method: route.method,
+        body: {
+          data: {
+            name: 'Imported project',
+            ownerId: 'owner-import',
+            createdBy: 'creator-import',
+            updatedBy: 'updater-import',
+          },
+        },
+        context: {
+          tenantId: 'tenant-1',
+          principal: {
+            userId: 'user-1',
+          },
+        },
+      }),
+      match: { route, params: {} },
+    })
+
+    expect(response).toEqual({ ok: true })
+    expect(runner).toHaveBeenCalledTimes(1)
+    expect(runner).toHaveBeenCalledWith(
+      'project.create',
+      expect.objectContaining({
+        data: {
+          name: 'Imported project',
+          ownerId: 'owner-import',
+          createdBy: 'creator-import',
+          updatedBy: 'updater-import',
+        },
+      }),
+    )
+  })
+
   it('returns validation failure when payload project conflicts with request context project', async () => {
     const runner = vi.fn(async () => ({ ok: true }))
     const plugin = createAgentspacePlugin({ runner })

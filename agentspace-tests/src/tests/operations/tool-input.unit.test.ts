@@ -16,6 +16,67 @@ describe('agentspace tool input parser', () => {
     })
   })
 
+  it('defaults project create owner fields from trusted host principal', () => {
+    const parsed = parseAgentspaceToolInput('project.create', {
+      data: {
+        name: 'Owned project',
+      },
+      __hostContext: {
+        principal: {
+          userId: 'user-1',
+        },
+      },
+    })
+
+    expect(parsed).toEqual({
+      data: {
+        name: 'Owned project',
+        ownerId: 'user-1',
+        createdBy: 'user-1',
+        updatedBy: 'user-1',
+      },
+    })
+  })
+
+  it('preserves explicit project create owner fields', () => {
+    const parsed = parseAgentspaceToolInput('project.create', {
+      data: {
+        name: 'Imported project',
+        ownerId: 'owner-import',
+        createdBy: 'creator-import',
+        updatedBy: 'updater-import',
+      },
+      __hostContext: {
+        principal: {
+          userId: 'user-1',
+        },
+      },
+    })
+
+    expect(parsed).toEqual({
+      data: {
+        name: 'Imported project',
+        ownerId: 'owner-import',
+        createdBy: 'creator-import',
+        updatedBy: 'updater-import',
+      },
+    })
+  })
+
+  it('leaves project create owner fields absent without host principal', () => {
+    const parsed = parseAgentspaceToolInput('project.create', {
+      data: {
+        name: 'System import',
+      },
+    })
+
+    expect(parsed).toEqual({
+      data: {
+        name: 'System import',
+      },
+    })
+  })
+
   it('normalizes flat update payloads into canonical patch envelopes', () => {
     const parsed = parseAgentspaceToolInput('project.update-project', {
       id: 'project-1',

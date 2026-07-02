@@ -40,6 +40,7 @@ const AGENTSPACE_CONTEXT_KEYS = new Set([
 ])
 
 const DEFAULT_PROJECT_READ_SCOPE_TAG = 'scope:default-project-read'
+const PROJECT_CREATE_OPERATION_ID = 'project.create'
 const EXPLICIT_GLOBAL_FILTER_KEYS = new Set([
   'all',
   'allProjects',
@@ -86,6 +87,15 @@ function resolveScopeValue(input: Record<string, unknown>): string | undefined {
 function resolveScopeResolutionValue(input: Record<string, unknown>): 'explicit' | 'cascade' | undefined {
   const value = String(input.scopeResolution ?? toRecord(input.__hostContext).scopeResolution ?? '').trim()
   return value === 'explicit' || value === 'cascade' ? value : undefined
+}
+
+function resolvePrincipalUserId(input: Record<string, unknown>): string | undefined {
+  const principal = toRecord(toRecord(input.__hostContext).principal)
+  return hasNonEmptyValue(principal.userId)
+    ? String(principal.userId).trim()
+    : hasNonEmptyValue(principal.id)
+      ? String(principal.id).trim()
+      : undefined
 }
 
 function isScopeableDefaultProjectReadOperation(operationId: AgentspaceTypedOperationId): boolean {
@@ -138,6 +148,33 @@ function injectProjectScopeIntoDefaultReadFilter(
       ...filter,
       scopeId,
       scopeResolution: resolveScopeResolutionValue(input) ?? 'explicit',
+    },
+  }
+}
+
+function injectProjectCreateOwnerDefaults(
+  operationId: AgentspaceTypedOperationId,
+  input: Record<string, unknown>,
+): Record<string, unknown> {
+  if (operationId !== PROJECT_CREATE_OPERATION_ID) return input
+  if (!input.data || typeof input.data !== 'object' || Array.isArray(input.data)) return input
+
+  const principalUserId = resolvePrincipalUserId(input)
+  if (!principalUserId) return input
+
+  const data = input.data as Record<string, unknown>
+  const defaults = {
+    ...(!hasNonEmptyValue(data.ownerId) ? { ownerId: principalUserId } : {}),
+    ...(!hasNonEmptyValue(data.createdBy) ? { createdBy: principalUserId } : {}),
+    ...(!hasNonEmptyValue(data.updatedBy) ? { updatedBy: principalUserId } : {}),
+  }
+  if (Object.keys(defaults).length === 0) return input
+
+  return {
+    ...input,
+    data: {
+      ...data,
+      ...defaults,
     },
   }
 }
@@ -304,9 +341,10 @@ export function parseAgentspaceToolInput<TId extends AgentspaceTypedOperationId>
     normalizedEnvelopeInput,
   )
   const scopedInput = injectProjectScopeIntoDefaultReadFilter(operationId, normalizedInput)
+  const defaultedInput = injectProjectCreateOwnerDefaults(operationId, scopedInput)
   const allowedOperationArgs = new Set(args.map((arg) => arg.name))
 
-  for (const key of Object.keys(scopedInput)) {
+  for (const key of Object.keys(defaultedInput)) {
     if (allowedOperationArgs.has(key)) continue
     if (AGENTSPACE_CONTEXT_KEYS.has(key)) continue
     throw new Error(`unknown_input_arg:${key}`)
@@ -316,15 +354,15 @@ export function parseAgentspaceToolInput<TId extends AgentspaceTypedOperationId>
   for (const arg of args) {
     const rawValue =
       arg.name === 'projectId' || arg.name === 'scopeId'
-        ? resolveProjectValue(scopedInput)
-        : scopedInput[arg.name]
+        ? resolveProjectValue(defaultedInput)
+        : defaultedInput[arg.name]
     const normalizedRawValue = injectProjectContextIntoDataArg(
       operationId,
-      scopedInput,
+      defaultedInput,
       arg.name,
       rawValue,
     )
-    if (!arg.optional && !hasRequiredOperationArg(scopedInput, arg.name)) {
+    if (!arg.optional && !hasRequiredOperationArg(defaultedInput, arg.name)) {
       throw new Error(toMissingRequiredArgToken(arg.name))
     }
     if (normalizedRawValue !== undefined) {
