@@ -541,6 +541,25 @@ export const AGENTSPACE_OPERATION_CATALOG_ROWS = [
     ]
   },
   {
+    "toolId": "aops-artifact-list-artifacts",
+    "operationId": "artifact.list-artifacts",
+    "summary": "List artifacts artifact.",
+    "serviceKey": "artifactService",
+    "serviceEntity": "artifact",
+    "methodName": "listArtifacts",
+    "kind": "list",
+    "args": [
+      {
+        "name": "filter",
+        "optional": true
+      },
+      {
+        "name": "options",
+        "optional": true
+      }
+    ]
+  },
+  {
     "toolId": "aops-artifact-list-artifacts-by-ref",
     "operationId": "artifact.list-artifacts-by-ref",
     "summary": "List artifacts by ref artifact.",

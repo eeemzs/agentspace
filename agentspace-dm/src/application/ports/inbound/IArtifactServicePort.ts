@@ -5,6 +5,7 @@ import { DbQueryOptions } from '@aopslab/xf-db'
 import type { ScopeResolution } from '../../../domain/types.js'
 
 export type ArtifactLinkInput = IbmArtifactLinkInsert
+export type ArtifactListFilter = Partial<IbmArtifact> & { scopeResolution?: ScopeResolution }
 
 export interface IArtifactServicePort {
   getById(id: string, options?: DbQueryOptions<IbmArtifact>): Effect.Effect<IbmArtifact | null, ArtifactServiceError>
@@ -12,6 +13,7 @@ export interface IArtifactServicePort {
   getArtifact(id: string, options?: DbQueryOptions<IbmArtifact>): Effect.Effect<IbmArtifact | null, ArtifactServiceError>
   storeArtifact(data: IbmArtifactInsert): Effect.Effect<IbmArtifact, ArtifactServiceError>
   linkArtifact(data: ArtifactLinkInput): Effect.Effect<IbmArtifactLink, ArtifactServiceError>
+  listArtifacts(filter?: ArtifactListFilter, options?: DbQueryOptions<IbmArtifact>): Effect.Effect<IbmArtifact[], ArtifactServiceError>
   listArtifactsByRef(
     refType: IbmArtifactLink['refType'],
     refId: string,

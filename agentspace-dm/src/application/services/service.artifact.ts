@@ -3,12 +3,12 @@ import { pipe } from 'effect/Function'
 import { validateInput, XfErrorFactory, effectErrorInfo } from '@aopslab/xf-core'
 import { XfLogger } from '@aopslab/xf-logger'
 import type { IRepositoryPortArtifact, IRepositoryPortArtifactLink, IRepositoryPortScope } from '../ports/repository-ports/index.js'
-import type { ArtifactLinkInput, IArtifactServicePort } from '../ports/inbound/index.js'
+import type { ArtifactLinkInput, ArtifactListFilter, IArtifactServicePort } from '../ports/inbound/index.js'
 import { ArtifactServiceError } from '../errors/ArtifactServiceError.js'
 import { IbmArtifact, IbmArtifactInsert, IbmArtifactLink, artifactZodSchemaInsert } from '../../domain/models/index.js'
 import { validateBmInputWithSchema } from './service.zod-validation.js'
 import { DbQueryOptions, mapDbError } from '@aopslab/xf-db'
-import { normalizeScopeResolution, resolveScopeChain } from './service.scope-resolution.js'
+import { listRecordsByScopeResolution, normalizeScopeResolution, resolveScopeChain } from './service.scope-resolution.js'
 
 export interface ArtifactServiceDependencies {}
 
@@ -107,6 +107,34 @@ export class ArtifactService implements IArtifactServicePort {
       Effect.tapError((e) => Effect.sync(() => {
         const info = effectErrorInfo(e)
         this.logger?.error({ error: info.unwrapped, stage }, 'Error in linkArtifact')
+      }))
+    )
+  }
+
+  listArtifacts(
+    filter: ArtifactListFilter = {},
+    options?: DbQueryOptions<IbmArtifact>
+  ): Effect.Effect<IbmArtifact[], ArtifactServiceError> {
+    const stage = 'ArtifactService::listArtifacts'
+    return pipe(
+      validateInput(filter, 'filter', { stage }),
+      Effect.flatMap((value) =>
+        listRecordsByScopeResolution(
+          this.artifactRepository as any,
+          this.scopeRepository,
+          value as Record<string, unknown> & ArtifactListFilter,
+          options,
+          {
+            stage,
+            defaultResolution: 'explicit',
+          },
+        ).pipe(
+          Effect.mapError(mapDbError({ stage, operation: 'find', factory: XfErrorFactory.notFound }))
+        )
+      ),
+      Effect.tapError((e) => Effect.sync(() => {
+        const info = effectErrorInfo(e)
+        this.logger?.error({ error: info.unwrapped, stage }, 'Error in listArtifacts')
       }))
     )
   }

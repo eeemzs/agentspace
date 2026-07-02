@@ -145,6 +145,27 @@ describe('agentspace tool input parser', () => {
     })
   })
 
+  it('defaults artifact list reads to exact project scope from project context', () => {
+    const parsed = parseAgentspaceToolInput('artifact.list-artifacts', {
+      projectId: 'project-1',
+    })
+
+    expect(parsed).toEqual({
+      filter: {
+        scopeId: 'project-1',
+        scopeResolution: 'explicit',
+      },
+    })
+  })
+
+  it('keeps artifact by-ref list strict', () => {
+    expect(() =>
+      parseAgentspaceToolInput('artifact.list-artifacts-by-ref', {
+        projectId: 'project-1',
+      }),
+    ).toThrow(/missing_required_arg:refType/)
+  })
+
   it('prefers scopeId over projectId when defaulting scopeable list filters', () => {
     const parsed = parseAgentspaceToolInput('prompt.list-prompts', {
       projectId: 'project-1',

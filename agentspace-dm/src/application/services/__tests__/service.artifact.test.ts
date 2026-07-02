@@ -51,6 +51,22 @@ describe('ArtifactService', () => {
     expect(result).toEqual([{ id: 'artifact-1' }])
   })
 
+  it('lists artifacts by scope filter', async () => {
+    const artifactRepo = makeRepo()
+    artifactRepo.find.mockImplementation(() => Effect.succeed([{ id: 'artifact-1', scopeId: 'project-1' }]))
+
+    const service = new ArtifactService({ artifactRepository: artifactRepo as any })
+    const result = await Effect.runPromise(
+      service.listArtifacts({ scopeId: 'project-1' } as any, { limit: 10 } as any)
+    )
+
+    expect(artifactRepo.find).toHaveBeenCalledWith({
+      matchEq: { scopeId: 'project-1' },
+      options: { limit: 10 },
+    })
+    expect(result).toEqual([{ id: 'artifact-1', scopeId: 'project-1' }])
+  })
+
   it('removes artifact by id', async () => {
     const artifactRepo = makeRepo()
     artifactRepo.deleteById.mockImplementation(() => Effect.succeed(1))

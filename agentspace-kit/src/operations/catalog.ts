@@ -25,6 +25,7 @@ const SCOPEABLE_DEFAULT_READ_SERVICE_ENTITIES = new Set([
   'agent-run',
   'agent-run-event',
   'agent-session',
+  'artifact',
   'chat-message',
   'chat-room',
   'codex-chat-thread',
