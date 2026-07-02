@@ -5,6 +5,7 @@ import {
   isProjectContextArgName,
   normalizeNonEmpty,
   resolveProjectContextValue,
+  resolveScopeContextValue,
   toMissingRequiredArgToken,
   toRecord,
 } from './tool-input.js'
@@ -21,6 +22,12 @@ describe('tool-input shared helper', () => {
     expect(resolveProjectContextValue({ projectId: 'project-1' })).toBe('project-1')
     expect(resolveProjectContextValue({ scopeId: 'project-2' })).toBe('project-2')
     expect(resolveProjectContextValue({ projectId: 'project-1', scopeId: 'project-2' })).toBe('project-1')
+  })
+
+  it('resolveScopeContextValue uses scope alias precedence', () => {
+    expect(resolveScopeContextValue({ projectId: 'project-1' })).toBe('project-1')
+    expect(resolveScopeContextValue({ scopeId: 'scope-2' })).toBe('scope-2')
+    expect(resolveScopeContextValue({ projectId: 'project-1', scopeId: 'scope-2' })).toBe('scope-2')
   })
 
   it('normalizes required token for project-scoped args', () => {

@@ -1,4 +1,9 @@
-import { normalizeNonEmpty, resolveProjectContextValue, toRecord } from '@aopslab/domain-kit-agentspace/shared'
+import {
+  normalizeNonEmpty,
+  resolveProjectContextValue,
+  resolveScopeContextValue,
+  toRecord,
+} from '@aopslab/domain-kit-agentspace/shared'
 
 import type { HostRequestContext } from './types.js'
 
@@ -66,6 +71,8 @@ export function buildContextScopedInput(
   const contextLocale = normalizeNonEmpty(contextRecord.locale)
   const contextFallbackLocale = normalizeNonEmpty(contextRecord.fallbackLocale)
   const contextProject = resolveProjectContextValue(contextRecord)
+  const contextScope = resolveScopeContextValue(contextRecord)
+  const contextScopeResolution = normalizeNonEmpty(contextRecord.scopeResolution)
 
   const payloadTenantId = normalizeNonEmpty(inputBase.tenantId)
   if (contextTenantId && payloadTenantId && contextTenantId !== payloadTenantId) {
@@ -77,12 +84,31 @@ export function buildContextScopedInput(
     throw new Error('validation_failed:project_context_mismatch')
   }
 
+  const payloadScope = normalizeNonEmpty(inputBase.scopeId)
+  if (contextScope && payloadScope && contextScope !== payloadScope) {
+    throw new Error('validation_failed:scope_context_mismatch')
+  }
+
+  const hostContext = {
+    ...(contextTenantId ? { tenantId: contextTenantId } : {}),
+    ...(contextLocale ? { locale: contextLocale } : {}),
+    ...(contextFallbackLocale ? { fallbackLocale: contextFallbackLocale } : {}),
+    ...(contextProject ? { projectId: contextProject } : {}),
+    ...(contextScope ? { scopeId: contextScope } : {}),
+    ...(contextScopeResolution === 'explicit' || contextScopeResolution === 'cascade'
+      ? { scopeResolution: contextScopeResolution }
+      : {}),
+    ...(contextRecord.principal ? { principal: contextRecord.principal } : {}),
+  }
+
   return {
     ...inputBase,
     ...(contextTenantId ? { tenantId: contextTenantId } : {}),
     ...(contextLocale ? { locale: contextLocale } : {}),
     ...(contextFallbackLocale ? { fallbackLocale: contextFallbackLocale } : {}),
     ...(contextProject && !payloadProject ? { projectId: contextProject } : {}),
+    ...(contextScope && !payloadScope ? { scopeId: contextScope } : {}),
+    ...(Object.keys(hostContext).length > 0 ? { __hostContext: hostContext } : {}),
   }
 }
 

@@ -25,6 +25,10 @@ export function resolveProjectContextValue(input: ToolInputRecord): string | und
   return normalizeNonEmpty(input.projectId) ?? normalizeNonEmpty(input.scopeId)
 }
 
+export function resolveScopeContextValue(input: ToolInputRecord): string | undefined {
+  return normalizeNonEmpty(input.scopeId) ?? normalizeNonEmpty(input.projectId)
+}
+
 export function isProjectContextArgName(argName: string): boolean {
   return (
     argName === 'projectId' ||

@@ -182,6 +182,157 @@ describe('agentspace host-plugin lifecycle guards', () => {
     )
   })
 
+  it('defaults scopeable GET list routes to exact scope from request context', async () => {
+    const runner = vi.fn(async () => ({ ok: true }))
+    const plugin = createAgentspacePlugin({ runner })
+    const route = findRouteByOperation(plugin.manifest.routes, 'memory-item.list-memory-items')
+
+    const response = await plugin.execute({
+      request: createDomainRequest({
+        method: route.method,
+        context: {
+          tenantId: 'tenant-1',
+          projectId: 'project-1',
+          scopeId: 'scope-project-1',
+        },
+      }),
+      match: { route, params: {} },
+    })
+
+    expect(response).toEqual({ ok: true })
+    expect(runner).toHaveBeenCalledTimes(1)
+    expect(runner).toHaveBeenCalledWith(
+      'memory-item.list-memory-items',
+      expect.objectContaining({
+        filter: {
+          scopeId: 'scope-project-1',
+          scopeResolution: 'explicit',
+        },
+      }),
+    )
+  })
+
+  it('preserves explicit scope filters on scopeable GET list routes', async () => {
+    const runner = vi.fn(async () => ({ ok: true }))
+    const plugin = createAgentspacePlugin({ runner })
+    const route = findRouteByOperation(plugin.manifest.routes, 'prompt.list-prompts')
+
+    const response = await plugin.execute({
+      request: createDomainRequest({
+        method: route.method,
+        body: {
+          filter: {
+            scopeId: 'shared-scope',
+            scopeResolution: 'cascade',
+          },
+        },
+        context: {
+          tenantId: 'tenant-1',
+          projectId: 'project-1',
+          scopeId: 'scope-project-1',
+        },
+      }),
+      match: { route, params: {} },
+    })
+
+    expect(response).toEqual({ ok: true })
+    expect(runner).toHaveBeenCalledTimes(1)
+    expect(runner).toHaveBeenCalledWith(
+      'prompt.list-prompts',
+      expect.objectContaining({
+        filter: {
+          scopeId: 'shared-scope',
+          scopeResolution: 'cascade',
+        },
+      }),
+    )
+  })
+
+  it('preserves explicit global filter intent on scopeable GET list routes', async () => {
+    const runner = vi.fn(async () => ({ ok: true }))
+    const plugin = createAgentspacePlugin({ runner })
+    const route = findRouteByOperation(plugin.manifest.routes, 'resource.list-resources')
+
+    const response = await plugin.execute({
+      request: createDomainRequest({
+        method: route.method,
+        body: {
+          filter: {
+            global: true,
+          },
+        },
+        context: {
+          tenantId: 'tenant-1',
+          projectId: 'project-1',
+          scopeId: 'scope-project-1',
+        },
+      }),
+      match: { route, params: {} },
+    })
+
+    expect(response).toEqual({ ok: true })
+    expect(runner).toHaveBeenCalledTimes(1)
+    expect(runner).toHaveBeenCalledWith(
+      'resource.list-resources',
+      expect.objectContaining({
+        filter: {
+          global: true,
+        },
+      }),
+    )
+  })
+
+  it('keeps scopeable GET list routes valid without project context', async () => {
+    const runner = vi.fn(async () => ({ ok: true }))
+    const plugin = createAgentspacePlugin({ runner })
+    const route = findRouteByOperation(plugin.manifest.routes, 'memory-item.list-memory-items')
+
+    const response = await plugin.execute({
+      request: createDomainRequest({
+        method: route.method,
+        context: {
+          tenantId: 'tenant-1',
+        },
+      }),
+      match: { route, params: {} },
+    })
+
+    expect(response).toEqual({ ok: true })
+    expect(runner).toHaveBeenCalledTimes(1)
+    expect(runner).toHaveBeenCalledWith('memory-item.list-memory-items', {})
+  })
+
+  it('uses explicit request scope resolution when defaulting scopeable GET list routes', async () => {
+    const runner = vi.fn(async () => ({ ok: true }))
+    const plugin = createAgentspacePlugin({ runner })
+    const route = findRouteByOperation(plugin.manifest.routes, 'skill.list-skills')
+
+    const response = await plugin.execute({
+      request: createDomainRequest({
+        method: route.method,
+        context: {
+          tenantId: 'tenant-1',
+          projectId: 'project-1',
+          scopeId: 'scope-project-1',
+          scopeResolution: 'cascade',
+        },
+      }),
+      match: { route, params: {} },
+    })
+
+    expect(response).toEqual({ ok: true })
+    expect(runner).toHaveBeenCalledTimes(1)
+    expect(runner).toHaveBeenCalledWith(
+      'skill.list-skills',
+      expect.objectContaining({
+        filter: {
+          scopeId: 'scope-project-1',
+          scopeResolution: 'cascade',
+        },
+      }),
+    )
+  })
+
   it('returns service unavailable envelope when operation timeout is exceeded', async () => {
     const runner = vi.fn(async () => await new Promise<never>(() => {}))
     const plugin = createAgentspacePlugin({ runner, operationTimeoutMs: 100 })
@@ -223,8 +374,6 @@ describe('agentspace host-plugin lifecycle guards', () => {
         method: route.method,
         body: {
           data: {
-            projectId: 'project-5',
-            scopeType: 'project',
             scopeId: 'project-5',
             kind: 'kickoff',
             durability: 'short',

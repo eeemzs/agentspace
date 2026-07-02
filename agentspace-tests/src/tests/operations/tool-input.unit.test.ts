@@ -70,4 +70,83 @@ describe('agentspace tool input parser', () => {
       },
     })
   })
+
+  it('defaults scopeable list reads to exact project scope from project context', () => {
+    const parsed = parseAgentspaceToolInput('memory-item.list-memory-items', {
+      projectId: 'project-1',
+    })
+
+    expect(parsed).toEqual({
+      filter: {
+        scopeId: 'project-1',
+        scopeResolution: 'explicit',
+      },
+    })
+  })
+
+  it('prefers scopeId over projectId when defaulting scopeable list filters', () => {
+    const parsed = parseAgentspaceToolInput('prompt.list-prompts', {
+      projectId: 'project-1',
+      scopeId: 'scope-project-1',
+    })
+
+    expect(parsed).toEqual({
+      filter: {
+        scopeId: 'scope-project-1',
+        scopeResolution: 'explicit',
+      },
+    })
+  })
+
+  it('preserves explicit scope filters for scopeable list reads', () => {
+    const parsed = parseAgentspaceToolInput('skill.list-skills', {
+      projectId: 'project-1',
+      filter: {
+        scopeId: 'shared-scope',
+        scopeResolution: 'cascade',
+      },
+    })
+
+    expect(parsed).toEqual({
+      filter: {
+        scopeId: 'shared-scope',
+        scopeResolution: 'cascade',
+      },
+    })
+  })
+
+  it('preserves explicit global filter intent for scopeable list reads', () => {
+    const parsed = parseAgentspaceToolInput('resource.list-resources', {
+      projectId: 'project-1',
+      filter: {
+        global: true,
+      },
+      options: {
+        limit: 10,
+      },
+    })
+
+    expect(parsed).toEqual({
+      filter: {
+        global: true,
+      },
+      options: {
+        limit: 10,
+      },
+    })
+  })
+
+  it('keeps scopeable list reads valid without project context', () => {
+    const parsed = parseAgentspaceToolInput('memory-item.list-memory-items', {})
+
+    expect(parsed).toEqual({})
+  })
+
+  it('does not inject scope filters into non-scopeable list operations', () => {
+    const parsed = parseAgentspaceToolInput('project.list-projects', {
+      projectId: 'project-1',
+    })
+
+    expect(parsed).toEqual({})
+  })
 })

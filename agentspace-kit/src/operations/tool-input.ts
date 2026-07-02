@@ -4,6 +4,7 @@ import { normalizeAgentspaceOperationInputForCompatibility } from '../shared/cod
 import {
   hasNonEmptyValue,
   resolveProjectContextValue,
+  resolveScopeContextValue,
   toMissingRequiredArgToken,
   toRecord,
 } from '../shared/tool-input.js'
@@ -32,13 +33,30 @@ const AGENTSPACE_CONTEXT_KEYS = new Set([
   'tenantId',
   'projectId',
   'scopeId',
+  'scopeResolution',
   'locale',
   'fallbackLocale',
   '__hostContext',
 ])
 
-const AGENTSPACE_OPERATION_ARGS_BY_ID = new Map<AgentspaceTypedOperationId, AgentspaceRequiredArg>(
+const DEFAULT_PROJECT_READ_SCOPE_TAG = 'scope:default-project-read'
+const EXPLICIT_GLOBAL_FILTER_KEYS = new Set([
+  'all',
+  'allProjects',
+  'global',
+  'tenantWide',
+  'unscoped',
+])
+
+const AGENTSPACE_OPERATION_SPECS_BY_ID = new Map(
   listAgentspaceOperationSpecs({ refresh: true }).map((operation) => [
+    operation.operationId as AgentspaceTypedOperationId,
+    operation,
+  ]),
+)
+
+const AGENTSPACE_OPERATION_ARGS_BY_ID = new Map<AgentspaceTypedOperationId, AgentspaceRequiredArg>(
+  [...AGENTSPACE_OPERATION_SPECS_BY_ID.values()].map((operation) => [
     operation.operationId as AgentspaceTypedOperationId,
     operation.args,
   ]),
@@ -59,6 +77,69 @@ const projectContextRequirementByOperationId = new Map<
 
 function resolveProjectValue(input: Record<string, unknown>): string | undefined {
   return resolveProjectContextValue(input) ?? resolveProjectContextValue(toRecord(input.__hostContext))
+}
+
+function resolveScopeValue(input: Record<string, unknown>): string | undefined {
+  return resolveScopeContextValue(input) ?? resolveScopeContextValue(toRecord(input.__hostContext))
+}
+
+function resolveScopeResolutionValue(input: Record<string, unknown>): 'explicit' | 'cascade' | undefined {
+  const value = String(input.scopeResolution ?? toRecord(input.__hostContext).scopeResolution ?? '').trim()
+  return value === 'explicit' || value === 'cascade' ? value : undefined
+}
+
+function isScopeableDefaultProjectReadOperation(operationId: AgentspaceTypedOperationId): boolean {
+  const operation = AGENTSPACE_OPERATION_SPECS_BY_ID.get(operationId)
+  return operation?.tags?.includes(DEFAULT_PROJECT_READ_SCOPE_TAG) === true
+}
+
+function hasMeaningfulExplicitValue(value: unknown): boolean {
+  if (value === undefined || value === null) return false
+  if (typeof value === 'boolean') return value
+  return hasNonEmptyValue(value)
+}
+
+function hasExplicitGlobalFilterIntent(filter: Record<string, unknown>): boolean {
+  for (const key of EXPLICIT_GLOBAL_FILTER_KEYS) {
+    if (hasMeaningfulExplicitValue(filter[key])) return true
+  }
+  return false
+}
+
+function hasExplicitScopeFilter(filter: Record<string, unknown>): boolean {
+  return (
+    hasMeaningfulExplicitValue(filter.scopeId) ||
+    hasMeaningfulExplicitValue(filter.projectId) ||
+    hasMeaningfulExplicitValue(filter.scopeResolution) ||
+    hasExplicitGlobalFilterIntent(filter)
+  )
+}
+
+function injectProjectScopeIntoDefaultReadFilter(
+  operationId: AgentspaceTypedOperationId,
+  input: Record<string, unknown>,
+): Record<string, unknown> {
+  if (!isScopeableDefaultProjectReadOperation(operationId)) return input
+
+  const hasFilter = Object.prototype.hasOwnProperty.call(input, 'filter')
+  if (hasFilter && (!input.filter || typeof input.filter !== 'object' || Array.isArray(input.filter))) {
+    return input
+  }
+
+  const scopeId = resolveScopeValue(input)
+  if (!scopeId) return input
+
+  const filter = toRecord(input.filter)
+  if (hasExplicitScopeFilter(filter)) return input
+
+  return {
+    ...input,
+    filter: {
+      ...filter,
+      scopeId,
+      scopeResolution: resolveScopeResolutionValue(input) ?? 'explicit',
+    },
+  }
 }
 
 function resolveRequiredProjectContextFieldsInDataArg(
@@ -222,9 +303,10 @@ export function parseAgentspaceToolInput<TId extends AgentspaceTypedOperationId>
     operationId,
     normalizedEnvelopeInput,
   )
+  const scopedInput = injectProjectScopeIntoDefaultReadFilter(operationId, normalizedInput)
   const allowedOperationArgs = new Set(args.map((arg) => arg.name))
 
-  for (const key of Object.keys(normalizedInput)) {
+  for (const key of Object.keys(scopedInput)) {
     if (allowedOperationArgs.has(key)) continue
     if (AGENTSPACE_CONTEXT_KEYS.has(key)) continue
     throw new Error(`unknown_input_arg:${key}`)
@@ -234,15 +316,15 @@ export function parseAgentspaceToolInput<TId extends AgentspaceTypedOperationId>
   for (const arg of args) {
     const rawValue =
       arg.name === 'projectId' || arg.name === 'scopeId'
-        ? resolveProjectValue(normalizedInput)
-        : normalizedInput[arg.name]
+        ? resolveProjectValue(scopedInput)
+        : scopedInput[arg.name]
     const normalizedRawValue = injectProjectContextIntoDataArg(
       operationId,
-      normalizedInput,
+      scopedInput,
       arg.name,
       rawValue,
     )
-    if (!arg.optional && !hasRequiredOperationArg(normalizedInput, arg.name)) {
+    if (!arg.optional && !hasRequiredOperationArg(scopedInput, arg.name)) {
       throw new Error(toMissingRequiredArgToken(arg.name))
     }
     if (normalizedRawValue !== undefined) {
