@@ -89,6 +89,5 @@
     "tsx": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
-  },
-  "packageManager": "pnpm@10.0.0"
+  }
 }
