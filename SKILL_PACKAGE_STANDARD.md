@@ -132,6 +132,16 @@ transfer contract.
 metadata and the current published `SkillVersion` metadata. `skill.ask` is a
 bounded projection of that same retrieval result.
 
+Every discovery candidate carries the immutable publish-time
+`packageSha256`, the `contentSha256` row for `SKILL.md`, and
+`computedTrustClass=verified-hosted-package`. The trust class is emitted only
+after the service validates the current/published identity, manifest
+provenance, entry-file membership, and canonical package digest from raw
+manifest metadata. Invalid or legacy versions without this evidence are not
+discoverable. `matchedBy` and the short score `rationale` are deterministic.
+The returned ranked prefix is limited to five candidates and 2 KiB; neither
+search nor ask loads package content to fill it.
+
 The discovery surface does not inspect package bodies and does not add a
 persisted index, embeddings, an LLM call, or inferred aliases. Aliases, CLI
 families, domain terms, capabilities, keywords, tags, and triggers must already

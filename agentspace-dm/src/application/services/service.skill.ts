@@ -1,5 +1,6 @@
 ﻿import { Effect } from 'effect'
 import { pipe } from 'effect/Function'
+import { createHash } from 'node:crypto'
 import { validateInput, XfErrorFactory, effectErrorInfo } from '@aopslab/xf-core'
 import { XfLogger } from '@aopslab/xf-logger'
 import type {
@@ -10,6 +11,9 @@ import type {
   IRepositoryPortSkillVersion,
 } from '../ports/repository-ports/index.js'
 import {
+  CANONICAL_SKILL_PACKAGE_ENTRY_FILE,
+  CANONICAL_SKILL_PACKAGE_STANDARD,
+  SKILL_DISCOVERY_MAX_BYTES,
   SKILL_DISCOVERY_MAX_RESULTS,
   type ISkillServicePort,
   type SkillAskResult,
@@ -47,6 +51,9 @@ export interface SkillServiceOptions {
 
 const SKILL_DISCOVERY_QUERY_MAX_LENGTH = 256
 const SKILL_DISCOVERY_SCAN_LIMIT = 10_000
+const SKILL_PACKAGE_MANIFEST_META_KEY = 'packageManifestV1'
+const SHA256_RE = /^[a-f0-9]{64}$/
+const SKILL_DISCOVERY_META_FIELD_RE = /^meta\.[A-Za-z0-9_.-]+$/
 const SKILL_DISCOVERY_META_KEYS = new Set([
   'aliases',
   'capabilities',
@@ -82,6 +89,15 @@ function compareUtf8(left: string, right: string): number {
   return Buffer.compare(Buffer.from(left, 'utf8'), Buffer.from(right, 'utf8'))
 }
 
+function sha256PackageRecords(files: ReadonlyArray<{ path: string; sha256: string }>): string {
+  const records = files
+    .map((file) => ({ path: file.path.normalize('NFC'), sha256: file.sha256.toLowerCase() }))
+    .sort((left, right) => compareUtf8(left.path, right.path))
+  return createHash('sha256')
+    .update(Buffer.concat(records.map((file) => Buffer.from(`${file.path}\0${file.sha256}\n`, 'utf8'))))
+    .digest('hex')
+}
+
 function truncateDiscoveryText(value: unknown, maxLength: number): string | undefined {
   const normalized = typeof value === 'string' ? value.trim().replace(/\s+/g, ' ') : ''
   if (!normalized) return undefined
@@ -113,7 +129,9 @@ function collectApprovedMetaFields(
       const values = Array.isArray(raw) ? raw : [raw]
       for (const item of values) {
         if (typeof item !== 'string' && typeof item !== 'number') continue
-        out.push({ field: `meta.${nextPath.join('.')}`, value: String(item) })
+        const field = `meta.${nextPath.join('.')}` as SkillDiscoveryMatchField
+        if (field.length > 96 || !SKILL_DISCOVERY_META_FIELD_RE.test(field)) continue
+        out.push({ field, value: String(item) })
       }
       continue
     }
@@ -121,6 +139,105 @@ function collectApprovedMetaFields(
   }
 
   return out
+}
+
+type SkillDiscoveryIntegrity = {
+  packageSha256: string
+  contentSha256: string
+  computedTrustClass: 'verified-hosted-package'
+}
+
+function readSkillDiscoveryIntegrity(skill: IbmSkill, version: IbmSkillVersion): SkillDiscoveryIntegrity | null {
+  const skillName = typeof skill.name === 'string' ? skill.name.trim() : ''
+  const versionId = String(version.id ?? '').trim()
+  const meta = isRecord(version.meta) ? version.meta : null
+  const manifest = meta && isRecord(meta[SKILL_PACKAGE_MANIFEST_META_KEY])
+    ? meta[SKILL_PACKAGE_MANIFEST_META_KEY]
+    : null
+  if (!skillName || !versionId || !manifest) return null
+
+  const entryFile = typeof version.entryFile === 'string' && version.entryFile.trim()
+    ? version.entryFile.trim()
+    : CANONICAL_SKILL_PACKAGE_ENTRY_FILE
+  const skillStandard = typeof version.skillStandard === 'string' && version.skillStandard.trim()
+    ? version.skillStandard.trim()
+    : CANONICAL_SKILL_PACKAGE_STANDARD
+  const packageSha256 = typeof manifest.packageSha256 === 'string' ? manifest.packageSha256 : ''
+  const provenance = isRecord(manifest.provenance) ? manifest.provenance : null
+  const compatibility = isRecord(manifest.compatibility) ? manifest.compatibility : null
+
+  if (
+    manifest.schemaVersion !== 1 ||
+    manifest.assetKind !== 'skill-package' ||
+    manifest.name !== skillName ||
+    manifest.version !== String(version.version) ||
+    manifest.versionId !== versionId ||
+    manifest.entryFile !== entryFile ||
+    manifest.standard !== skillStandard ||
+    entryFile !== CANONICAL_SKILL_PACKAGE_ENTRY_FILE ||
+    skillStandard !== CANONICAL_SKILL_PACKAGE_STANDARD ||
+    !SHA256_RE.test(packageSha256) ||
+    !Array.isArray(manifest.files) ||
+    manifest.files.length < 1 ||
+    manifest.files.length > 256 ||
+    !compatibility ||
+    typeof compatibility.minCliVersion !== 'string' ||
+    !compatibility.minCliVersion.trim() ||
+    compatibility.maxSchemaVersion !== 1 ||
+    !provenance ||
+    provenance.trustClass !== 'verified-hosted-package' ||
+    provenance.expectedDigestSource !== 'immutable-hosted-metadata' ||
+    provenance.reference !== `skill-version:${versionId}`
+  ) return null
+
+  const files: Array<{ path: string; sha256: string }> = []
+  const paths = new Set<string>()
+  let contentSha256: string | null = null
+  for (const row of manifest.files) {
+    if (!isRecord(row)) return null
+    const path = typeof row.path === 'string' ? row.path.trim().normalize('NFC') : ''
+    const sha256 = typeof row.sha256 === 'string' ? row.sha256 : ''
+    if (
+      !path ||
+      paths.has(path) ||
+      !SHA256_RE.test(sha256) ||
+      !Number.isSafeInteger(row.byteLength) ||
+      Number(row.byteLength) < 0
+    ) return null
+    paths.add(path)
+    files.push({ path, sha256 })
+    if (path === entryFile) {
+      if (contentSha256 !== null) return null
+      contentSha256 = sha256
+    }
+  }
+  if (!contentSha256 || sha256PackageRecords(files) !== packageSha256) return null
+
+  return {
+    packageSha256,
+    contentSha256,
+    computedTrustClass: 'verified-hosted-package',
+  }
+}
+
+function buildDiscoveryRationale(matchedBy: readonly SkillDiscoveryMatchField[], score: number): string {
+  const value = `Matched raw metadata: ${matchedBy.join(', ')}; score ${score}.`
+  return truncateDiscoveryText(value, 160) ?? `Matched raw metadata; score ${score}.`
+}
+
+function fitDiscoveryCandidates(
+  query: string,
+  normalizedQuery: string,
+  ranked: readonly SkillDiscoveryCandidate[],
+): SkillDiscoveryCandidate[] {
+  const selected: SkillDiscoveryCandidate[] = []
+  for (const candidate of ranked) {
+    const next = [...selected, candidate]
+    const result = { query, normalizedQuery, count: next.length, candidates: next }
+    if (Buffer.byteLength(JSON.stringify(result), 'utf8') > SKILL_DISCOVERY_MAX_BYTES) break
+    selected.push(candidate)
+  }
+  return selected
 }
 
 function scoreDiscoveryField(
@@ -149,7 +266,16 @@ function buildDiscoveryCandidate(
   const skillId = String(skill.id ?? '').trim()
   const versionId = String(version.id ?? '').trim()
   const name = truncateDiscoveryText(skill.name, 80)
-  if (!skillId || !versionId || !name || version.status !== 'published') return null
+  if (
+    !skillId ||
+    skillId.length > 160 ||
+    !versionId ||
+    versionId.length > 160 ||
+    !name ||
+    version.status !== 'published'
+  ) return null
+  const integrity = readSkillDiscoveryIntegrity(skill, version)
+  if (!integrity) return null
 
   const fields: Array<{ field: SkillDiscoveryMatchField; value: unknown; weight: number }> = [
     { field: 'name', value: skill.name, weight: SKILL_DISCOVERY_FIELD_WEIGHT.name },
@@ -178,6 +304,7 @@ function buildDiscoveryCandidate(
 
   const entryFile = truncateDiscoveryText(version.entryFile, 80) ?? 'SKILL.md'
   const skillStandard = truncateDiscoveryText(version.skillStandard, 80) ?? 'aops-skill-package-v1'
+  const boundedMatchedBy = matchedBy.slice(0, 5)
   return {
     skillId,
     versionId,
@@ -189,9 +316,13 @@ function buildDiscoveryCandidate(
     version: String(version.version),
     entryFile,
     skillStandard,
+    packageSha256: integrity.packageSha256,
+    contentSha256: integrity.contentSha256,
     origin: 'hosted',
+    computedTrustClass: integrity.computedTrustClass,
     score,
-    matchedBy: matchedBy.slice(0, 5),
+    matchedBy: boundedMatchedBy,
+    rationale: buildDiscoveryRationale(boundedMatchedBy, score),
   }
 }
 
@@ -330,6 +461,14 @@ export class SkillService implements ISkillServicePort {
           }))
         )
       }
+      if (Buffer.byteLength(normalizedRawQuery, 'utf8') > SKILL_DISCOVERY_QUERY_MAX_LENGTH) {
+        return yield* _(
+          Effect.fail(XfErrorFactory.createFailed({
+            stage,
+            message: `skill_discovery_query_bytes_too_long:${Buffer.byteLength(normalizedRawQuery, 'utf8')}`,
+          }))
+        )
+      }
 
       const normalizedQuery = normalizeDiscoveryText(normalizedRawQuery)
       const tokens = toDiscoveryTokens(normalizedRawQuery)
@@ -392,12 +531,13 @@ export class SkillService implements ISkillServicePort {
           compareUtf8(left.versionId, right.versionId)
         )
         .slice(0, requestedLimit)
+      const selected = fitDiscoveryCandidates(normalizedRawQuery, normalizedQuery, ranked)
 
       return {
         query: normalizedRawQuery,
         normalizedQuery,
-        count: ranked.length,
-        candidates: ranked,
+        count: selected.length,
+        candidates: selected,
       }
     }).pipe(
       Effect.tapError((error) => Effect.sync(() => {
@@ -415,12 +555,17 @@ export class SkillService implements ISkillServicePort {
   ): Effect.Effect<SkillAskResult, SkillServiceError> {
     return this.searchSkills(query, scopeId, scopeResolution, limit).pipe(
       Effect.map((result) => {
-        const answer = result.candidates.length === 0
-          ? `No published hosted skill matched "${result.query}".`
-          : result.candidates
-            .map((candidate, index) => `${index + 1}. ${candidate.name} (${candidate.exactRef}, score ${candidate.score})`)
-            .join('\n')
-        return { ...result, answer }
+        const candidates = [...result.candidates]
+        while (true) {
+          const answer = candidates.length === 0
+            ? `No published hosted skill matched "${result.query}".`
+            : candidates
+              .map((candidate, index) => `${index + 1}. ${candidate.name} (${candidate.exactRef}); ${candidate.rationale}`)
+              .join('\n')
+          const projected = { ...result, count: candidates.length, candidates, answer }
+          if (Buffer.byteLength(JSON.stringify(projected), 'utf8') <= SKILL_DISCOVERY_MAX_BYTES) return projected
+          candidates.pop()
+        }
       })
     )
   }

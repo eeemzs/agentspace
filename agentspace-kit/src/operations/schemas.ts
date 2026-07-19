@@ -232,10 +232,11 @@ const SKILL_DISCOVERY_INPUT_SCHEMA: JsonSchema = objectSchema({
   scopeResolution: { type: 'string', enum: ['explicit', 'cascade'] },
   limit: { type: 'integer', minimum: 1, maximum: 5 },
 }, ['query'])
+const SHA256_SCHEMA: JsonSchema = { type: 'string', pattern: '^[a-f0-9]{64}$' }
 const SKILL_DISCOVERY_MATCH_FIELD_SCHEMA: JsonSchema = {
   anyOf: [
     { enum: ['name', 'shortDescription', 'description', 'tags', 'version', 'entryFile', 'skillStandard'] },
-    { type: 'string', pattern: '^meta\\.[A-Za-z0-9_.-]+$' },
+    { type: 'string', pattern: '^meta\\.[A-Za-z0-9_.-]+$', maxLength: 96 },
   ],
 }
 const SKILL_DISCOVERY_CANDIDATE_SCHEMA: JsonSchema = objectSchema({
@@ -247,7 +248,10 @@ const SKILL_DISCOVERY_CANDIDATE_SCHEMA: JsonSchema = objectSchema({
   version: NON_EMPTY_STRING_SCHEMA,
   entryFile: NON_EMPTY_STRING_SCHEMA,
   skillStandard: NON_EMPTY_STRING_SCHEMA,
+  packageSha256: SHA256_SCHEMA,
+  contentSha256: SHA256_SCHEMA,
   origin: { const: 'hosted' },
+  computedTrustClass: { const: 'verified-hosted-package' },
   score: { type: 'integer', minimum: 1 },
   matchedBy: {
     type: 'array',
@@ -256,7 +260,23 @@ const SKILL_DISCOVERY_CANDIDATE_SCHEMA: JsonSchema = objectSchema({
     uniqueItems: true,
     items: SKILL_DISCOVERY_MATCH_FIELD_SCHEMA,
   },
-}, ['skillId', 'versionId', 'exactRef', 'name', 'version', 'entryFile', 'skillStandard', 'origin', 'score', 'matchedBy'])
+  rationale: { type: 'string', minLength: 1, maxLength: 160 },
+}, [
+  'skillId',
+  'versionId',
+  'exactRef',
+  'name',
+  'version',
+  'entryFile',
+  'skillStandard',
+  'packageSha256',
+  'contentSha256',
+  'origin',
+  'computedTrustClass',
+  'score',
+  'matchedBy',
+  'rationale',
+])
 const SKILL_SEARCH_OUTPUT_SCHEMA: JsonSchema = objectSchema({
   query: NON_EMPTY_STRING_SCHEMA,
   normalizedQuery: NON_EMPTY_STRING_SCHEMA,
@@ -270,7 +290,6 @@ const SKILL_ASK_OUTPUT_SCHEMA: JsonSchema = objectSchema({
   candidates: { type: 'array', maxItems: 5, items: SKILL_DISCOVERY_CANDIDATE_SCHEMA },
   answer: { type: 'string', maxLength: 1024 },
 }, ['query', 'normalizedQuery', 'count', 'candidates', 'answer'])
-const SHA256_SCHEMA: JsonSchema = { type: 'string', pattern: '^[a-f0-9]{64}$' }
 const SKILL_PACKAGE_FILE_DIGEST_SCHEMA: JsonSchema = objectSchema({
   path: NON_EMPTY_STRING_SCHEMA,
   sha256: SHA256_SCHEMA,

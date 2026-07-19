@@ -10,6 +10,7 @@ export type SkillListFilter = Partial<IbmSkill> & {
 }
 
 export const SKILL_DISCOVERY_MAX_RESULTS = 5
+export const SKILL_DISCOVERY_MAX_BYTES = 2 * 1024
 
 export type SkillDiscoveryMatchField =
   | 'name'
@@ -30,9 +31,13 @@ export interface SkillDiscoveryCandidate {
   version: string
   entryFile: string
   skillStandard: string
+  packageSha256: string
+  contentSha256: string
   origin: 'hosted'
+  computedTrustClass: 'verified-hosted-package'
   score: number
   matchedBy: SkillDiscoveryMatchField[]
+  rationale: string
 }
 
 export interface SkillSearchResult {

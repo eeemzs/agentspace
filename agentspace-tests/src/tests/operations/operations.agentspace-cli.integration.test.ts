@@ -230,13 +230,31 @@ for (const variant of repoVariants) {
             JSON.stringify({ query: skillName, scopeId: projectId, limit: 5 }),
           ],
           variant.url,
-        )) as { candidates?: Array<{ skillId?: string; versionId?: string; exactRef?: string; origin?: string }> }
+        )) as {
+          candidates?: Array<{
+            skillId?: string
+            versionId?: string
+            exactRef?: string
+            packageSha256?: string
+            contentSha256?: string
+            origin?: string
+            computedTrustClass?: string
+            matchedBy?: string[]
+            rationale?: string
+          }>
+        }
         expect(searched.candidates?.[0]).toMatchObject({
           skillId,
           versionId: skillVersionId,
           exactRef: `skill-version:${skillVersionId}`,
+          packageSha256: exported.manifest?.packageSha256,
           origin: 'hosted',
+          computedTrustClass: 'verified-hosted-package',
         })
+        expect(String(searched.candidates?.[0]?.contentSha256 ?? '')).toMatch(/^[a-f0-9]{64}$/)
+        expect(searched.candidates?.[0]?.matchedBy).toContain('name')
+        expect(String(searched.candidates?.[0]?.rationale ?? '')).toContain('score')
+        expect(Buffer.byteLength(JSON.stringify(searched), 'utf8')).toBeLessThanOrEqual(2 * 1024)
 
         const asked = (await runAgentspaceCli(
           [

@@ -81,7 +81,8 @@ const OPERATION_DOCS_OVERRIDES = new Map<string, AgentspaceDomainCapabilityOpera
       notes: [
         'Search reads raw Skill name/shortDescription/description/tags plus current published SkillVersion version/entryFile/skillStandard and approved metadata keys.',
         'It does not read package bodies, build a persisted index, call an LLM, or use embeddings.',
-        'Results are deterministically ranked and bounded to at most five candidates with exact skill-version refs.',
+        'Each candidate includes immutable package and entry-content SHA-256, a trust class computed from validated publish-time metadata, matchedBy, and a short deterministic score rationale.',
+        'Versions without a valid immutable package manifest are excluded; results are a deterministic ranked prefix bounded to at most five candidates and 2 KiB with exact skill-version refs.',
       ],
     },
   ],
@@ -91,7 +92,7 @@ const OPERATION_DOCS_OVERRIDES = new Map<string, AgentspaceDomainCapabilityOpera
       summary: 'Project a bounded human-readable answer from one skill.search retrieval result.',
       notes: [
         'Ask delegates to the same metadata-only search implementation and does not run a second retrieval.',
-        'The answer contains candidate identity and ranking evidence only; package bodies are not loaded.',
+        'The answer contains candidate identity, digest, trust, and ranking evidence only; package bodies are not loaded and the complete projection remains within 2 KiB.',
       ],
     },
   ],
