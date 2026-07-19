@@ -2,7 +2,13 @@
 import { pipe } from 'effect/Function'
 import { validateInput, XfErrorFactory, effectErrorInfo } from '@aopslab/xf-core'
 import { XfLogger } from '@aopslab/xf-logger'
-import type { IRepositoryPortScope, IRepositoryPortSkill, IRepositoryPortSkillVersion } from '../ports/repository-ports/index.js'
+import type {
+  IRepositoryPortProject,
+  IRepositoryPortResource,
+  IRepositoryPortScope,
+  IRepositoryPortSkill,
+  IRepositoryPortSkillVersion,
+} from '../ports/repository-ports/index.js'
 import {
   SKILL_DISCOVERY_MAX_RESULTS,
   type ISkillServicePort,
@@ -11,13 +17,19 @@ import {
   type SkillDiscoveryMatchField,
   type SkillListFilter,
   type SkillSearchResult,
+  type OfficialCatalogReceiptV1,
+  type OfficialCatalogReconcilePlanV1,
+  type OfficialCatalogRollbackRequestV1,
+  type OfficialCatalogScopeV1,
+  type OfficialCatalogSnapshotV1,
 } from '../ports/inbound/index.js'
 import { SkillServiceError } from '../errors/SkillServiceError.js'
 import { IbmSkill, IbmSkillInsert, IbmSkillVersion, skillZodSchemaInsert } from '../../domain/models/index.js'
 import { validateBmInputWithSchema } from './service.zod-validation.js'
-import { DbQueryOptions, mapDbError } from '@aopslab/xf-db'
+import { DbQueryOptions, type IUnitOfWork, mapDbError } from '@aopslab/xf-db'
 import { listRecordsByScopeResolution } from './service.scope-resolution.js'
 import type { ScopeResolution } from '../../domain/types.js'
+import { OfficialCatalogService } from './service.officialCatalog.js'
 
 export interface SkillServiceDependencies {}
 
@@ -25,6 +37,9 @@ export interface SkillServiceOptions {
   skillRepository: IRepositoryPortSkill
   skillVersionRepository?: IRepositoryPortSkillVersion
   scopeRepository?: IRepositoryPortScope
+  projectRepository?: IRepositoryPortProject
+  resourceRepository?: IRepositoryPortResource
+  unitOfWork?: IUnitOfWork
   serviceDependencies?: Partial<SkillServiceDependencies>
   logger?: XfLogger
   locale?: string
@@ -184,13 +199,56 @@ export class SkillService implements ISkillServicePort {
   private readonly skillRepository: IRepositoryPortSkill
   private readonly skillVersionRepository?: IRepositoryPortSkillVersion
   private readonly scopeRepository?: IRepositoryPortScope
+  private readonly officialCatalogService?: OfficialCatalogService
   private readonly logger?: XfLogger
 
   constructor(options: SkillServiceOptions) {
     this.skillRepository = options.skillRepository
     this.skillVersionRepository = options.skillVersionRepository
     this.scopeRepository = options.scopeRepository
+    if (
+      options.skillVersionRepository &&
+      options.scopeRepository &&
+      options.projectRepository &&
+      options.resourceRepository
+    ) {
+      this.officialCatalogService = new OfficialCatalogService({
+        skillRepository: options.skillRepository,
+        skillVersionRepository: options.skillVersionRepository,
+        scopeRepository: options.scopeRepository,
+        projectRepository: options.projectRepository,
+        resourceRepository: options.resourceRepository,
+        unitOfWork: options.unitOfWork,
+      })
+    }
     this.logger = options.logger?.child({ module: this.constructor.name })
+  }
+
+  inspectOfficialCatalog(scope: OfficialCatalogScopeV1): Effect.Effect<OfficialCatalogSnapshotV1, SkillServiceError> {
+    return this.officialCatalogService
+      ? this.officialCatalogService.inspect(scope)
+      : Effect.fail(XfErrorFactory.createFailed({
+        stage: 'SkillService::inspectOfficialCatalog',
+        message: 'official_catalog_store_unavailable',
+      }))
+  }
+
+  reconcileOfficialCatalog(plan: OfficialCatalogReconcilePlanV1): Effect.Effect<OfficialCatalogReceiptV1, SkillServiceError> {
+    return this.officialCatalogService
+      ? this.officialCatalogService.reconcile(plan)
+      : Effect.fail(XfErrorFactory.createFailed({
+        stage: 'SkillService::reconcileOfficialCatalog',
+        message: 'official_catalog_store_unavailable',
+      }))
+  }
+
+  rollbackOfficialCatalog(request: OfficialCatalogRollbackRequestV1): Effect.Effect<OfficialCatalogReceiptV1, SkillServiceError> {
+    return this.officialCatalogService
+      ? this.officialCatalogService.rollback(request)
+      : Effect.fail(XfErrorFactory.createFailed({
+        stage: 'SkillService::rollbackOfficialCatalog',
+        message: 'official_catalog_store_unavailable',
+      }))
   }
 
   getById(id: string, options?: DbQueryOptions<IbmSkill>): Effect.Effect<IbmSkill | null, SkillServiceError> {

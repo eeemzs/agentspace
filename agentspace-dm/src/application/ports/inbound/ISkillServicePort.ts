@@ -3,6 +3,7 @@ import { SkillServiceError } from '../../errors/SkillServiceError.js'
 import { IbmSkill, IbmSkillInsert } from '../../../domain/models/index.js'
 import { DbQueryOptions } from '@aopslab/xf-db'
 import type { ScopeResolution } from '../../../domain/types.js'
+import type { IOfficialCatalogServicePort } from './IOfficialCatalogServicePort.js'
 
 export type SkillListFilter = Partial<IbmSkill> & {
   scopeResolution?: ScopeResolution
@@ -45,7 +46,7 @@ export interface SkillAskResult extends SkillSearchResult {
   answer: string
 }
 
-export interface ISkillServicePort {
+export interface ISkillServicePort extends IOfficialCatalogServicePort {
   getById(id: string, options?: DbQueryOptions<IbmSkill>): Effect.Effect<IbmSkill | null, SkillServiceError>
   create(data: IbmSkillInsert): Effect.Effect<IbmSkill, SkillServiceError>
   getSkill(id: string, options?: DbQueryOptions<IbmSkill>): Effect.Effect<IbmSkill | null, SkillServiceError>
