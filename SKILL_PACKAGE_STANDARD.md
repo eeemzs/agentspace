@@ -104,9 +104,40 @@ Expected output:
 - `entryFile`
 - `skillStandard`
 - `files[]`
+- `manifest` (`PackageManifestV1`-compatible immutable hosted metadata)
+
+Client-transfer export rules:
+
+- Only the skill's `currentVersionId` may be exported.
+- The selected version must be `published` and published versions are immutable.
+- `manifest.files[]` contains the publish-time SHA-256 and byte length for every
+  transferred file.
+- `manifest.packageSha256` is computed from NFC paths sorted by unsigned UTF-8
+  bytes using records `<path> NUL <lowercase-file-sha256> LF`.
+- Provenance is `verified-hosted-package` with expected digest source
+  `immutable-hosted-metadata`.
+- Export never returns `sourcePath`, `fullPath`, output directories, or another
+  server-local filesystem pointer.
 
 Export output is intended to round-trip back into `import-skill-package`
 without compatibility transforms.
+
+`materialize-skill-package` is a distinct trusted server-side operation and may
+return its explicitly requested output path. It is not the client package
+transfer contract.
+
+## Metadata discovery contract
+
+`skill.search` performs deterministic on-read ranking over raw `Skill`
+metadata and the current published `SkillVersion` metadata. `skill.ask` is a
+bounded projection of that same retrieval result.
+
+The discovery surface does not inspect package bodies and does not add a
+persisted index, embeddings, an LLM call, or inferred aliases. Aliases, CLI
+families, domain terms, capabilities, keywords, tags, and triggers must already
+exist in raw metadata. Persisted indexing and publisher/trust schema expansion
+remain deferred until observed scale or a cross-authority publisher model
+requires them.
 
 ## Materialize Contract
 

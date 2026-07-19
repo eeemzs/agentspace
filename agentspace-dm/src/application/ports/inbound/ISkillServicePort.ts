@@ -8,11 +8,60 @@ export type SkillListFilter = Partial<IbmSkill> & {
   scopeResolution?: ScopeResolution
 }
 
+export const SKILL_DISCOVERY_MAX_RESULTS = 5
+
+export type SkillDiscoveryMatchField =
+  | 'name'
+  | 'shortDescription'
+  | 'description'
+  | 'tags'
+  | 'version'
+  | 'entryFile'
+  | 'skillStandard'
+  | `meta.${string}`
+
+export interface SkillDiscoveryCandidate {
+  skillId: string
+  versionId: string
+  exactRef: string
+  name: string
+  shortDescription?: string
+  version: string
+  entryFile: string
+  skillStandard: string
+  origin: 'hosted'
+  score: number
+  matchedBy: SkillDiscoveryMatchField[]
+}
+
+export interface SkillSearchResult {
+  query: string
+  normalizedQuery: string
+  count: number
+  candidates: SkillDiscoveryCandidate[]
+}
+
+export interface SkillAskResult extends SkillSearchResult {
+  answer: string
+}
+
 export interface ISkillServicePort {
   getById(id: string, options?: DbQueryOptions<IbmSkill>): Effect.Effect<IbmSkill | null, SkillServiceError>
   create(data: IbmSkillInsert): Effect.Effect<IbmSkill, SkillServiceError>
   getSkill(id: string, options?: DbQueryOptions<IbmSkill>): Effect.Effect<IbmSkill | null, SkillServiceError>
   listSkills(filter?: SkillListFilter, options?: DbQueryOptions<IbmSkill>): Effect.Effect<IbmSkill[], SkillServiceError>
+  searchSkills(
+    query: string,
+    scopeId?: string,
+    scopeResolution?: ScopeResolution,
+    limit?: number
+  ): Effect.Effect<SkillSearchResult, SkillServiceError>
+  askSkills(
+    query: string,
+    scopeId?: string,
+    scopeResolution?: ScopeResolution,
+    limit?: number
+  ): Effect.Effect<SkillAskResult, SkillServiceError>
   updateSkill(id: string, patch: Partial<IbmSkill>): Effect.Effect<IbmSkill, SkillServiceError>
   removeSkill(id: string): Effect.Effect<void, SkillServiceError>
 }

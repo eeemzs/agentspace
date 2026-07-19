@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "@aopslab/domain-host-plugin-agentspace": "workspace:*",
+    "@aopslab/domain-kit-agentspace": "workspace:*",
     "@aopslab/domain-tooling-agentspace": "workspace:*",
     "@aopslab/xf-core": "catalog:",
     "dotenv": "catalog:"

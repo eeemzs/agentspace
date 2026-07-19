@@ -75,6 +75,27 @@ const OPERATION_DOCS_OVERRIDES = new Map<string, AgentspaceDomainCapabilityOpera
     },
   ],
   [
+    normalizeAgentspaceOperationId('skill.search'),
+    {
+      summary: 'Search current published hosted skills using deterministic metadata-only on-read ranking.',
+      notes: [
+        'Search reads raw Skill name/shortDescription/description/tags plus current published SkillVersion version/entryFile/skillStandard and approved metadata keys.',
+        'It does not read package bodies, build a persisted index, call an LLM, or use embeddings.',
+        'Results are deterministically ranked and bounded to at most five candidates with exact skill-version refs.',
+      ],
+    },
+  ],
+  [
+    normalizeAgentspaceOperationId('skill.ask'),
+    {
+      summary: 'Project a bounded human-readable answer from one skill.search retrieval result.',
+      notes: [
+        'Ask delegates to the same metadata-only search implementation and does not run a second retrieval.',
+        'The answer contains candidate identity and ranking evidence only; package bodies are not loaded.',
+      ],
+    },
+  ],
+  [
     normalizeAgentspaceOperationId('skill-version.import-skill-package'),
     {
       summary: 'Import a canonical filesystem skill package into skill and skill-version records.',
@@ -91,8 +112,10 @@ const OPERATION_DOCS_OVERRIDES = new Map<string, AgentspaceDomainCapabilityOpera
     {
       summary: 'Export a canonical filesystem skill package from a skill version.',
       notes: [
-        'Returns the canonical filesystem package rooted at SKILL.md.',
-        'Export output is intended to round-trip back into import-skill-package without compatibility shims.',
+        'Exports only the skill currentVersionId when that version is published and carries immutable publish-time digest metadata.',
+        'Returns package content plus aops-skill-package-v1 per-file and package SHA-256 evidence rooted at SKILL.md.',
+        'The trusted manifest provenance is verified-hosted-package from immutable-hosted-metadata.',
+        'Client export strips server-local path fields; materialize-skill-package remains the separate server filesystem operation.',
       ],
     },
   ],

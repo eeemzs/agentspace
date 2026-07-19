@@ -3059,6 +3059,25 @@ export const AGENTSPACE_OPERATION_CATALOG_ROWS = [
     ]
   },
   {
+    "toolId": "aops-skill-ask",
+    "operationId": "skill.ask",
+    "summary": "Project a bounded answer from the deterministic hosted skill metadata search.",
+    "serviceKey": "skillService",
+    "serviceEntity": "skill",
+    "methodName": "askSkills",
+    "kind": "custom",
+    "sideEffect": "none",
+    "examples": [
+      "{\"query\":\"project management\",\"scopeId\":\"<scope-id>\",\"limit\":3}"
+    ],
+    "args": [
+      { "name": "query", "optional": false },
+      { "name": "scopeId", "optional": true },
+      { "name": "scopeResolution", "optional": true },
+      { "name": "limit", "optional": true }
+    ]
+  },
+  {
     "toolId": "aops-skill-create",
     "operationId": "skill.create",
     "summary": "Create skill.",
@@ -3143,6 +3162,25 @@ export const AGENTSPACE_OPERATION_CATALOG_ROWS = [
         "name": "id",
         "optional": false
       }
+    ]
+  },
+  {
+    "toolId": "aops-skill-search",
+    "operationId": "skill.search",
+    "summary": "Search current published skills using deterministic on-read raw metadata ranking.",
+    "serviceKey": "skillService",
+    "serviceEntity": "skill",
+    "methodName": "searchSkills",
+    "kind": "custom",
+    "sideEffect": "none",
+    "examples": [
+      "{\"query\":\"kanban\",\"scopeId\":\"<scope-id>\",\"limit\":5}"
+    ],
+    "args": [
+      { "name": "query", "optional": false },
+      { "name": "scopeId", "optional": true },
+      { "name": "scopeResolution", "optional": true },
+      { "name": "limit", "optional": true }
     ]
   },
   {

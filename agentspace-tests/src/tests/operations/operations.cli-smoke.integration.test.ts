@@ -39,6 +39,8 @@ describe('agentspace-cli version/help/manifest', () => {
     expect(String(cliManifest.kind ?? '')).toBe('agentspace-cli-projection')
     expect(Object.prototype.hasOwnProperty.call(cliManifest.commandsById ?? {}, 'manifest.get')).toBe(true)
     expect(Object.prototype.hasOwnProperty.call(cliManifest.commandsById ?? {}, 'project.list-projects')).toBe(true)
+    expect(Object.prototype.hasOwnProperty.call(cliManifest.commandsById ?? {}, 'skill.search')).toBe(true)
+    expect(Object.prototype.hasOwnProperty.call(cliManifest.commandsById ?? {}, 'skill.ask')).toBe(true)
     expect(Array.isArray(cliManifest.artifacts)).toBe(true)
 
     const dcmOperationDocs = (await runAgentspaceCliWithoutRepo(
@@ -59,6 +61,17 @@ describe('agentspace-cli version/help/manifest', () => {
     expect(String(skillPackageDocs.summary ?? '').toLowerCase()).toContain('skill package')
     expect(Array.isArray(skillPackageDocs.notes) && skillPackageDocs.notes.some((note) => note.includes('SKILL.md'))).toBe(true)
     expect(Array.isArray(skillPackageDocs.examples) && skillPackageDocs.examples.some((example) => example.includes('"bundle"'))).toBe(true)
+
+    const skillSearchDocs = (await runAgentspaceCliWithoutRepo(
+      ['manifest', 'get', 'dcm', '--path', 'docs.operations.skill.search'],
+    )) as { summary?: string; notes?: string[] }
+    expect(String(skillSearchDocs.summary ?? '').toLowerCase()).toContain('metadata')
+    expect(Array.isArray(skillSearchDocs.notes) && skillSearchDocs.notes.some((note) => note.includes('at most five'))).toBe(true)
+
+    const skillAskDescriptor = (await runAgentspaceCliWithoutRepo(
+      ['manifest', 'get', 'cli', '--path', 'commandsById.skill.ask'],
+    )) as { title?: string }
+    expect(String(skillAskDescriptor.title ?? '')).toBe('agentspace skill ask')
 
     const workflowInstanceDocs = (await runAgentspaceCliWithoutRepo(
       ['manifest', 'get', 'dcm', '--path', 'docs.operations.workflow-instance.list-workflow-instances'],

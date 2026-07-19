@@ -226,6 +226,102 @@ const DB_OPTIONS_SCHEMA: JsonSchema = {
   type: 'object',
   additionalProperties: true,
 }
+const SKILL_DISCOVERY_INPUT_SCHEMA: JsonSchema = objectSchema({
+  query: { type: 'string', minLength: 1, maxLength: 256 },
+  scopeId: NON_EMPTY_STRING_SCHEMA,
+  scopeResolution: { type: 'string', enum: ['explicit', 'cascade'] },
+  limit: { type: 'integer', minimum: 1, maximum: 5 },
+}, ['query'])
+const SKILL_DISCOVERY_MATCH_FIELD_SCHEMA: JsonSchema = {
+  anyOf: [
+    { enum: ['name', 'shortDescription', 'description', 'tags', 'version', 'entryFile', 'skillStandard'] },
+    { type: 'string', pattern: '^meta\\.[A-Za-z0-9_.-]+$' },
+  ],
+}
+const SKILL_DISCOVERY_CANDIDATE_SCHEMA: JsonSchema = objectSchema({
+  skillId: NON_EMPTY_STRING_SCHEMA,
+  versionId: NON_EMPTY_STRING_SCHEMA,
+  exactRef: { type: 'string', pattern: '^skill-version:.+' },
+  name: { type: 'string', minLength: 1, maxLength: 80 },
+  shortDescription: { type: 'string', minLength: 1, maxLength: 96 },
+  version: NON_EMPTY_STRING_SCHEMA,
+  entryFile: NON_EMPTY_STRING_SCHEMA,
+  skillStandard: NON_EMPTY_STRING_SCHEMA,
+  origin: { const: 'hosted' },
+  score: { type: 'integer', minimum: 1 },
+  matchedBy: {
+    type: 'array',
+    minItems: 1,
+    maxItems: 5,
+    uniqueItems: true,
+    items: SKILL_DISCOVERY_MATCH_FIELD_SCHEMA,
+  },
+}, ['skillId', 'versionId', 'exactRef', 'name', 'version', 'entryFile', 'skillStandard', 'origin', 'score', 'matchedBy'])
+const SKILL_SEARCH_OUTPUT_SCHEMA: JsonSchema = objectSchema({
+  query: NON_EMPTY_STRING_SCHEMA,
+  normalizedQuery: NON_EMPTY_STRING_SCHEMA,
+  count: { type: 'integer', minimum: 0, maximum: 5 },
+  candidates: { type: 'array', maxItems: 5, items: SKILL_DISCOVERY_CANDIDATE_SCHEMA },
+}, ['query', 'normalizedQuery', 'count', 'candidates'])
+const SKILL_ASK_OUTPUT_SCHEMA: JsonSchema = objectSchema({
+  query: NON_EMPTY_STRING_SCHEMA,
+  normalizedQuery: NON_EMPTY_STRING_SCHEMA,
+  count: { type: 'integer', minimum: 0, maximum: 5 },
+  candidates: { type: 'array', maxItems: 5, items: SKILL_DISCOVERY_CANDIDATE_SCHEMA },
+  answer: { type: 'string', maxLength: 1024 },
+}, ['query', 'normalizedQuery', 'count', 'candidates', 'answer'])
+const SHA256_SCHEMA: JsonSchema = { type: 'string', pattern: '^[a-f0-9]{64}$' }
+const SKILL_PACKAGE_FILE_DIGEST_SCHEMA: JsonSchema = objectSchema({
+  path: NON_EMPTY_STRING_SCHEMA,
+  sha256: SHA256_SCHEMA,
+  byteLength: { type: 'integer', minimum: 0 },
+}, ['path', 'sha256', 'byteLength'])
+const SKILL_PACKAGE_COMPATIBILITY_SCHEMA: JsonSchema = objectSchema({
+  minCliVersion: NON_EMPTY_STRING_SCHEMA,
+  maxSchemaVersion: { const: 1 },
+}, ['minCliVersion', 'maxSchemaVersion'])
+const SKILL_PACKAGE_MANIFEST_SCHEMA: JsonSchema = objectSchema({
+  schemaVersion: { const: 1 },
+  assetKind: { const: 'skill-package' },
+  name: NON_EMPTY_STRING_SCHEMA,
+  version: NON_EMPTY_STRING_SCHEMA,
+  versionId: NON_EMPTY_STRING_SCHEMA,
+  entryFile: { const: 'SKILL.md' },
+  standard: { const: 'aops-skill-package-v1' },
+  packageSha256: SHA256_SCHEMA,
+  files: { type: 'array', minItems: 1, items: SKILL_PACKAGE_FILE_DIGEST_SCHEMA },
+  compatibility: SKILL_PACKAGE_COMPATIBILITY_SCHEMA,
+  provenance: objectSchema({
+    trustClass: { const: 'verified-hosted-package' },
+    expectedDigestSource: { const: 'immutable-hosted-metadata' },
+    reference: NON_EMPTY_STRING_SCHEMA,
+  }, ['trustClass', 'expectedDigestSource', 'reference']),
+}, ['schemaVersion', 'assetKind', 'name', 'version', 'versionId', 'entryFile', 'standard', 'packageSha256', 'files', 'compatibility', 'provenance'])
+const SKILL_PACKAGE_TRANSFER_FILE_SCHEMA: JsonSchema = objectSchema({
+  path: NON_EMPTY_STRING_SCHEMA,
+  content: { type: 'string' },
+  kind: { type: 'string' },
+  encoding: { type: 'string' },
+  mimeType: { type: 'string' },
+}, ['path', 'content'])
+const SKILL_PACKAGE_EXPORT_OUTPUT_SCHEMA: JsonSchema = objectSchema({
+  skillVersionId: NON_EMPTY_STRING_SCHEMA,
+  skillId: NON_EMPTY_STRING_SCHEMA,
+  skillName: NON_EMPTY_STRING_SCHEMA,
+  projectId: NON_EMPTY_STRING_SCHEMA,
+  scopeId: NON_EMPTY_STRING_SCHEMA,
+  files: { type: 'array', minItems: 1, items: SKILL_PACKAGE_TRANSFER_FILE_SCHEMA },
+  metadata: { type: 'object', additionalProperties: true },
+  manifest: SKILL_PACKAGE_MANIFEST_SCHEMA,
+  package: objectSchema({
+    entryFile: { const: 'SKILL.md' },
+    standard: { const: 'aops-skill-package-v1' },
+    format: { const: 'filesystem-skill-package' },
+    fileCount: { type: 'integer', minimum: 1 },
+    metadata: { type: 'object', additionalProperties: true },
+    compatibility: SKILL_PACKAGE_COMPATIBILITY_SCHEMA,
+  }, ['entryFile', 'standard', 'format', 'fileCount', 'compatibility']),
+}, ['skillVersionId', 'skillId', 'skillName', 'projectId', 'scopeId', 'files', 'metadata', 'manifest', 'package'])
 const CHAT_ROOM_STATUS_SCHEMA: JsonSchema = { type: 'string', enum: ['active', 'archived'] }
 const CHAT_MEMBER_STATUS_SCHEMA: JsonSchema = { type: 'string', enum: ['active', 'left'] }
 const CHAT_MESSAGE_KIND_SCHEMA: JsonSchema = { type: 'string', enum: ['message'] }
@@ -561,6 +657,14 @@ const INPUT_SCHEMA_OVERRIDES_BY_OPERATION_ID = new Map<string, JsonSchema>([
   [normalizeAgentspaceOperationId('project-path.upsert-project-path'), PROJECT_PATH_UPSERT_INPUT_SCHEMA],
   [normalizeAgentspaceOperationId('resource.create'), RESOURCE_CREATE_INPUT_SCHEMA],
   [normalizeAgentspaceOperationId('resource.create-resource'), RESOURCE_CREATE_INPUT_SCHEMA],
+  [normalizeAgentspaceOperationId('skill.ask'), SKILL_DISCOVERY_INPUT_SCHEMA],
+  [normalizeAgentspaceOperationId('skill.search'), SKILL_DISCOVERY_INPUT_SCHEMA],
+])
+
+const OUTPUT_SCHEMA_OVERRIDES_BY_OPERATION_ID = new Map<string, JsonSchema>([
+  [normalizeAgentspaceOperationId('skill.ask'), SKILL_ASK_OUTPUT_SCHEMA],
+  [normalizeAgentspaceOperationId('skill.search'), SKILL_SEARCH_OUTPUT_SCHEMA],
+  [normalizeAgentspaceOperationId('skill-version.export-skill-package'), SKILL_PACKAGE_EXPORT_OUTPUT_SCHEMA],
 ])
 
 function inferOperationKind(operationId: string): AgentspaceOperationKind {
@@ -718,6 +822,9 @@ export function getAgentspaceContractSchema(ref: string): JsonSchema | null {
     const inputSchema = buildInputSchemaFromCatalog(normalizedOperationId)
     if (inputSchema) return inputSchema
   }
+
+  const outputOverride = OUTPUT_SCHEMA_OVERRIDES_BY_OPERATION_ID.get(normalizedOperationId)
+  if (parsed.direction === 'output' && outputOverride) return outputOverride
 
   const kind = inferOperationKind(normalizedOperationId)
   return getDefaultSchemaForKind(kind, parsed.direction)

@@ -504,6 +504,9 @@ importers:
       '@aopslab/domain-host-plugin-agentspace':
         specifier: workspace:*
         version: link:../agentspace-host-plugin
+      '@aopslab/domain-kit-agentspace':
+        specifier: workspace:*
+        version: link:../agentspace-kit
       '@aopslab/domain-tooling-agentspace':
         specifier: workspace:*
         version: link:../agentspace-tooling

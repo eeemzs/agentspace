@@ -142,6 +142,7 @@ for (const variant of repoVariants) {
                 scopeId: projectId,
                 createdBy: 'agentspace-tests',
                 updatedBy: 'agentspace-tests',
+                publish: true,
                 bundle: {
                   sourcePath: '/tmp/agentspace-skill-package-test',
                   metadata: {
@@ -190,6 +191,12 @@ for (const variant of repoVariants) {
           variant.url,
         )) as {
           metadata?: { source?: string; purpose?: string }
+          manifest?: {
+            versionId?: string
+            packageSha256?: string
+            files?: Array<{ path?: string; sha256?: string; byteLength?: number }>
+            provenance?: { trustClass?: string; expectedDigestSource?: string }
+          }
           package?: { entryFile?: string; standard?: string; format?: string; sourcePath?: string; fileCount?: number }
           files?: Array<{ path?: string; content?: string }>
         }
@@ -197,7 +204,7 @@ for (const variant of repoVariants) {
         expect(String(exported.package?.entryFile ?? '')).toBe('SKILL.md')
         expect(String(exported.package?.standard ?? '')).toBe('aops-skill-package-v1')
         expect(String(exported.package?.format ?? '')).toBe('filesystem-skill-package')
-        expect(String(exported.package?.sourcePath ?? '')).toBe('/tmp/agentspace-skill-package-test')
+        expect(exported.package?.sourcePath).toBeUndefined()
         expect(Number(exported.package?.fileCount ?? 0)).toBe(2)
         expect(String(exported.metadata?.source ?? '')).toBe('agentspace-tests')
         expect(String(exported.metadata?.purpose ?? '')).toBe('round-trip')
@@ -205,6 +212,44 @@ for (const variant of repoVariants) {
         expect(filePaths).toContain('SKILL.md')
         expect(filePaths).toContain('references/checklist.md')
         expect(filePaths).not.toContain('agents/openai.yaml')
+        expect(String(exported.manifest?.versionId ?? '')).toBe(skillVersionId)
+        expect(String(exported.manifest?.packageSha256 ?? '')).toMatch(/^[a-f0-9]{64}$/)
+        expect(exported.manifest?.files).toHaveLength(2)
+        expect(exported.manifest?.provenance).toMatchObject({
+          trustClass: 'verified-hosted-package',
+          expectedDigestSource: 'immutable-hosted-metadata',
+        })
+        expect(JSON.stringify(exported)).not.toContain('/tmp/agentspace-skill-package-test')
+
+        const searched = (await runAgentspaceCli(
+          [
+            'tool',
+            '--id',
+            'agentspace.skill.search',
+            '--input',
+            JSON.stringify({ query: skillName, scopeId: projectId, limit: 5 }),
+          ],
+          variant.url,
+        )) as { candidates?: Array<{ skillId?: string; versionId?: string; exactRef?: string; origin?: string }> }
+        expect(searched.candidates?.[0]).toMatchObject({
+          skillId,
+          versionId: skillVersionId,
+          exactRef: `skill-version:${skillVersionId}`,
+          origin: 'hosted',
+        })
+
+        const asked = (await runAgentspaceCli(
+          [
+            'tool',
+            '--id',
+            'agentspace.skill.ask',
+            '--input',
+            JSON.stringify({ query: skillName, scopeId: projectId, limit: 3 }),
+          ],
+          variant.url,
+        )) as { answer?: string; candidates?: Array<{ versionId?: string }> }
+        expect(String(asked.answer ?? '')).toContain(`skill-version:${skillVersionId}`)
+        expect(asked.candidates?.[0]?.versionId).toBe(skillVersionId)
 
         const materialized = (await runAgentspaceCli(
           [

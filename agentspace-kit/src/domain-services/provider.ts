@@ -500,6 +500,7 @@ resourceService: async (ctx, _deps, repos, logger) => {
 skillService: async (ctx, _deps, repos, logger) => {
       return new SkillService({
         skillRepository: repos.skillRepository,
+        skillVersionRepository: repos.skillVersionRepository,
         scopeRepository: repos.scopeRepository,
         logger,
         locale: ctx.locale,
