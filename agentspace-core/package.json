@@ -1,0 +1,38 @@
+{
+  "name": "@aopslab/domain-core-agentspace",
+  "version": "0.1.0",
+  "type": "module",
+  "private": false,
+  "description": "Agentspace core helpers and resources.",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eeemzs/agentspace.git",
+    "directory": "agentspace-core"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -b tsconfig.lib.json"
+  },
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "resources",
+    "LICENSE",
+    "NOTICE",
+    "!**/*.tsbuildinfo"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  }
+}

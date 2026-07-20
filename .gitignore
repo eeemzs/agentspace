@@ -1,0 +1,137 @@
+# See https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
+
+# compiled output
+dist
+tmp
+.tmp/
+*.sqlite
+out-tsc
+build
+.svelte-kit
+# dependencies
+node_modules
+
+# IDEs and editors
+/.idea
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# IDE - VSCode (completely ignored - Linux/Windows sync issues)
+.vscode/
+**/.vscode/
+
+# misc
+/.sass-cache
+/connect.lock
+/coverage
+/libpeerconnection.log
+npm-debug.log
+yarn-error.log
+testem.log
+/typings
+
+# System Files
+.DS_Store
+Thumbs.db
+
+.nx/
+.nx/cache
+.nx/workspace-data
+.cursor/rules/nx-rules.mdc
+.github/instructions/nx.instructions.md
+
+vite.config.*.timestamp*
+vitest.config.*.timestamp*
+*.env
+
+test-output
+test-output.log
+apps/xfgen-cli-old/
+out/
+
+# Next.js
+.next
+out
+
+# Playwright test artifacts
+apps/*-e2e/test-results/
+**/playwright-report/
+**/.last-run.json
+
+# TypeScript incremental build info
+*.tsbuildinfo
+**/logs
+**/src-tauri/target/
+.orchestra
+**/.orchestra
+.xf-agents
+**/.run
+apps/smweb-admin-cli/backup/web-categories
+apps/bootman-cli/backup/
+
+.tools/node-v20.18.1-win-x64.zip
+.tools/node-v20.18.1-win-x64/
+
+# ===================
+# Tauri / Rust
+# ===================
+
+# Rust build output
+src-tauri/target/
+**/target/
+
+# Cargo lock (optional - some prefer to track it)
+# src-tauri/Cargo.lock
+
+# Debug symbols
+*.pdb
+*.dSYM/
+
+# Tauri generated files (schemas can be regenerated)
+src-tauri/gen/
+
+# Tauri bundle output
+src-tauri/bundle/
+
+# Tauri sidecar binaries (local builds)
+src-tauri/binaries/
+
+# Windows installer tools
+src-tauri/WixTools/
+
+# macOS app bundles during development
+*.app/
+
+# Linux AppImage/deb during development
+*.AppImage
+*.deb
+*.rpm
+
+# Windows installers
+*.msi
+*.exe
+!src-tauri/binaries/*.exe
+
+# Tauri sidecar binaries (if auto-generated)
+# Keep tracked binaries in src-tauri/binaries/
+
+# Rust incremental compilation
+*.rmeta
+*.rlib
+
+# Rust analyzer
+rust-project.json
+
+# LLVM coverage
+*.profraw
+*.profdata
+
+# Tauri CLI cache
+.tauri/
+
+# AOPS repo metadata should be tracked
+!.aops/

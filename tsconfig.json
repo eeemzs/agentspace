@@ -1,0 +1,30 @@
+{
+  "extends": "./tsconfig.base.json",
+  "files": [],
+  "references": [
+    {
+      "path": "./agentspace-tooling"
+    },
+    {
+      "path": "./agentspace-cli"
+    },
+    {
+      "path": "./agentspace-tests"
+    },
+    {
+      "path": "./agentspace-core"
+    },
+    {
+      "path": "./agentspace-host-plugin"
+    },
+    {
+      "path": "./agentspace-ops"
+    },
+    {
+      "path": "./agentspace-kit"
+    },
+    {
+      "path": "./agentspace-dm"
+    }
+  ]
+}

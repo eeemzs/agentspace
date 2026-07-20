@@ -1,0 +1,40 @@
+{
+  "name": "@aopslab/domain-ops-agentspace",
+  "version": "0.1.0",
+  "type": "module",
+  "private": false,
+  "description": "Agentspace operational utilities (seed, maintenance, offline ops).",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eeemzs/agentspace.git",
+    "directory": "agentspace-ops"
+  },
+  "main": "./dist/src/index.js",
+  "module": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "scripts": {
+    "build": "tsc -b tsconfig.lib.json"
+  },
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/src/index.js",
+      "default": "./dist/src/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "NOTICE",
+    "!**/*.tsbuildinfo"
+  ],
+  "dependencies": {
+    "@aopslab/domain-kit-agentspace": "workspace:*"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  }
+}

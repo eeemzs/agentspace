@@ -1,0 +1,46 @@
+{
+  "name": "@aopslab/domain-tooling-agentspace",
+  "version": "0.1.0",
+  "type": "module",
+  "private": false,
+  "description": "Agentspace shared tooling surface (CLI/MCP/AOPS wrappers).",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eeemzs/agentspace.git",
+    "directory": "agentspace-tooling"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -b tsconfig.lib.json",
+    "postbuild": "pnpm run manifest:emit",
+    "manifest:print": "tsx scripts/manifest-cli.ts print --kind all",
+    "manifest:emit": "tsx scripts/manifest-cli.ts emit --kind all --out-dir dist/manifests",
+    "manifest:check": "tsx scripts/manifest-cli.ts check --kind all --out-dir dist/manifests",
+    "manifest:sync": "pnpm run build && pnpm run manifest:check"
+  },
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "NOTICE",
+    "!**/*.tsbuildinfo"
+  ],
+  "dependencies": {
+    "@aopslab/domain-kit-agentspace": "workspace:*",
+    "zod": "catalog:"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  }
+}

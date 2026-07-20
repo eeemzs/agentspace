@@ -1,0 +1,29 @@
+{
+  "name": "@aopslab/domain-tests-agentspace",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "main": "./dist/main.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.app.json",
+    "test": "pnpm run test:sqlite",
+    "test:basic": "node scripts/run-integration.mjs --repos=sqlite --runner=node -- --exclude src/tests/operations/operations.agentspace-cli.integration.test.ts",
+    "test:pg": "node scripts/run-integration.mjs --repos=pg --runner=node",
+    "test:sqlite": "node scripts/run-integration.mjs --repos=sqlite --runner=node",
+    "test:full": "pnpm run test:pg && pnpm run test:sqlite",
+    "test:matrix": "node scripts/run-integration.mjs",
+    "test:fast:sqlite": "pnpm run test:basic",
+    "test:cli": "pnpm run test:sqlite",
+    "start": "node dist/main.js"
+  },
+  "dependencies": {
+    "@aopslab/domain-kit-agentspace": "workspace:*",
+    "dotenv": "catalog:",
+    "effect": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

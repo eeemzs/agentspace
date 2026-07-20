@@ -1,0 +1,55 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1775595687527,
+      "tag": "0000_goofy_vector",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1776094058060,
+      "tag": "0001_light_hannibal_king",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1778803200000,
+      "tag": "0002_memory_single_truth",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1779134400000,
+      "tag": "0003_memory_remove_lesson",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1779494400000,
+      "tag": "0004_memory_decision_retention",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1781107115557,
+      "tag": "0005_chat_rooms_v1",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1781611040297,
+      "tag": "0006_missions_v1",
+      "breakpoints": true
+    }
+  ]
+}
