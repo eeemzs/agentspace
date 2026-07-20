@@ -1,6 +1,6 @@
 {
   "name": "@aopslab/domain-kit-agentspace",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "description": "Agentspace kit surface.",
   "license": "Apache-2.0",

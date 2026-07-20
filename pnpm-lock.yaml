@@ -7,38 +7,38 @@ settings:
 catalogs:
   default:
     '@aopslab/xf-bm':
-      specifier: 0.1.88
-      version: 0.1.88
+      specifier: 0.1.89
+      version: 0.1.89
     '@aopslab/xf-core':
-      specifier: 0.1.68
-      version: 0.1.68
+      specifier: 0.1.69
+      version: 0.1.69
     '@aopslab/xf-db':
-      specifier: 0.1.74
-      version: 0.1.74
-    '@aopslab/xf-db-drizzle':
-      specifier: 0.1.80
-      version: 0.1.80
-    '@aopslab/xf-db-mongoose':
-      specifier: 0.1.78
-      version: 0.1.78
-    '@aopslab/xf-db-redis':
       specifier: 0.1.75
       version: 0.1.75
+    '@aopslab/xf-db-drizzle':
+      specifier: 0.1.81
+      version: 0.1.81
+    '@aopslab/xf-db-mongoose':
+      specifier: 0.1.79
+      version: 0.1.79
+    '@aopslab/xf-db-redis':
+      specifier: 0.1.76
+      version: 0.1.76
     '@aopslab/xf-dm':
-      specifier: 0.1.83
-      version: 0.1.83
+      specifier: 0.1.84
+      version: 0.1.84
     '@aopslab/xf-dm-kits':
-      specifier: 0.1.13
-      version: 0.1.13
+      specifier: 0.1.14
+      version: 0.1.14
     '@aopslab/xf-i18n':
-      specifier: 0.1.73
-      version: 0.1.73
+      specifier: 0.1.74
+      version: 0.1.74
     '@aopslab/xf-logger':
       specifier: 0.1.61
       version: 0.1.61
     '@aopslab/xf-validation':
-      specifier: 0.1.79
-      version: 0.1.79
+      specifier: 0.1.80
+      version: 0.1.80
     '@changesets/cli':
       specifier: ^2.29.8
       version: 2.31.1
@@ -54,12 +54,9 @@ catalogs:
     drizzle-kit:
       specifier: ^0.31.9
       version: 0.31.10
-    drizzle-orm:
-      specifier: 0.45.1
-      version: 0.45.1
     effect:
-      specifier: 3.19.19
-      version: 3.19.19
+      specifier: 3.20.0
+      version: 3.20.0
     tsx:
       specifier: ^4.21.0
       version: 4.23.1
@@ -73,49 +70,52 @@ catalogs:
       specifier: 4.4.3
       version: 4.4.3
 
+overrides:
+  drizzle-orm: 0.45.2
+
 importers:
 
   .:
     dependencies:
       '@aopslab/xf-bm':
         specifier: 'catalog:'
-        version: 0.1.88(zod@4.4.3)
+        version: 0.1.89(zod@4.4.3)
       '@aopslab/xf-core':
         specifier: 'catalog:'
-        version: 0.1.68
+        version: 0.1.69
       '@aopslab/xf-db':
         specifier: 'catalog:'
-        version: 0.1.74(zod@4.4.3)
+        version: 0.1.75(zod@4.4.3)
       '@aopslab/xf-db-drizzle':
         specifier: 'catalog:'
-        version: 0.1.80(drizzle-orm@0.45.1(@upstash/redis@1.38.0)(pg@8.20.0))(zod@4.4.3)
+        version: 0.1.81(drizzle-orm@0.45.2(@upstash/redis@1.38.0)(pg@8.20.0))(zod@4.4.3)
       '@aopslab/xf-db-mongoose':
         specifier: 'catalog:'
-        version: 0.1.78(mongoose@8.23.1)(zod@4.4.3)
+        version: 0.1.79(mongoose@8.23.1)(zod@4.4.3)
       '@aopslab/xf-db-redis':
         specifier: 'catalog:'
-        version: 0.1.75(zod@4.4.3)
+        version: 0.1.76(zod@4.4.3)
       '@aopslab/xf-dm':
         specifier: 'catalog:'
-        version: 0.1.83(drizzle-orm@0.45.1(@upstash/redis@1.38.0)(pg@8.20.0))(mongoose@8.23.1)(zod@4.4.3)
+        version: 0.1.84(drizzle-orm@0.45.2(@upstash/redis@1.38.0)(pg@8.20.0))(mongoose@8.23.1)(zod@4.4.3)
       '@aopslab/xf-dm-kits':
         specifier: 'catalog:'
-        version: 0.1.13(drizzle-orm@0.45.1(@upstash/redis@1.38.0)(pg@8.20.0))(mongoose@8.23.1)
+        version: 0.1.14(drizzle-orm@0.45.2(@upstash/redis@1.38.0)(pg@8.20.0))(mongoose@8.23.1)
       '@aopslab/xf-i18n':
         specifier: 'catalog:'
-        version: 0.1.73
+        version: 0.1.74
       '@aopslab/xf-logger':
         specifier: 'catalog:'
         version: 0.1.61
       '@aopslab/xf-validation':
         specifier: 'catalog:'
-        version: 0.1.79(zod@4.4.3)
+        version: 0.1.80(zod@4.4.3)
       dotenv:
         specifier: 'catalog:'
         version: 17.4.2
       effect:
         specifier: 'catalog:'
-        version: 3.19.19
+        version: 3.20.0
       zod:
         specifier: 'catalog:'
         version: 4.4.3
@@ -130,8 +130,8 @@ importers:
         specifier: 'catalog:'
         version: 0.31.10
       drizzle-orm:
-        specifier: 'catalog:'
-        version: 0.45.1(@upstash/redis@1.38.0)(pg@8.20.0)
+        specifier: 0.45.2
+        version: 0.45.2(@upstash/redis@1.38.0)(pg@8.20.0)
       tsx:
         specifier: 'catalog:'
         version: 4.23.1
@@ -155,7 +155,7 @@ importers:
         version: link:../agentspace-tooling
       '@aopslab/xf-core':
         specifier: 'catalog:'
-        version: 0.1.68
+        version: 0.1.69
       dotenv:
         specifier: 'catalog:'
         version: 17.4.2
@@ -166,37 +166,37 @@ importers:
     dependencies:
       '@aopslab/xf-bm':
         specifier: 'catalog:'
-        version: 0.1.88(zod@4.4.3)
+        version: 0.1.89(zod@4.4.3)
       '@aopslab/xf-core':
         specifier: 'catalog:'
-        version: 0.1.68
+        version: 0.1.69
       '@aopslab/xf-db':
         specifier: 'catalog:'
-        version: 0.1.74(zod@4.4.3)
+        version: 0.1.75(zod@4.4.3)
       '@aopslab/xf-db-drizzle':
         specifier: 'catalog:'
-        version: 0.1.80(drizzle-orm@0.45.1(@upstash/redis@1.38.0)(pg@8.20.0))(zod@4.4.3)
+        version: 0.1.81(drizzle-orm@0.45.2(@upstash/redis@1.38.0)(pg@8.20.0))(zod@4.4.3)
       '@aopslab/xf-db-redis':
         specifier: 'catalog:'
-        version: 0.1.75(zod@4.4.3)
+        version: 0.1.76(zod@4.4.3)
       '@aopslab/xf-dm':
         specifier: 'catalog:'
-        version: 0.1.83(drizzle-orm@0.45.1(@upstash/redis@1.38.0)(pg@8.20.0))(mongoose@8.23.1)(zod@4.4.3)
+        version: 0.1.84(drizzle-orm@0.45.2(@upstash/redis@1.38.0)(pg@8.20.0))(mongoose@8.23.1)(zod@4.4.3)
       '@aopslab/xf-i18n':
         specifier: 'catalog:'
-        version: 0.1.73
+        version: 0.1.74
       '@aopslab/xf-logger':
         specifier: 'catalog:'
         version: 0.1.61
       '@aopslab/xf-validation':
         specifier: 'catalog:'
-        version: 0.1.79(zod@4.4.3)
+        version: 0.1.80(zod@4.4.3)
       drizzle-orm:
-        specifier: 'catalog:'
-        version: 0.45.1(@upstash/redis@1.38.0)(pg@8.20.0)
+        specifier: 0.45.2
+        version: 0.45.2(@upstash/redis@1.38.0)(pg@8.20.0)
       effect:
         specifier: 'catalog:'
-        version: 3.19.19
+        version: 3.20.0
       zod:
         specifier: 'catalog:'
         version: 4.4.3
@@ -208,7 +208,7 @@ importers:
         version: link:../agentspace-kit
       '@aopslab/xf-validation':
         specifier: 'catalog:'
-        version: 0.1.79(zod@4.4.3)
+        version: 0.1.80(zod@4.4.3)
       ajv:
         specifier: 'catalog:'
         version: 8.20.0
@@ -220,22 +220,22 @@ importers:
         version: link:../agentspace-dm
       '@aopslab/xf-core':
         specifier: 'catalog:'
-        version: 0.1.68
+        version: 0.1.69
       '@aopslab/xf-db':
         specifier: 'catalog:'
-        version: 0.1.74(zod@4.4.3)
+        version: 0.1.75(zod@4.4.3)
       '@aopslab/xf-dm-kits':
         specifier: 'catalog:'
-        version: 0.1.13(drizzle-orm@0.45.2(@upstash/redis@1.38.0)(pg@8.20.0))(mongoose@8.23.1)
+        version: 0.1.14(drizzle-orm@0.45.2(@upstash/redis@1.38.0)(pg@8.20.0))(mongoose@8.23.1)
       '@aopslab/xf-i18n':
         specifier: 'catalog:'
-        version: 0.1.73
+        version: 0.1.74
       '@aopslab/xf-logger':
         specifier: 'catalog:'
         version: 0.1.61
       '@aopslab/xf-validation':
         specifier: 'catalog:'
-        version: 0.1.79(zod@4.4.3)
+        version: 0.1.80(zod@4.4.3)
       ajv:
         specifier: 'catalog:'
         version: 8.20.0
@@ -244,7 +244,7 @@ importers:
         version: 17.4.2
       effect:
         specifier: 'catalog:'
-        version: 3.19.19
+        version: 3.20.0
       zod:
         specifier: 'catalog:'
         version: 4.4.3
@@ -265,7 +265,7 @@ importers:
         version: 17.4.2
       effect:
         specifier: 'catalog:'
-        version: 3.19.19
+        version: 3.20.0
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
@@ -288,44 +288,44 @@ importers:
 
 packages:
 
-  '@aopslab/xf-bm@0.1.88':
-    resolution: {integrity: sha512-nm9+SfTSEzl5ViIW6Drq5WcyOBDwBd3rzr0DmIo1i500CocU0QDDGKrg/SjmuPDH9QQOnivmW9BCCmenlzsjzQ==}
+  '@aopslab/xf-bm@0.1.89':
+    resolution: {integrity: sha512-ItjiR8QaRlpMwKJ53vBHJRIvFeAFYTMLVtaUdGkY8U9IwANwcZLoVpW5s+NzJqCF5rxxXqNOiFvQjZdzAjpWEA==}
     peerDependencies:
       zod: 4.4.3
 
-  '@aopslab/xf-core@0.1.68':
-    resolution: {integrity: sha512-X6ZKoqrcdhq4dMc/BDc1zycrsxL6AuxBEt0DBpLQaXVKWSIkLOiayOp67bEha1ToM4fCbWWCJvnQLXY/YovThA==}
+  '@aopslab/xf-core@0.1.69':
+    resolution: {integrity: sha512-o1bZsdMMKAKg0rNDroovxJbCRGUFiq4tAVIRYUSgfRn1yy48hfwj5VO/AtW6kAlNDhAWJDq6+l3as472Azj5zA==}
 
-  '@aopslab/xf-db-drizzle@0.1.80':
-    resolution: {integrity: sha512-0AczRnkpbopyjoFT4X71WVACvpZaUOwSXT/a9d+dMAOEhFT2aSu8JOg5bz9Ty4J7RosT4Uq9CNAWVhLPhHvRsQ==}
+  '@aopslab/xf-db-drizzle@0.1.81':
+    resolution: {integrity: sha512-sabpZZFG6yfbiH35iWNqp45yq233TX5+qEuKIpsUKpf6KIBETiRyj2IY3AJtwQhNBRr5i1DVLq/NQxOxY9U2PA==}
     peerDependencies:
-      drizzle-orm: 0.45.1
+      drizzle-orm: 0.45.2
 
-  '@aopslab/xf-db-mongoose@0.1.78':
-    resolution: {integrity: sha512-2CkquaHQYjlxao9BQ1njfkChAycddMDarECN2IpN/4UrpfmFkTuy0w8SMwQdm30N9XzVKItDgwNho4gEFN8EoA==}
+  '@aopslab/xf-db-mongoose@0.1.79':
+    resolution: {integrity: sha512-xfZQSnGbFly9QvqB6yOv2PBBw9uxcuIr9IH4LRNdhn+ofpCWNzTI7SDxzwKIkAMsyyH5aJtDTKq2Z8ZG4mutoQ==}
     peerDependencies:
       mongoose: 8.23.1
 
-  '@aopslab/xf-db-redis@0.1.75':
-    resolution: {integrity: sha512-tkmj3gNgJjkCuRxMI0P7kvtFW4jnD5NXBBBGUpEkWBPzvWT3cnt/l9qgcY7uTst+2QVRFClmr4n0ms++55lA7g==}
+  '@aopslab/xf-db-redis@0.1.76':
+    resolution: {integrity: sha512-4mw0wvuconP2b45eorgiksYrrMjgMvdApTFg9HcsGEyvdF0wpdtzEYamGAhpn4eulNmxIpit+w06tD3pYLJJOQ==}
 
-  '@aopslab/xf-db@0.1.74':
-    resolution: {integrity: sha512-1Nt3bavzaAVMfhBoHiwqV917IuJhlsPeCrgyziVGV/E9RKSK11s+P2GhJN4U+ebwsRuqeAzxROTS3CaDV0YzjQ==}
+  '@aopslab/xf-db@0.1.75':
+    resolution: {integrity: sha512-lkr+w+PYmi0rS1GcziIXZSE/eXGjAZxNQ4n7m2fG3onEGozPUpOGLxUuk6/PuxUsPeW4k4jFLSahAKVsoGAgAg==}
 
-  '@aopslab/xf-dm-kits@0.1.13':
-    resolution: {integrity: sha512-9vA7ylOIuMddaXoHq9ipU7SK/SkLq/Bbl8mbzxr744A4MAJdD5Ot0GFqaQuh4Xb2SNfZaOghxkco7z+TONirHg==}
+  '@aopslab/xf-dm-kits@0.1.14':
+    resolution: {integrity: sha512-tw3FwRWBTz7EI85uASBa6dymjIyd375lEaghd1K3nb5YN3Qn/FkvIBOlLSF7yQeAJmldUHF2DAxwHo5hb4SBOw==}
 
-  '@aopslab/xf-dm@0.1.83':
-    resolution: {integrity: sha512-5xZeM0Ic7pUBfFvPIQzGY88IJmHbwVuYclPm/7PTn72+wrHwLJ8XFLKisktyZdV6Dh4ekl0naUTMfL4VlAjdGA==}
+  '@aopslab/xf-dm@0.1.84':
+    resolution: {integrity: sha512-jxKmxBAcJEkQNMAkGH+69SXuuibTLhdsRgpl99lD8O7sT6OgeVDgBNZ0IwO3PcGDnMi3HFcPdPAUlwJknMuNdQ==}
 
-  '@aopslab/xf-i18n@0.1.73':
-    resolution: {integrity: sha512-0tOZSxfr2ft2pHEA98zX2EpkZHzAvhBTbn7Z/E2d4cwE1R64NeLYrSK9GmTSiC+1F63aBqlgLZ7pGc31OaNjFQ==}
+  '@aopslab/xf-i18n@0.1.74':
+    resolution: {integrity: sha512-r3qM4Se09IbSld720Il+XsamFG+DGqvuGgHDLlVdUbgImAs3YqBopTLuTFI+SlQMJ7TvJ8Dj6yQlq5FokvpWxg==}
 
   '@aopslab/xf-logger@0.1.61':
     resolution: {integrity: sha512-LCEqKkUw5kIwUdvuxxwvZPu5CmaC60oE9kZycS8PUZlthVoD3Y6PsBfxKMHsywTptEWVEdhJXJ5VcGowmrDvXQ==}
 
-  '@aopslab/xf-validation@0.1.79':
-    resolution: {integrity: sha512-17iBiOBWIEFUfIkZ+CarZtVLneDHraBCubkJsJpJkhXyOqcJiGYCe/9IPtFhp6JZSR1i2pYLCC9ejgMpX3J0oQ==}
+  '@aopslab/xf-validation@0.1.80':
+    resolution: {integrity: sha512-EWX5JnExdX8mBBKp8CF7fYTifijScMPLC72dRgA0IUp7GfY+baJQBXluUw1ipgByUhDv4HktAz5nW3cOvpHfiA==}
     peerDependencies:
       zod: 4.4.3
 
@@ -968,36 +968,42 @@ packages:
     engines: {node: ^20.19.0 || >=22.12.0}
     cpu: [arm64]
     os: [linux]
+    libc: [glibc]
 
   '@rolldown/binding-linux-arm64-musl@1.1.5':
     resolution: {integrity: sha512-lAryqH7IteztmCXQXk0etKj4wBQ7Gx5S6LjKhsgp9zb8I5bsuvU/2llH1hDQcjsFeqIsovMVN339/8pUDDBXxA==}
     engines: {node: ^20.19.0 || >=22.12.0}
     cpu: [arm64]
     os: [linux]
+    libc: [musl]
 
   '@rolldown/binding-linux-ppc64-gnu@1.1.5':
     resolution: {integrity: sha512-fsK/sNBnxzBlL4O1JNrZakVQxPspqpED5dLtNsZS9oOKmtSpdNIzxH2kkol5HYTWJN47sE20ztMJPxfZ89qGOg==}
     engines: {node: ^20.19.0 || >=22.12.0}
     cpu: [ppc64]
     os: [linux]
+    libc: [glibc]
 
   '@rolldown/binding-linux-s390x-gnu@1.1.5':
     resolution: {integrity: sha512-gLYb4BIadlfTOYT5gO503n8zQjXflgzpD0FcyKh0Mzx3rqCZKnHoJWV9xe1KXUJ5lx2JfcSHr/mhzS0PC/McAA==}
     engines: {node: ^20.19.0 || >=22.12.0}
     cpu: [s390x]
     os: [linux]
+    libc: [glibc]
 
   '@rolldown/binding-linux-x64-gnu@1.1.5':
     resolution: {integrity: sha512-FjcpEKUyJygHgs1o50VYNvkt5+7Le/VEdYt0AkRpkL33MnyQfwr8l5mXwMmfmTbyMPr5vJLC+8/Gd9gXnwU1QQ==}
     engines: {node: ^20.19.0 || >=22.12.0}
     cpu: [x64]
     os: [linux]
+    libc: [glibc]
 
   '@rolldown/binding-linux-x64-musl@1.1.5':
     resolution: {integrity: sha512-Me+PfPI2TMeOQk0gYWfLQZtTktrmzbr8cDboqX83XKc7UrgAi55gF+2dUkWdxd19n55Essp2yeca+O9N5rBxHg==}
     engines: {node: ^20.19.0 || >=22.12.0}
     cpu: [x64]
     os: [linux]
+    libc: [musl]
 
   '@rolldown/binding-openharmony-arm64@1.1.5':
     resolution: {integrity: sha512-yc5WrLzXks6zCQfn9Oxr8pORKyl/pF+QjHmW/Qx3qu0oyrrNC+y2JLTU1E2rcWYAmzlnqngWXHQjy51VzW70Vw==}
@@ -1185,98 +1191,6 @@ packages:
     resolution: {integrity: sha512-7OZcmQUrdGI+DUNNsKBn1aW8qSoKuTH7d0mYgSP8bAzdFzKoovxEFnoGQp2dVs82EOJeYycqRtciopszwUf8bw==}
     hasBin: true
 
-  drizzle-orm@0.45.1:
-    resolution: {integrity: sha512-Te0FOdKIistGNPMq2jscdqngBRfBpC8uMFVwqjf6gtTVJHIQ/dosgV/CLBU2N4ZJBsXL5savCba9b0YJskKdcA==}
-    peerDependencies:
-      '@aws-sdk/client-rds-data': '>=3'
-      '@cloudflare/workers-types': '>=4'
-      '@electric-sql/pglite': '>=0.2.0'
-      '@libsql/client': '>=0.10.0'
-      '@libsql/client-wasm': '>=0.10.0'
-      '@neondatabase/serverless': '>=0.10.0'
-      '@op-engineering/op-sqlite': '>=2'
-      '@opentelemetry/api': ^1.4.1
-      '@planetscale/database': '>=1.13'
-      '@prisma/client': '*'
-      '@tidbcloud/serverless': '*'
-      '@types/better-sqlite3': '*'
-      '@types/pg': '*'
-      '@types/sql.js': '*'
-      '@upstash/redis': '>=1.34.7'
-      '@vercel/postgres': '>=0.8.0'
-      '@xata.io/client': '*'
-      better-sqlite3: '>=7'
-      bun-types: '*'
-      expo-sqlite: '>=14.0.0'
-      gel: '>=2'
-      knex: '*'
-      kysely: '*'
-      mysql2: '>=2'
-      pg: '>=8'
-      postgres: '>=3'
-      prisma: '*'
-      sql.js: '>=1'
-      sqlite3: '>=5'
-    peerDependenciesMeta:
-      '@aws-sdk/client-rds-data':
-        optional: true
-      '@cloudflare/workers-types':
-        optional: true
-      '@electric-sql/pglite':
-        optional: true
-      '@libsql/client':
-        optional: true
-      '@libsql/client-wasm':
-        optional: true
-      '@neondatabase/serverless':
-        optional: true
-      '@op-engineering/op-sqlite':
-        optional: true
-      '@opentelemetry/api':
-        optional: true
-      '@planetscale/database':
-        optional: true
-      '@prisma/client':
-        optional: true
-      '@tidbcloud/serverless':
-        optional: true
-      '@types/better-sqlite3':
-        optional: true
-      '@types/pg':
-        optional: true
-      '@types/sql.js':
-        optional: true
-      '@upstash/redis':
-        optional: true
-      '@vercel/postgres':
-        optional: true
-      '@xata.io/client':
-        optional: true
-      better-sqlite3:
-        optional: true
-      bun-types:
-        optional: true
-      expo-sqlite:
-        optional: true
-      gel:
-        optional: true
-      knex:
-        optional: true
-      kysely:
-        optional: true
-      mysql2:
-        optional: true
-      pg:
-        optional: true
-      postgres:
-        optional: true
-      prisma:
-        optional: true
-      sql.js:
-        optional: true
-      sqlite3:
-        optional: true
-
   drizzle-orm@0.45.2:
     resolution: {integrity: sha512-kY0BSaTNYWnoDMVoyY8uxmyHjpJW1geOmBMdSSicKo9CIIWkSxMIj2rkeSR51b8KAPB7m+qysjuHme5nKP+E5Q==}
     peerDependencies:
@@ -1369,8 +1283,8 @@ packages:
       sqlite3:
         optional: true
 
-  effect@3.19.19:
-    resolution: {integrity: sha512-Yc8U/SVXo2dHnaP7zNBlAo83h/nzSJpi7vph6Hzyl4ulgMBIgPmz3UzOjb9sBgpFE00gC0iETR244sfXDNLHRg==}
+  effect@3.20.0:
+    resolution: {integrity: sha512-qMLfDJscrNG8p/aw+IkT9W7fgj50Z4wG5bLBy0Txsxz8iUHjDIkOgO3SV0WZfnQbNG2VJYb0b+rDLMrhM4+Krw==}
 
   end-of-stream@1.4.5:
     resolution: {integrity: sha512-ooEGc6HP26xXq/N+GCGOT0JKCLDGrq2bQUZrQ7gyrJiZANJ/8YDTxTpQBXGMn+WbIQXNVpyWymm7KYVICQnyOg==}
@@ -1574,24 +1488,28 @@ packages:
     engines: {node: '>= 12.0.0'}
     cpu: [arm64]
     os: [linux]
+    libc: [glibc]
 
   lightningcss-linux-arm64-musl@1.33.0:
     resolution: {integrity: sha512-yiO5ROMuYQgXbC60yjZU5CYSFZGKXL0HFATXt9mHJn1+zW55oCtMI9NfcVhYLMFDL7gV7oBPon/EmMMGg2OvtQ==}
     engines: {node: '>= 12.0.0'}
     cpu: [arm64]
     os: [linux]
+    libc: [musl]
 
   lightningcss-linux-x64-gnu@1.33.0:
     resolution: {integrity: sha512-ar+Ju7LmcN0Jo4FpL4hpFybwNG9/3A/Br5KW2n2jyODg3MEZXaDYADdemoNS+BDNfMgKvylJLj4S5tyRActuAg==}
     engines: {node: '>= 12.0.0'}
     cpu: [x64]
     os: [linux]
+    libc: [glibc]
 
   lightningcss-linux-x64-musl@1.33.0:
     resolution: {integrity: sha512-RYiYbkokw0trfKqqzfF55lginwEPrD3OJDfTuJzFs1MK6iFnDenaz1fqLLtX4ITG3OktJQXOeTaw1awrBAlZPw==}
     engines: {node: '>= 12.0.0'}
     cpu: [x64]
     os: [linux]
+    libc: [musl]
 
   lightningcss-win32-arm64-msvc@1.33.0:
     resolution: {integrity: sha512-1K+MPfLSFVpphzpdbfkhlWk6wBrTObBzS2T6db10PNOZgR9GoVsAWzwNyuhUYYbTp23j+4RrncfujZ4uAzXvwA==}
@@ -2146,68 +2064,54 @@ packages:
 
 snapshots:
 
-  '@aopslab/xf-bm@0.1.88(zod@4.4.3)':
+  '@aopslab/xf-bm@0.1.89(zod@4.4.3)':
     dependencies:
-      '@aopslab/xf-core': 0.1.68
-      '@aopslab/xf-i18n': 0.1.73
+      '@aopslab/xf-core': 0.1.69
+      '@aopslab/xf-i18n': 0.1.74
       '@aopslab/xf-logger': 0.1.61
-      '@aopslab/xf-validation': 0.1.79(zod@4.4.3)
-      effect: 3.19.19
+      '@aopslab/xf-validation': 0.1.80(zod@4.4.3)
+      effect: 3.20.0
       tslib: 2.8.1
       zod: 4.4.3
 
-  '@aopslab/xf-core@0.1.68':
+  '@aopslab/xf-core@0.1.69':
     dependencies:
       '@aopslab/xf-logger': 0.1.61
-      effect: 3.19.19
+      effect: 3.20.0
       tslib: 2.8.1
 
-  '@aopslab/xf-db-drizzle@0.1.80(drizzle-orm@0.45.1(@upstash/redis@1.38.0)(pg@8.20.0))(zod@4.4.3)':
+  '@aopslab/xf-db-drizzle@0.1.81(drizzle-orm@0.45.2(@upstash/redis@1.38.0)(pg@8.20.0))(zod@4.4.3)':
     dependencies:
-      '@aopslab/xf-bm': 0.1.88(zod@4.4.3)
-      '@aopslab/xf-core': 0.1.68
-      '@aopslab/xf-db': 0.1.74(zod@4.4.3)
-      '@aopslab/xf-logger': 0.1.61
-      drizzle-orm: 0.45.1(@upstash/redis@1.38.0)(pg@8.20.0)
-      effect: 3.19.19
-      pg: 8.20.0
-      tslib: 2.8.1
-    transitivePeerDependencies:
-      - pg-native
-      - zod
-
-  '@aopslab/xf-db-drizzle@0.1.80(drizzle-orm@0.45.2(@upstash/redis@1.38.0)(pg@8.20.0))(zod@4.4.3)':
-    dependencies:
-      '@aopslab/xf-bm': 0.1.88(zod@4.4.3)
-      '@aopslab/xf-core': 0.1.68
-      '@aopslab/xf-db': 0.1.74(zod@4.4.3)
+      '@aopslab/xf-bm': 0.1.89(zod@4.4.3)
+      '@aopslab/xf-core': 0.1.69
+      '@aopslab/xf-db': 0.1.75(zod@4.4.3)
       '@aopslab/xf-logger': 0.1.61
       drizzle-orm: 0.45.2(@upstash/redis@1.38.0)(pg@8.20.0)
-      effect: 3.19.19
+      effect: 3.20.0
       pg: 8.20.0
       tslib: 2.8.1
     transitivePeerDependencies:
       - pg-native
       - zod
 
-  '@aopslab/xf-db-mongoose@0.1.78(mongoose@8.23.1)(zod@4.4.3)':
+  '@aopslab/xf-db-mongoose@0.1.79(mongoose@8.23.1)(zod@4.4.3)':
     dependencies:
-      '@aopslab/xf-bm': 0.1.88(zod@4.4.3)
-      '@aopslab/xf-core': 0.1.68
-      '@aopslab/xf-db': 0.1.74(zod@4.4.3)
+      '@aopslab/xf-bm': 0.1.89(zod@4.4.3)
+      '@aopslab/xf-core': 0.1.69
+      '@aopslab/xf-db': 0.1.75(zod@4.4.3)
       '@aopslab/xf-logger': 0.1.61
       dotenv: 16.6.1
-      effect: 3.19.19
+      effect: 3.20.0
       mongoose: 8.23.1
       tslib: 2.8.1
     transitivePeerDependencies:
       - zod
 
-  '@aopslab/xf-db-redis@0.1.75(zod@4.4.3)':
+  '@aopslab/xf-db-redis@0.1.76(zod@4.4.3)':
     dependencies:
-      '@aopslab/xf-bm': 0.1.88(zod@4.4.3)
-      '@aopslab/xf-core': 0.1.68
-      '@aopslab/xf-db': 0.1.74(zod@4.4.3)
+      '@aopslab/xf-bm': 0.1.89(zod@4.4.3)
+      '@aopslab/xf-core': 0.1.69
+      '@aopslab/xf-db': 0.1.75(zod@4.4.3)
       '@aopslab/xf-logger': 0.1.61
       '@upstash/redis': 1.38.0
       redis: 5.12.1
@@ -2217,24 +2121,24 @@ snapshots:
       - '@opentelemetry/api'
       - zod
 
-  '@aopslab/xf-db@0.1.74(zod@4.4.3)':
+  '@aopslab/xf-db@0.1.75(zod@4.4.3)':
     dependencies:
-      '@aopslab/xf-bm': 0.1.88(zod@4.4.3)
-      '@aopslab/xf-core': 0.1.68
+      '@aopslab/xf-bm': 0.1.89(zod@4.4.3)
+      '@aopslab/xf-core': 0.1.69
       '@aopslab/xf-logger': 0.1.61
-      effect: 3.19.19
+      effect: 3.20.0
       tslib: 2.8.1
       uuid: 11.1.1
     transitivePeerDependencies:
       - zod
 
-  '@aopslab/xf-dm-kits@0.1.13(drizzle-orm@0.45.1(@upstash/redis@1.38.0)(pg@8.20.0))(mongoose@8.23.1)':
+  '@aopslab/xf-dm-kits@0.1.14(drizzle-orm@0.45.2(@upstash/redis@1.38.0)(pg@8.20.0))(mongoose@8.23.1)':
     dependencies:
-      '@aopslab/xf-core': 0.1.68
-      '@aopslab/xf-db': 0.1.74(zod@4.4.3)
-      '@aopslab/xf-dm': 0.1.83(drizzle-orm@0.45.1(@upstash/redis@1.38.0)(pg@8.20.0))(mongoose@8.23.1)(zod@4.4.3)
+      '@aopslab/xf-core': 0.1.69
+      '@aopslab/xf-db': 0.1.75(zod@4.4.3)
+      '@aopslab/xf-dm': 0.1.84(drizzle-orm@0.45.2(@upstash/redis@1.38.0)(pg@8.20.0))(mongoose@8.23.1)(zod@4.4.3)
       '@aopslab/xf-logger': 0.1.61
-      effect: 3.19.19
+      effect: 3.20.0
       tslib: 2.8.1
       zod: 4.4.3
     transitivePeerDependencies:
@@ -2244,31 +2148,15 @@ snapshots:
       - mongoose
       - pg-native
 
-  '@aopslab/xf-dm-kits@0.1.13(drizzle-orm@0.45.2(@upstash/redis@1.38.0)(pg@8.20.0))(mongoose@8.23.1)':
+  '@aopslab/xf-dm@0.1.84(drizzle-orm@0.45.2(@upstash/redis@1.38.0)(pg@8.20.0))(mongoose@8.23.1)(zod@4.4.3)':
     dependencies:
-      '@aopslab/xf-core': 0.1.68
-      '@aopslab/xf-db': 0.1.74(zod@4.4.3)
-      '@aopslab/xf-dm': 0.1.83(drizzle-orm@0.45.2(@upstash/redis@1.38.0)(pg@8.20.0))(mongoose@8.23.1)(zod@4.4.3)
+      '@aopslab/xf-core': 0.1.69
+      '@aopslab/xf-db': 0.1.75(zod@4.4.3)
+      '@aopslab/xf-db-drizzle': 0.1.81(drizzle-orm@0.45.2(@upstash/redis@1.38.0)(pg@8.20.0))(zod@4.4.3)
+      '@aopslab/xf-db-mongoose': 0.1.79(mongoose@8.23.1)(zod@4.4.3)
+      '@aopslab/xf-db-redis': 0.1.76(zod@4.4.3)
       '@aopslab/xf-logger': 0.1.61
-      effect: 3.19.19
-      tslib: 2.8.1
-      zod: 4.4.3
-    transitivePeerDependencies:
-      - '@node-rs/xxhash'
-      - '@opentelemetry/api'
-      - drizzle-orm
-      - mongoose
-      - pg-native
-
-  '@aopslab/xf-dm@0.1.83(drizzle-orm@0.45.1(@upstash/redis@1.38.0)(pg@8.20.0))(mongoose@8.23.1)(zod@4.4.3)':
-    dependencies:
-      '@aopslab/xf-core': 0.1.68
-      '@aopslab/xf-db': 0.1.74(zod@4.4.3)
-      '@aopslab/xf-db-drizzle': 0.1.80(drizzle-orm@0.45.1(@upstash/redis@1.38.0)(pg@8.20.0))(zod@4.4.3)
-      '@aopslab/xf-db-mongoose': 0.1.78(mongoose@8.23.1)(zod@4.4.3)
-      '@aopslab/xf-db-redis': 0.1.75(zod@4.4.3)
-      '@aopslab/xf-logger': 0.1.61
-      effect: 3.19.19
+      effect: 3.20.0
       tslib: 2.8.1
     transitivePeerDependencies:
       - '@node-rs/xxhash'
@@ -2278,27 +2166,9 @@ snapshots:
       - pg-native
       - zod
 
-  '@aopslab/xf-dm@0.1.83(drizzle-orm@0.45.2(@upstash/redis@1.38.0)(pg@8.20.0))(mongoose@8.23.1)(zod@4.4.3)':
+  '@aopslab/xf-i18n@0.1.74':
     dependencies:
-      '@aopslab/xf-core': 0.1.68
-      '@aopslab/xf-db': 0.1.74(zod@4.4.3)
-      '@aopslab/xf-db-drizzle': 0.1.80(drizzle-orm@0.45.2(@upstash/redis@1.38.0)(pg@8.20.0))(zod@4.4.3)
-      '@aopslab/xf-db-mongoose': 0.1.78(mongoose@8.23.1)(zod@4.4.3)
-      '@aopslab/xf-db-redis': 0.1.75(zod@4.4.3)
-      '@aopslab/xf-logger': 0.1.61
-      effect: 3.19.19
-      tslib: 2.8.1
-    transitivePeerDependencies:
-      - '@node-rs/xxhash'
-      - '@opentelemetry/api'
-      - drizzle-orm
-      - mongoose
-      - pg-native
-      - zod
-
-  '@aopslab/xf-i18n@0.1.73':
-    dependencies:
-      '@aopslab/xf-core': 0.1.68
+      '@aopslab/xf-core': 0.1.69
       tslib: 2.8.1
 
   '@aopslab/xf-logger@0.1.61':
@@ -2307,11 +2177,11 @@ snapshots:
       pino-loki: 3.0.0
       pino-pretty: 13.1.3
 
-  '@aopslab/xf-validation@0.1.79(zod@4.4.3)':
+  '@aopslab/xf-validation@0.1.80(zod@4.4.3)':
     dependencies:
-      '@aopslab/xf-core': 0.1.68
-      '@aopslab/xf-i18n': 0.1.73
-      effect: 3.19.19
+      '@aopslab/xf-core': 0.1.69
+      '@aopslab/xf-i18n': 0.1.74
+      effect: 3.20.0
       tslib: 2.8.1
       zod: 4.4.3
 
@@ -2982,17 +2852,12 @@ snapshots:
       esbuild: 0.25.12
       tsx: 4.23.1
 
-  drizzle-orm@0.45.1(@upstash/redis@1.38.0)(pg@8.20.0):
-    optionalDependencies:
-      '@upstash/redis': 1.38.0
-      pg: 8.20.0
-
   drizzle-orm@0.45.2(@upstash/redis@1.38.0)(pg@8.20.0):
     optionalDependencies:
       '@upstash/redis': 1.38.0
       pg: 8.20.0
 
-  effect@3.19.19:
+  effect@3.20.0:
     dependencies:
       '@standard-schema/spec': 1.1.0
       fast-check: 3.23.2

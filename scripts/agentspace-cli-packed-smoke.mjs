@@ -221,16 +221,33 @@ function createTempRunRoot(tempRoot) {
   return fs.mkdtempSync(path.join(tempRoot, 'agentspace-cli-smoke.'))
 }
 
-function buildInstallAppPackageJson(overrides) {
+function buildInstallAppPackageJson() {
   return {
     name: 'agentspace-cli-packaged-smoke',
     private: true,
     type: 'module',
-    pnpm: {
-      onlyBuiltDependencies: ['better-sqlite3'],
-      overrides,
-    },
   }
+}
+
+function writeInstallWorkspaceConfig(installAppDir, overrides) {
+  const overrideLines = Object.entries(overrides).map(
+    ([packageName, tarballPath]) => `  "${packageName}": "${tarballPath.replaceAll('\\', '/')}"`,
+  )
+  fs.writeFileSync(
+    path.join(installAppDir, 'pnpm-workspace.yaml'),
+    [
+      'packages:',
+      '  - "."',
+      '',
+      'overrides:',
+      ...overrideLines,
+      '',
+      'allowBuilds:',
+      '  better-sqlite3: true',
+      '',
+    ].join('\n'),
+    'utf8',
+  )
 }
 
 function buildIsolatedEnv(homeDir) {
@@ -337,17 +354,20 @@ function main() {
       tarballs.set(packed.name, packed.tarballPath)
     }
 
+    const tarballPaths = internalPackages.map((pkg) => tarballs.get(pkg.name))
+    assert(tarballPaths.every(Boolean), 'missing_internal_tarball')
     const overrides = Object.fromEntries(
       [...tarballs.entries()].map(([packageName, tarballPath]) => [packageName, `file:${tarballPath}`]),
     )
-    writeJson(path.join(installAppDir, 'package.json'), buildInstallAppPackageJson(overrides))
+    writeJson(path.join(installAppDir, 'package.json'), buildInstallAppPackageJson())
+    writeInstallWorkspaceConfig(installAppDir, overrides)
 
     const cliTarball = tarballs.get('@aopslab/domain-cli-agentspace')
     assert(Boolean(cliTarball), 'missing_cli_tarball')
 
     run(
       'pnpm',
-      ['add', cliTarball, '--registry', 'https://registry.npmjs.org'],
+      ['add', ...tarballPaths, '--registry', 'https://registry.npmjs.org'],
       { cwd: installAppDir },
     )
 
