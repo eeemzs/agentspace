@@ -67,7 +67,7 @@ export class ServiceBuilderWorkflowDefinition {
         return yield* _(
           Effect.fail(
             new XfConfigurationError({
-              message: 'repository override veya repositoryConfig sağlamanız gerekiyor',
+              message: 'You must provide a repository override or repositoryConfig',
               operation: 'build',
               stage: 'ServiceBuilderWorkflowDefinition::build',
             })
@@ -90,7 +90,7 @@ export class ServiceBuilderWorkflowDefinition {
           return yield* _(
             Effect.fail(
               new XfConfigurationError({
-                message: 'Repository konfigürasyonu gerekli. withConfig() sonrası repositoryConfig ayarlayın.',
+                message: 'Repository configuration is required. Set repositoryConfig after withConfig().',
                 stage: 'ServiceBuilderWorkflowDefinition::build',
               })
             )
@@ -108,7 +108,7 @@ export class ServiceBuilderWorkflowDefinition {
             RepositoryFactoryWorkflowDefinition.create(repositoryParams),
             (error) =>
               new XfConfigurationError({
-                message: `RepositoryFactoryWorkflowDefinition.create başarısız: ${(error as any)?.message ?? 'unknown'}`,
+                message: `RepositoryFactoryWorkflowDefinition.create failed: ${(error as any)?.message ?? 'unknown'}`,
                 stage: 'ServiceBuilderWorkflowDefinition::build',
                 cause: error,
               })

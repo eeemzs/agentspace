@@ -1,4 +1,4 @@
-﻿/* eslint-disable @typescript-eslint/no-this-alias */
+/* eslint-disable @typescript-eslint/no-this-alias */
 import { Effect } from 'effect'
 import { XfConfigurationError } from '@aopslab/xf-core'
 import { LocaleOptions, RepositoryCreateParams } from '@aopslab/xf-dm'
@@ -74,7 +74,7 @@ export class ServiceBuilderProject {
         return yield* _(
           Effect.fail(
             new XfConfigurationError({
-              message: 'repository override veya repositoryConfig sağlamanız gerekiyor',
+              message: 'You must provide a repository override or repositoryConfig',
               operation: 'build',
               stage: 'ServiceBuilderProject::build',
             })
@@ -99,7 +99,7 @@ export class ServiceBuilderProject {
           return yield* _(
             Effect.fail(
               new XfConfigurationError({
-                message: 'Repository konfigürasyonu gerekli. withConfig() sonrası repositoryConfig ayarlayın.',
+                message: 'Repository configuration is required. Set repositoryConfig after withConfig().',
                 stage: 'ServiceBuilderProject::build',
               })
             )
@@ -117,7 +117,7 @@ export class ServiceBuilderProject {
             RepositoryFactoryProject.create(repositoryParams),
             (error) =>
               new XfConfigurationError({
-                message: `RepositoryFactoryProject.create başarısız: ${(error as any)?.message ?? 'unknown'}`,
+                message: `RepositoryFactoryProject.create failed: ${(error as any)?.message ?? 'unknown'}`,
                 stage: 'ServiceBuilderProject::build',
                 cause: error,
               }),
@@ -137,7 +137,7 @@ export class ServiceBuilderProject {
             RepositoryFactoryScope.create(repositoryParams),
             (error) =>
               new XfConfigurationError({
-                message: `RepositoryFactoryScope.create başarısız: ${(error as any)?.message ?? 'unknown'}`,
+                message: `RepositoryFactoryScope.create failed: ${(error as any)?.message ?? 'unknown'}`,
                 stage: 'ServiceBuilderProject::build',
                 cause: error,
               }),

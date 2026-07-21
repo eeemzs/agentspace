@@ -72,7 +72,7 @@ export class ServiceBuilderAgentRunEvent {
         return yield* _(
           Effect.fail(
             new XfConfigurationError({
-              message: 'repository override veya repositoryConfig sağlamanız gerekiyor',
+              message: 'You must provide a repository override or repositoryConfig',
               operation: 'build',
               stage: 'ServiceBuilderAgentRunEvent::build',
             })
@@ -96,7 +96,7 @@ export class ServiceBuilderAgentRunEvent {
           return yield* _(
             Effect.fail(
               new XfConfigurationError({
-                message: 'Repository konfigürasyonu gerekli. withConfig() sonrası repositoryConfig ayarlayın.',
+                message: 'Repository configuration is required. Set repositoryConfig after withConfig().',
                 stage: 'ServiceBuilderAgentRunEvent::build',
               })
             )
@@ -114,7 +114,7 @@ export class ServiceBuilderAgentRunEvent {
             RepositoryFactoryAgentRunEvent.create(repositoryParams),
             (error) =>
               new XfConfigurationError({
-                message: `RepositoryFactoryAgentRunEvent.create başarısız: ${(error as any)?.message ?? 'unknown'}`,
+                message: `RepositoryFactoryAgentRunEvent.create failed: ${(error as any)?.message ?? 'unknown'}`,
                 stage: 'ServiceBuilderAgentRunEvent::build',
                 cause: error,
               }),

@@ -67,7 +67,7 @@ export class ServiceBuilderActivityItem {
         return yield* _(
           Effect.fail(
             new XfConfigurationError({
-              message: 'repository override veya repositoryConfig sağlamanız gerekiyor',
+              message: 'You must provide a repository override or repositoryConfig',
               operation: 'build',
               stage: 'ServiceBuilderActivityItem::build',
             })
@@ -91,7 +91,7 @@ export class ServiceBuilderActivityItem {
           return yield* _(
             Effect.fail(
               new XfConfigurationError({
-                message: 'Repository konfigürasyonu gerekli. withConfig() sonrası repositoryConfig ayarlayın.',
+                message: 'Repository configuration is required. Set repositoryConfig after withConfig().',
                 stage: 'ServiceBuilderActivityItem::build',
               })
             )
@@ -109,7 +109,7 @@ export class ServiceBuilderActivityItem {
             RepositoryFactoryActivityItem.create(repositoryParams),
             (error) =>
               new XfConfigurationError({
-                message: `RepositoryFactoryActivityItem.create başarısız: ${(error as any)?.message ?? 'unknown'}`,
+                message: `RepositoryFactoryActivityItem.create failed: ${(error as any)?.message ?? 'unknown'}`,
                 stage: 'ServiceBuilderActivityItem::build',
                 cause: error,
               }),

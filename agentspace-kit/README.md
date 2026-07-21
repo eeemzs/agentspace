@@ -1,10 +1,10 @@
-﻿# aops-kit
+# agentspace-kit
 
-aops-kit kiti, domain servis ve repository'lerini hexagonal prensiplerle uygulamalara baglayan ince bir kopru saglar.
-Bu scaffold, `inventory-kit` desenini takip eder ve domain'e ozel kodlari
-`//==> custom ... <==//` bloklarinda izole eder.
+Agentspace Kit is a thin bridge that connects domain services and repositories
+to applications using hexagonal architecture. Domain-specific extensions remain
+isolated in `//==> custom ... <==//` blocks.
 
-## Hizli Kullanim (env ile)
+## Quick Start
 
 ```ts
 import { createAgentspaceKitWithEnv, getAgentspaceKitEnvConfig } from '@aops/aops-kit'
@@ -13,7 +13,7 @@ const { kit } = createAgentspaceKitWithEnv({
   envConfig: getAgentspaceKitEnvConfig(),
   baseContext: {
     tenantId: 'tenant-1',
-    locale: 'tr',
+    locale: 'en',
     fallbackLocale: 'en',
     logger,
   },
@@ -22,56 +22,17 @@ const { kit } = createAgentspaceKitWithEnv({
 const service = await kit.getProjectService()
 ```
 
-## Env Degiskenleri
+## Environment Variables
 
 - `TENANT_ID`
 - `LOG_LEVEL`
-- `AGENTSPACE_REPO_URL` (ortak repo URL; pg/sqlite)
-- `AGENTSPACE_SQLITE_URL` (sqlite repo URL)
-- `AGENTSPACE_PG_URL` (postgres repo URL)
-- `AOPS_PG_URL` (geriye donuk ortak fallback)
+- `AGENTSPACE_REPO_URL` (shared PostgreSQL or SQLite repository URL)
+- `AGENTSPACE_SQLITE_URL` (SQLite repository URL)
+- `AGENTSPACE_PG_URL` (PostgreSQL repository URL)
+- `AOPS_PG_URL` (legacy shared fallback)
 
-## Sundugu Yuzey
+## Notes
 
-Services:
-- `projectService`
-- `promptService`
-- `promptVersionService`
-- `resourceService`
-- `skillService`
-- `skillVersionService`
-- `kanbanBoardService`
-- `kanbanColumnService`
-- `sprintService`
-- `sprintItemService`
-- `taskService`
-- `taskCommentService`
-- `agentSessionService`
-- `agentRunService`
-- `artifactService`
-- `artifactLinkService`
-- `memoryItemService`
-
-Repositories:
-- `projectRepository`
-- `promptRepository`
-- `promptVersionRepository`
-- `resourceRepository`
-- `skillRepository`
-- `skillVersionRepository`
-- `kanbanBoardRepository`
-- `kanbanColumnRepository`
-- `sprintRepository`
-- `sprintItemRepository`
-- `taskRepository`
-- `taskCommentRepository`
-- `agentSessionRepository`
-- `agentRunRepository`
-- `artifactRepository`
-- `artifactLinkRepository`
-- `memoryItemRepository`
-
-## Notlar
-
-- `tenantId` context icinde zorunludur.
-- Cache key varsayilan olarak `locale|fallbackLocale` uzerinden hesaplanir.
+- `tenantId` is required in the context.
+- The cache key is derived from `locale|fallbackLocale` by default.
+- Service and repository accessors are exported by the kit's typed surface.

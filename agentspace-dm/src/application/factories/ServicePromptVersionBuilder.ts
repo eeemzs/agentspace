@@ -1,4 +1,4 @@
-﻿/* eslint-disable @typescript-eslint/no-this-alias */
+/* eslint-disable @typescript-eslint/no-this-alias */
 import { Effect } from 'effect'
 import { XfConfigurationError } from '@aopslab/xf-core'
 import { LocaleOptions, RepositoryCreateParams } from '@aopslab/xf-dm'
@@ -85,7 +85,7 @@ export class ServiceBuilderPromptVersion {
         return yield* _(
           Effect.fail(
             new XfConfigurationError({
-              message: 'repository override veya repositoryConfig sağlamanız gerekiyor',
+              message: 'You must provide a repository override or repositoryConfig',
               operation: 'build',
               stage: 'ServiceBuilderPromptVersion::build',
             })
@@ -109,7 +109,7 @@ export class ServiceBuilderPromptVersion {
           return yield* _(
             Effect.fail(
               new XfConfigurationError({
-                message: 'Repository konfigürasyonu gerekli. withConfig() sonrası repositoryConfig ayarlayın.',
+                message: 'Repository configuration is required. Set repositoryConfig after withConfig().',
                 stage: 'ServiceBuilderPromptVersion::build',
               })
             )
@@ -127,7 +127,7 @@ export class ServiceBuilderPromptVersion {
             RepositoryFactoryPromptVersion.create(repositoryParams),
             (error) =>
               new XfConfigurationError({
-                message: `RepositoryFactoryPromptVersion.create başarısız: ${(error as any)?.message ?? 'unknown'}`,
+                message: `RepositoryFactoryPromptVersion.create failed: ${(error as any)?.message ?? 'unknown'}`,
                 stage: 'ServiceBuilderPromptVersion::build',
                 cause: error,
               }),

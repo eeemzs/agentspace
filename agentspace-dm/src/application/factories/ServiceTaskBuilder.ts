@@ -1,4 +1,4 @@
-﻿/* eslint-disable @typescript-eslint/no-this-alias */
+/* eslint-disable @typescript-eslint/no-this-alias */
 import { Effect } from 'effect'
 import { XfConfigurationError } from '@aopslab/xf-core'
 import { LocaleOptions, RepositoryCreateParams } from '@aopslab/xf-dm'
@@ -96,7 +96,7 @@ export class ServiceBuilderTask {
         return yield* _(
           Effect.fail(
             new XfConfigurationError({
-              message: 'repository override veya repositoryConfig sağlamanız gerekiyor',
+              message: 'You must provide a repository override or repositoryConfig',
               operation: 'build',
               stage: 'ServiceBuilderTask::build',
             })
@@ -124,7 +124,7 @@ export class ServiceBuilderTask {
           return yield* _(
             Effect.fail(
               new XfConfigurationError({
-                message: 'Repository konfigürasyonu gerekli. withConfig() sonrası repositoryConfig ayarlayın.',
+                message: 'Repository configuration is required. Set repositoryConfig after withConfig().',
                 stage: 'ServiceBuilderTask::build',
               })
             )
@@ -142,7 +142,7 @@ export class ServiceBuilderTask {
             RepositoryFactoryTask.create(repositoryParams),
             (error) =>
               new XfConfigurationError({
-                message: `RepositoryFactoryTask.create başarısız: ${(error as any)?.message ?? 'unknown'}`,
+                message: `RepositoryFactoryTask.create failed: ${(error as any)?.message ?? 'unknown'}`,
                 stage: 'ServiceBuilderTask::build',
                 cause: error,
               }),
@@ -157,7 +157,7 @@ export class ServiceBuilderTask {
           return yield* _(
             Effect.fail(
               new XfConfigurationError({
-                message: 'Repository konfigürasyonu gerekli. withConfig() sonrası repositoryConfig ayarlayın.',
+                message: 'Repository configuration is required. Set repositoryConfig after withConfig().',
                 stage: 'ServiceBuilderTask::build',
               })
             )
@@ -173,7 +173,7 @@ export class ServiceBuilderTask {
             RepositoryFactoryTaskLabel.create(repositoryParams),
             (error) =>
               new XfConfigurationError({
-                message: `RepositoryFactoryTaskLabel.create başarısız: ${(error as any)?.message ?? 'unknown'}`,
+                message: `RepositoryFactoryTaskLabel.create failed: ${(error as any)?.message ?? 'unknown'}`,
                 stage: 'ServiceBuilderTask::build',
                 cause: error,
               }),
@@ -188,7 +188,7 @@ export class ServiceBuilderTask {
           return yield* _(
             Effect.fail(
               new XfConfigurationError({
-                message: 'Repository konfigürasyonu gerekli. withConfig() sonrası repositoryConfig ayarlayın.',
+                message: 'Repository configuration is required. Set repositoryConfig after withConfig().',
                 stage: 'ServiceBuilderTask::build',
               })
             )
@@ -204,7 +204,7 @@ export class ServiceBuilderTask {
             RepositoryFactoryTaskLabelLink.create(repositoryParams),
             (error) =>
               new XfConfigurationError({
-                message: `RepositoryFactoryTaskLabelLink.create başarısız: ${(error as any)?.message ?? 'unknown'}`,
+                message: `RepositoryFactoryTaskLabelLink.create failed: ${(error as any)?.message ?? 'unknown'}`,
                 stage: 'ServiceBuilderTask::build',
                 cause: error,
               }),
@@ -219,7 +219,7 @@ export class ServiceBuilderTask {
           return yield* _(
             Effect.fail(
               new XfConfigurationError({
-                message: 'Repository konfigürasyonu gerekli. withConfig() sonrası repositoryConfig ayarlayın.',
+                message: 'Repository configuration is required. Set repositoryConfig after withConfig().',
                 stage: 'ServiceBuilderTask::build',
               })
             )
@@ -235,7 +235,7 @@ export class ServiceBuilderTask {
             RepositoryFactoryTaskChecklistItem.create(repositoryParams),
             (error) =>
               new XfConfigurationError({
-                message: `RepositoryFactoryTaskChecklistItem.create başarısız: ${(error as any)?.message ?? 'unknown'}`,
+                message: `RepositoryFactoryTaskChecklistItem.create failed: ${(error as any)?.message ?? 'unknown'}`,
                 stage: 'ServiceBuilderTask::build',
                 cause: error,
               }),
@@ -250,7 +250,7 @@ export class ServiceBuilderTask {
           return yield* _(
             Effect.fail(
               new XfConfigurationError({
-                message: 'Repository konfigürasyonu gerekli. withConfig() sonrası repositoryConfig ayarlayın.',
+                message: 'Repository configuration is required. Set repositoryConfig after withConfig().',
                 stage: 'ServiceBuilderTask::build',
               })
             )
@@ -266,7 +266,7 @@ export class ServiceBuilderTask {
             RepositoryFactoryTaskRelation.create(repositoryParams),
             (error) =>
               new XfConfigurationError({
-                message: `RepositoryFactoryTaskRelation.create başarısız: ${(error as any)?.message ?? 'unknown'}`,
+                message: `RepositoryFactoryTaskRelation.create failed: ${(error as any)?.message ?? 'unknown'}`,
                 stage: 'ServiceBuilderTask::build',
                 cause: error,
               }),

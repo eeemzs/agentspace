@@ -224,7 +224,7 @@ function run(command, args, options = {}) {
     throw new Error(`Komut calistirilamadi: ${printable} (${result.error.message})`);
   }
   if ((result.status ?? 1) !== 0) {
-    throw new Error(`Komut basarisiz: ${printable}`);
+    throw new Error(`Komut failed: ${printable}`);
   }
 }
 
@@ -237,15 +237,15 @@ Ornek:
   pnpm cascade:changeset -- --from xf-core --root-bump minor --dependent-bump patch
   pnpm cascade:release -- --from @aopslab/xf-core
 
-Opsiyonlar:
-  --from <pkg|dir[,pkg2]>     Kaynak paket(ler). (ornek: @aopslab/xf-core veya xf-core)
-  --root-bump <type>          Kaynak paket bump tipi: patch|minor|major (default: patch)
-  --dependent-bump <type>     Bagimli paket bump tipi: patch|minor|major (default: patch)
-  --release                   Changeset olusturduktan sonra version/install/build/publish calistir
-  --scope <@scope>            Token secimi icin scope (ornek: @aopslab)
+Options:
+  --from <pkg|dir[,pkg2]>     Source package(s), for example @aopslab/xf-core or xf-core
+  --root-bump <type>          Source package bump type: patch|minor|major (default: patch)
+  --dependent-bump <type>     Dependent package bump type: patch|minor|major (default: patch)
+  --release                   Run version/install/build/publish after creating the changeset
+  --scope <@scope>            Scope used to select the token (for example @aopslab)
   --registry <url>            Publish registry (default: https://npm.pkg.github.com)
   --access <type>             Publish access (default: restricted)
-  --dry-run                   Dosya/komut uygulamadan sadece plani yazdir
+  --dry-run                   Print the plan without changing files or running commands
   --help
 `);
 }

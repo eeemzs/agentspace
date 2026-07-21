@@ -1,4 +1,4 @@
-﻿/* eslint-disable @typescript-eslint/no-this-alias */
+/* eslint-disable @typescript-eslint/no-this-alias */
 import { Effect } from 'effect'
 import { XfConfigurationError } from '@aopslab/xf-core'
 import { LocaleOptions, RepositoryCreateParams } from '@aopslab/xf-dm'
@@ -72,7 +72,7 @@ export class ServiceBuilderAgentSession {
         return yield* _(
           Effect.fail(
             new XfConfigurationError({
-              message: 'repository override veya repositoryConfig sağlamanız gerekiyor',
+              message: 'You must provide a repository override or repositoryConfig',
               operation: 'build',
               stage: 'ServiceBuilderAgentSession::build',
             })
@@ -96,7 +96,7 @@ export class ServiceBuilderAgentSession {
           return yield* _(
             Effect.fail(
               new XfConfigurationError({
-                message: 'Repository konfigürasyonu gerekli. withConfig() sonrası repositoryConfig ayarlayın.',
+                message: 'Repository configuration is required. Set repositoryConfig after withConfig().',
                 stage: 'ServiceBuilderAgentSession::build',
               })
             )
@@ -114,7 +114,7 @@ export class ServiceBuilderAgentSession {
             RepositoryFactoryAgentSession.create(repositoryParams),
             (error) =>
               new XfConfigurationError({
-                message: `RepositoryFactoryAgentSession.create başarısız: ${(error as any)?.message ?? 'unknown'}`,
+                message: `RepositoryFactoryAgentSession.create failed: ${(error as any)?.message ?? 'unknown'}`,
                 stage: 'ServiceBuilderAgentSession::build',
                 cause: error,
               }),

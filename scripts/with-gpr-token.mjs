@@ -162,8 +162,8 @@ function resolveToken({ workspaceDir, scope, explicitToken }) {
     [
       "GitHub Packages token bulunamadi.",
       `Scope: ${normalizedScope || "(belirtilmedi)"}`,
-      `Aranan env keyler: ${envCandidates.join(", ")}`,
-      "Cozum: OS env'e ekleyin (veya fallback icin .env dosyasina yazin)."
+      `Environment keys checked: ${envCandidates.join(", ")}`,
+      "Resolution: add the value to the OS environment or write it to .env as a fallback."
     ].join("\n")
   );
 }
@@ -211,7 +211,7 @@ function runCommand(command, cwd, env, dryRun, tempConfig) {
     throw new Error(`Komut calistirilamadi: ${printable} (${result.error.message})`);
   }
   if ((result.status ?? 1) !== 0) {
-    throw new Error(`Komut basarisiz: ${printable}`);
+    throw new Error(`Komut failed: ${printable}`);
   }
 }
 
@@ -226,11 +226,11 @@ Kullanim:
   node ./scripts/with-gpr-token.mjs --scope @aopslab -- pnpm -r publish --no-git-checks
   node ./scripts/with-gpr-token.mjs --scope @sonmicro -- npm whoami --registry https://npm.pkg.github.com
 
-Opsiyonlar:
-  --scope <@scope>    Token secim scope'u (ornek: @aopslab)
-  --token <value>     Dogrudan token (opsiyonel)
-  --workspace <dir>   Varsayilan: mevcut dizin
-  --dry-run           Komutu calistirmadan plani yazdirir
+Options:
+  --scope <@scope>    Token selection scope (for example @aopslab)
+  --token <value>     Direct token value (optional)
+  --workspace <dir>   Default: current directory
+  --dry-run           Print the plan without running the command
   --quiet             Token kaynak logunu basmaz
   --help
 

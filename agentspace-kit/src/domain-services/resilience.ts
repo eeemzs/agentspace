@@ -1,8 +1,8 @@
 import type { AgentspaceKitProviderOptions } from './types.js';
 
 /**
- * Resilience/policy preset'lerini tek yerde toplayın.
- * Örn. retry/breaker/timeouts veya cache ayarları.
+ * Keep resilience and policy presets in one place.
+ * Examples include retry, circuit-breaker, timeout, and cache settings.
  */
 export const defaultAgentspaceKitResilience: Pick<AgentspaceKitProviderOptions, 'resilience' | 'cache'> = {
   resilience: {

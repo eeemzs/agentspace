@@ -4,10 +4,10 @@ Agentspace domain for dm, kit, host-plugin, tooling, cli, and tests.
 
 ## User Guide
 
-- Domain kullanim rehberi hosted Docman canonical kayittir.
-- Mirror copy consuming repo icinde okunur:
+- The canonical domain user guide is hosted in Docman.
+- Consuming repositories read the mirrored copy at:
   `.aops/docman/domain-guides/agentspace-user-guide.md`
-- Mirror yenileme:
+- Refresh the mirror with:
   `aops-cli doc mirror pull --project-slug aops --group-uid domain-guides --document-slug agentspace-user-guide --out-dir ./.aops/docman --apply --json`
 
 ## Packages
@@ -81,8 +81,8 @@ projection, or `tool_not_found` after a domain change.
 
 ## Drizzle Flow
 
-- PostgreSQL varsayilani icin `AGENTSPACE_PG_URL` veya `AGENTSPACE_REPO_URL` kullan.
-- SQLite icin `AGENTSPACE_DRIZZLE_DIALECT=sqlite` ve `AGENTSPACE_SQLITE_URL=file:/absolute/path/agentspace.sqlite` kullan.
-- Root `db:*` scriptleri once `agentspace-dm` paketini build eder, sonra uygun Drizzle config ile calisir.
+- For the PostgreSQL default, set `AGENTSPACE_PG_URL` or `AGENTSPACE_REPO_URL`.
+- For SQLite, set `AGENTSPACE_DRIZZLE_DIALECT=sqlite` and `AGENTSPACE_SQLITE_URL=file:/absolute/path/agentspace.sqlite`.
+- Root `db:*` scripts build `agentspace-dm` first, then run with the appropriate Drizzle configuration.
 - SQLite config: `drizzle.agentspace.sqlite.config.ts`
 - PostgreSQL config: `drizzle.agentspace.config.ts`

@@ -66,7 +66,7 @@ export class ServiceBuilderAgentProfile {
         return yield* _(
           Effect.fail(
             new XfConfigurationError({
-              message: 'repository override veya repositoryConfig sağlamanız gerekiyor',
+              message: 'You must provide a repository override or repositoryConfig',
               operation: 'build',
               stage: 'ServiceBuilderAgentProfile::build',
             }),
@@ -90,7 +90,7 @@ export class ServiceBuilderAgentProfile {
           return yield* _(
             Effect.fail(
               new XfConfigurationError({
-                message: 'Repository konfigürasyonu gerekli. withConfig() sonrası repositoryConfig ayarlayın.',
+                message: 'Repository configuration is required. Set repositoryConfig after withConfig().',
                 stage: 'ServiceBuilderAgentProfile::build',
               }),
             ),
@@ -108,7 +108,7 @@ export class ServiceBuilderAgentProfile {
             RepositoryFactoryAgentProfile.create(repositoryParams),
             (error) =>
               new XfConfigurationError({
-                message: `RepositoryFactoryAgentProfile.create başarısız: ${(error as any)?.message ?? 'unknown'}`,
+                message: `RepositoryFactoryAgentProfile.create failed: ${(error as any)?.message ?? 'unknown'}`,
                 stage: 'ServiceBuilderAgentProfile::build',
                 cause: error,
               }),
